@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-import { setLibs } from './utils.js';
 
 // Add project-wide style path here.
 const STYLES = '';
@@ -44,7 +43,8 @@ const CONFIG = {
  * ------------------------------------------------------------
  */
 
-const miloLibs = setLibs(LIBS);
+// const miloLibs = 'https://main--milo--adobecom.hlx.live/libs';
+const miloLibs = 'https://test-ratko--milo--zagi25.hlx.page/libs';
 
 (function loadStyles() {
   const paths = [`${miloLibs}/styles/styles.css`];
