@@ -21,7 +21,7 @@ const LIBS = '/libs';
 const CONFIG = {
   // codeRoot: '',
   // contentRoot: '',
-  // imsClientId: 'college',
+  imsClientId: 'APP_GRAVITY_RUNTIME_TEST_PROD',
   // geoRouting: 'off',
   // fallbackRouting: 'off',
   locales: {
@@ -62,4 +62,37 @@ const miloLibs = 'https://test-ratko--milo--zagi25.hlx.page/libs';
 
   setConfig({ ...CONFIG, miloLibs });
   await loadArea();
+  const imsReady = setInterval(() => {
+    if (window.adobeIMS && window.adobeIMS.initialized) {
+      clearInterval(imsReady);
+
+      if (!window.adobeIMS.isSignedInUser()) {
+        const button = document.querySelector('button.feds-signIn');
+        const newButton = button.cloneNode(true);
+        newButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          const params = new URLSearchParams(window.location.search);
+          window.location.assign(`https://ims-na1.adobelogin.com/ims/authorize/v2?redirect_uri=https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/login&client_id=${CONFIG.imsClientId}&scope=openid,AdobeID,session&response_type=code&state=${params.get('page')}`);
+        });
+        button.replaceWith(newButton);
+      } else {
+        const signOutReady = setInterval(() => {
+          const signOutBtn = document.querySelector('.feds-profile-actions')?.lastElementChild;
+          if (signOutBtn) {
+            clearInterval(signOutReady);
+            console.log(signOutBtn);
+            const newSignOutBtn = signOutBtn.cloneNode(true);
+            newSignOutBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const logoutResponse = await fetch('https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/logout');
+              if (logoutResponse.ok) {
+                window.adobeIMS.signOut();
+              }
+            });
+            signOutBtn.replaceWith(newSignOutBtn);
+          }
+        },100);
+      }
+    }
+  }, 1000);
 }());
