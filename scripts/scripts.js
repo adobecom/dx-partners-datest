@@ -21,7 +21,11 @@ const LIBS = '/libs';
 const CONFIG = {
   // codeRoot: '',
   // contentRoot: '',
-  imsClientId: 'APP_GRAVITY_RUNTIME_TEST_PROD',
+  imsClientId: window.location.origin.includes('-dev') ? 'APP_GRAVITY_RUNTIME' :  'APP_GRAVITY_RUNTIME_TEST_PROD',
+  imsScope: 'AdobeID,openid',
+  env: {
+    ims: 'stage',
+  },
   // geoRouting: 'off',
   // fallbackRouting: 'off',
   locales: {
@@ -45,6 +49,9 @@ const CONFIG = {
 
 // const miloLibs = 'https://main--milo--adobecom.hlx.live/libs';
 const miloLibs = 'https://test-ratko--milo--zagi25.hlx.page/libs';
+if (window.location.hash.includes('access_token')) {
+  window.location.hash = '';
+}
 
 (function loadStyles() {
   const paths = [`${miloLibs}/styles/styles.css`];
@@ -65,40 +72,22 @@ const miloLibs = 'https://test-ratko--milo--zagi25.hlx.page/libs';
   const imsReady = setInterval(() => {
     if (window.adobeIMS && window.adobeIMS.initialized) {
       clearInterval(imsReady);
-
-      if (!window.adobeIMS.isSignedInUser()) {
-        window.adobeid = {
-          ...window.adobeid,
-          redirect_uri: 'https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/login',
-        }
-        const button = document.querySelector('button.feds-signIn');
-        const newButton = button.cloneNode(true);
-        newButton.addEventListener('click', (e) => {
-          e.preventDefault();
-          const params = new URLSearchParams(window.location.search);
-          const page = params.get('page');
-          window.adobeIMS.signIn({},{page}, 'code');
-          // window.location.assign(`https://ims-na1.adobelogin.com/ims/authorize/v2?redirect_uri=https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/login&client_id=${CONFIG.imsClientId}&scope=openid,AdobeID,session&response_type=code&state=${params.get('page')}`);
-        });
-        button.replaceWith(newButton);
-      } else {
-        // const signOutReady = setInterval(() => {
-        //   const signOutBtn = document.querySelector('.feds-profile-actions')?.lastElementChild;
-        //   if (signOutBtn) {
-        //     clearInterval(signOutReady);
-        //     console.log(signOutBtn);
-        //     const newSignOutBtn = signOutBtn.cloneNode(true);
-        //     newSignOutBtn.addEventListener('click', async (e) => {
-        //       e.preventDefault();
-        //       const logoutResponse = await fetch('https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/logout');
-        //       if (logoutResponse.ok) {
-        //         window.adobeIMS.signOut();
-        //       }
-        //     });
-        //     signOutBtn.replaceWith(newSignOutBtn);
-        //   }
-        // },100);
-        //
+      window.adobeIMS.adobeIdData.alwaysRemoveTokenFromUrl = true;
+      if (window.adobeIMS.isSignedInUser()) {
+        const signOutReady = setInterval(() => {
+          const signOutBtn = document.querySelector('.feds-profile-actions')?.lastElementChild;
+          if (signOutBtn) {
+            clearInterval(signOutReady);
+            const newSignOutBtn = signOutBtn.cloneNode(true);
+            newSignOutBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const logoutResponse = await fetch('https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/logout');
+              window.adobeIMS.adobeIdData.redirect_uri = 'https://14257-ratkotest-dev.adobeioruntime.net/api/v1/web/RatkoDev/edge-worker?page=https://test-branch3--dx-partners--adobecom.hlx.page/SPP/drafts/ratko/public'
+              window.adobeIMS.signOut();
+            });
+            signOutBtn.replaceWith(newSignOutBtn);
+          }
+        },100);
       }
     }
   }, 1000);
