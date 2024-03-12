@@ -40,3 +40,8 @@ export const [setLibs, getLibs] = (() => {
 export async function useMiloSample() {
   const { createTag } = await import(`${getLibs()}/utils/utils.js`);
 }
+
+const miloLibs = setLibs('/libs');
+
+const { createTag, localizeLink } = await import(`${miloLibs}/utils/utils.js`);
+export { createTag, localizeLink };
