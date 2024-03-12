@@ -64,6 +64,7 @@ export var partnerNewsStyles = css`
   
   .partner-news-sidebar .filter .filter-header:hover {
     background-color: ${lightGrey};
+    cursor: pointer;
   }
   
   .partner-news-sidebar .filter .label {
@@ -84,10 +85,6 @@ export var partnerNewsStyles = css`
     transform: rotate(-180deg);
   }
   
-  .partner-news-sidebar .filter .filter-header:hover {
-    cursor: pointer;
-  }
-  
   .partner-news-sidebar .filter .filter-list {
     margin: 0;
     max-height: 0;
@@ -101,7 +98,7 @@ export var partnerNewsStyles = css`
      padding: 0 5px;
   }
   
-  .partner-news-sidebar .filter-list li >*:hover {
+  .partner-news-sidebar .filter-list li > *:hover {
     background-color: ${lightGrey};
   }
   
@@ -168,7 +165,7 @@ export var partnerNewsStyles = css`
     flex-direction: column;
   }
   
-  .partner-news-collection .empty-file {
+  .partner-news-collection .no-results .empty-file {
     height: auto;
     width: 150px;
     margin-bottom: 15px;

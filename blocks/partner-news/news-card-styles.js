@@ -81,9 +81,6 @@ export var newsCardStyles = css`
     font-size: .875rem;
     line-height: 1.3125rem;
     font-weight: 400;
-  }
-  
-  .news-card .card-description {
     word-break: break-word;
     margin: 0 0 14px;
     display: -webkit-box;
