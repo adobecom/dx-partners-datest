@@ -261,6 +261,7 @@ async function declareSwcPartnerNews(data) {
 
     handleSort(event) {
       this.selectedSortOrder = event.target.value;
+      this.selectedPageNum = 1;
       this.handleActions();
     }
 
