@@ -155,7 +155,7 @@ async function declareSwcPartnerNews(data) {
     }
 
     get pagination() {
-      if (!this.cards?.length) return;
+      if (!this.cards.length) return;
 
       const min = 1;
       this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
@@ -279,18 +279,24 @@ async function declareSwcPartnerNews(data) {
     }
 
     handlePageNum(pageNum) {
-      if (this.selectedPageNum !== pageNum) this.selectedPageNum = pageNum;
-      this.handleActions();
+      if (this.selectedPageNum !== pageNum) {
+        this.selectedPageNum = pageNum;
+        this.handleActions();
+      }
     }
 
     handlePrevPage() {
-      if ( this.selectedPageNum > 1 ) this.selectedPageNum--;
-      this.handleActions();
+      if ( this.selectedPageNum > 1 ) {
+        this.selectedPageNum--;
+        this.handleActions();
+      }
     }
 
     handleNextPage() {
-      if (this.selectedPageNum < this.totalPages) this.selectedPageNum++;
-      this.handleActions();
+      if (this.selectedPageNum < this.totalPages) {
+        this.selectedPageNum++;
+        this.handleActions();
+      }
     }
 
     handleResetFilters() {
