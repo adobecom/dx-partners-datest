@@ -1,5 +1,5 @@
 import { getLibs } from '../../scripts/utils.js';
-import { partnerNewsStyles, newsCardStyles } from './partner-news-styles.js';
+import { partnerCardsStyles, newsCardStyles } from './partner-cards-styles.js';
 
 function formatDate(cardDate) {
   if (!cardDate) return;
@@ -15,8 +15,8 @@ function formatDate(cardDate) {
   return formattedDate;
 }
 
-async function declareSwcPartnerNews() {
-  if (customElements.get('partner-news')) return;
+async function declarePartnerCards() {
+  if (customElements.get('partner-cards') || customElements.get('news-card')) return;
 
   const miloLibs = getLibs();
   const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
@@ -48,9 +48,9 @@ async function declareSwcPartnerNews() {
   }
   customElements.define('news-card', NewsCard);
 
-  class PartnerNews extends LitElement {
+  class PartnerCards extends LitElement {
     static styles = css`
-      ${partnerNewsStyles}
+      ${partnerCardsStyles}
       #search {
         width: 100%;
       }
@@ -67,8 +67,8 @@ async function declareSwcPartnerNews() {
       totalPages: { type: Number },
       selectedPageNum: { type: Number },
       selectedSortOrder: { type: String, attribute: 'data-sort', reflect: true },
-      selectedFilters: { type: Array },
-      desktopView: { type: Boolean }
+      selectedFilters: { type: Object },
+      mobileView: { type: Boolean }
     };
 
     constructor() {
@@ -80,15 +80,15 @@ async function declareSwcPartnerNews() {
       this.searchTerm = '';
       this.totalPages = 0;
       this.selectedPageNum = 1;
-      this.cardsPerPage = 3;
+      this.cardsPerPage = 6;
       this.selectedSortOrder = '';
-      this.selectedFilters = [];
-      this.desktopView = window.innerWidth > 1200;
+      this.selectedFilters = {};
+      this.mobileView = window.innerWidth <= 1200;
       window.addEventListener('resize', this.updateView.bind(this));
     }
 
     updateView() {
-      this.desktopView = window.innerWidth > 1200;
+      this.mobileView = window.innerWidth <= 1200;
     }
 
     async firstUpdated() {
@@ -123,12 +123,12 @@ async function declareSwcPartnerNews() {
       }
     }
 
-    get newsCards() {
+    get partnerCards() {
       if (this.paginatedCards.length) {
         return html`${repeat(
           this.paginatedCards,
           (card) => card.contentArea?.title,
-          (card) => html`<news-card class="news-card-wrapper" .data=${card}></news-card>`,
+          (card) => html`<news-card class="card-wrapper" .data=${card}></news-card>`,
         )}`;
       } else {
         return html`<div class="no-results">
@@ -176,29 +176,26 @@ async function declareSwcPartnerNews() {
         this.blockData.filters,
         (filter) => filter.key,
         (filter) => {
+          const selectedTagsData = this.countSelectedTags(filter.key);
+          const tagsCount = selectedTagsData.tagsCount;
+
           return html`
           <div class="filter">
             <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
-              <span class="label">${filter.value}</span>
-              <i class="chevron-icon">
-                <sp-icon-chevron-down />
-              </i>
+              <span class="filter-label">${filter.value}</span>
+              <sp-icon-chevron-down class="filter-chevron-icon" />
             </button>
-            <button class="selected-tags-count-btn ${this.countSelectedTags(filter.key) ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}">
-              <span class="total-num">${this.countSelectedTags(filter.key)}</span>
+            <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}">
+              <span class="filter-selected-tags-total-num">${tagsCount}</span>
             </button>
             <ul class="filter-list">
               <sp-theme theme="spectrum" color="light" scale="medium">
-                ${this.getTagsByFilter(filter.tags)}
+                ${this.getTagsByFilter(filter)}
               </sp-theme>
             </ul>
           </div>`
         }
       )}`;
-    }
-
-    openFiltersMobile() {
-
     }
 
     get filtersMobile() {
@@ -208,49 +205,91 @@ async function declareSwcPartnerNews() {
         this.blockData.filters,
         (filter) => filter.key,
         (filter) => {
+          const selectedTagsData = this.countSelectedTags(filter.key);
+          const tagsString = selectedTagsData.tagsString;
+          const tagsCount = selectedTagsData.tagsCount;
+
           return html`
-            <button class="filter-mobile-btn" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
-              <div class="filter-mobile-btn-text">
-                <h3 class="label">${filter.value}</h3>
-                <div>Selected filters</div>
+            <div class="filter-wrapper-mobile">
+              <div class="filter-mobile">
+                <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>
+                  <div class="filter-header-content-mobile">
+                    <h3 class="filter-header-name-mobile">${filter.value}</h3>
+                    ${tagsCount
+                      ? html `
+                        <div class="filter-header-selected-tags-mobile">
+                            <span class="filter-header-selected-tags-text-mobile">${tagsString}</span>
+                            <span class="filter-header-selected-tags-count-mobile">+ ${tagsCount}</span>
+                        </div>
+                      `
+                      : ''
+                    }
+                  </div>
+                  <sp-icon-chevron-down class="filter-header-chevron-icon" />
+                </button>
+                <ul class="filter-tags-mobile">
+                  <sp-theme theme="spectrum" color="light" scale="medium">
+                    ${this.getTagsByFilter(filter)}
+                  </sp-theme>
+                </ul>
+                <div class="filter-footer-mobile-wrapper">
+                  <div class="filter-footer-mobile">
+                    <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
+                    <div class="filter-footer-buttons-mobile">
+                      <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}">Clear All</button>
+                      <sp-theme theme="spectrum" color="light" scale="medium">
+                        <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>Apply</sp-button>
+                      </sp-theme>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="filter-mobile-btn-icons">
-                <span>30</span>
-                <i class="chevron-icon"><sp-icon-chevron-down /></i>
-              </div>
-          </div>`
+            </div>
+          `
         }
       )}`;
     }
 
     get chosenFilters() {
-      if (!this.selectedFilters.length) return;
+      const extractedTags = Object.values(this.selectedFilters).flatMap(tagsArray => tagsArray);
+      if (!extractedTags.length) return;
 
-      return html`${repeat(
-        this.selectedFilters,
+      const htmlContent = html`${repeat(
+        extractedTags.sort((a, b) => a.value.localeCompare(b.value)),
         (tag) => tag.key,
-        (tag) => {
-          return html`
-            <button class="chosen-filter-btn" @click="${(e) => this.handleRemoveTag(tag)}">
-              ${tag.value}
-            </button>
-          `
-        }
-      )}`
+        (tag) => html`
+          <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleRemoveTag(tag)}">
+            ${tag.value}
+          </button>`
+      )}`;
+
+      return { htmlContent, tagsCount: extractedTags.length };
     }
 
-    getTagsByFilter(tags) {
+    getTagsByFilter(filter) {
+      const tags = filter.tags;
+
       return html`${repeat(
         tags,
         (tag) => tag.key,
         (tag) => html`<li><sp-checkbox 
           size="m" emphasized
           ?checked=${tag.checked}
-          @change=${(event) => this.handleTag(event, tag)}
+          @change=${(event) => this.handleTag(event, tag, filter.key)}
         >
           ${tag.value}
         </sp-checkbox></li>`,
       )}`;
+    }
+
+    openFiltersMobile() {
+      const element = this.shadowRoot.querySelector('.all-filters-wrapper-mobile');
+      element.classList.add('open');
+    }
+
+    closeFiltersMobile() {
+      const element = this.shadowRoot.querySelector('.all-filters-wrapper-mobile');
+      element.classList.remove('open');
     }
 
     expandFilter(clickedFilter) {
@@ -260,7 +299,6 @@ async function declareSwcPartnerNews() {
     handleActions() {
       //searching
       this.cards = this.allCards.filter((card) =>
-        formatDate(card.cardDate).toLowerCase().includes(this.searchTerm) ||
         card.contentArea?.title.toLowerCase().includes(this.searchTerm) ||
         card.contentArea?.description.toLowerCase().includes(this.searchTerm)
       );
@@ -275,13 +313,42 @@ async function declareSwcPartnerNews() {
       this.cards.sort(sortFunctions[this.selectedSortOrder]);
 
       //filtering
-      if (this.selectedFilters.length) {
+      const selectedFiltersKeys = Object.keys(this.selectedFilters);
+      if (selectedFiltersKeys.length) {
         this.cards = this.cards.filter((card) =>
-          this.selectedFilters.every((filter) =>
-            card.arbitrary.some((arbitraryTag) => arbitraryTag.key === filter.parentKey && arbitraryTag.value === filter.key)
+          selectedFiltersKeys.every((key) =>
+            card.arbitrary.some((arbitraryTag) => {
+              if (key === arbitraryTag.key) {
+                return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
+              }
+              return false;
+            })
           )
-        )
+        );
       }
+
+//----------------------------------- test for filtering will be removed -----------------------------------
+//       let test = [
+//         {"name": "card1", "arbitrary": [{"key": "audience", "value": "marketing"}, {"key": "audience", "value": "sales"}, {"key": "region", "value": "japan"}]},
+//         {"name": "card2", "arbitrary": [{"key": "audience", "value": "sales"}, {"key": "region", "value": "emea"}]},
+//         {"name": "card3", "arbitrary": [{"key": "region", "value": "japan"}, {"key": "region", "value": "emea"}]},
+//         {"name": "card4", "arbitrary": []},
+//         {"name": "card5", "arbitrary": [{"key": "audience", "value": "marketing"}, {"key": "region", "value": "test-region"}]},
+//       ];
+//
+//       test = test.filter((card) =>
+//         selectedFiltersKeys.every((key) =>
+//           card.arbitrary.some((arbitraryTag) => {
+//             if (key === arbitraryTag.key) {
+//               return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
+//             }
+//             return false;
+//           })
+//         )
+//       );
+//
+//       console.log('testFilters:', test)
+//----------------------------------- test for filtering will be removed -----------------------------------
 
       //pagination
       const startIndex = this.selectedPageNum === 1 ? 0 : (this.selectedPageNum - 1) * this.cardsPerPage;
@@ -291,8 +358,7 @@ async function declareSwcPartnerNews() {
 
     handleResetActions() {
       this.searchTerm = '';
-      this.selectedSortOrder = this.blockData.sort.selected;
-      this.selectedFilters = [];
+      this.selectedFilters = {};
       this.blockData.filters.forEach(filter => {
         filter.tags.forEach(tag => tag.checked = false);
       });
@@ -310,29 +376,70 @@ async function declareSwcPartnerNews() {
       if (event.target.value !== this.selectedSortOrder) this.selectedSortOrder = event.target.value;
     }
 
-    handleTag(event, tag) {
-      const tagKey = tag.key;
-      if (event.target.checked) {
-        tag.checked = true;
-        this.selectedFilters = [...this.selectedFilters, tag];
+    handleTag(event, tag, filterKey) {
+      if (!event.target.checked) {
+        this.handleRemoveTag(tag);
+        return;
+      }
+
+      tag.checked = true;
+
+      if (this.selectedFilters[filterKey]) {
+          this.selectedFilters = {
+          ...this.selectedFilters,
+          [filterKey]: [...this.selectedFilters[filterKey], tag]
+        };
       } else {
-        tag.checked = false;
-        this.selectedFilters = this.selectedFilters.filter(selectedTag => tagKey !== selectedTag.key);
+        this.selectedFilters = {
+          ...this.selectedFilters,
+          [filterKey]: [tag]
+        };
       }
     }
 
     handleRemoveTag(tag) {
       tag.checked = false;
-      this.selectedFilters = this.selectedFilters.filter(selectedTag => tag.key !== selectedTag.key);
+      const { key: tagKey, parentKey: filterKey } = tag;
+      const filteredTags = [...this.selectedFilters[filterKey]].filter(tag => tag.key !== tagKey);
+
+      if (filteredTags.length) {
+        this.selectedFilters = {
+          ...this.selectedFilters,
+          [filterKey]: filteredTags
+        };
+      } else {
+        const filterKeys = Object.keys(this.selectedFilters);
+        const updatedFilters = filterKeys.reduce((acc, e) => {
+          if (e !== filterKey) {
+            acc[e] = this.selectedFilters[e];
+          }
+          return acc;
+        }, {});
+
+        this.selectedFilters = updatedFilters;
+      }
     }
 
     countSelectedTags(filterKey) {
-      const tagsLength = this.selectedFilters.filter((filter) => filter.parentKey === filterKey);
-      if (tagsLength.length) return tagsLength.length;
+      if (!this.selectedFilters[filterKey]) {
+        return {
+          'tagsString': '',
+          'tagsCount': 0
+        };
+      }
+
+      const tags = [...this.selectedFilters[filterKey]].map(tag => tag.value);
+      return {
+        'tagsString': tags.join(', '),
+        'tagsCount': tags.length
+      };
     }
 
     handleResetTags(filterKey) {
-      this.selectedFilters = this.selectedFilters.filter(selectedTag => filterKey !== selectedTag.parentKey);
+      const updatedFilters = {...this.selectedFilters};
+      delete updatedFilters[filterKey];
+      this.selectedFilters = {...updatedFilters};
+
       this.blockData.filters.forEach(filter => {
         if (filter.key === filterKey) {
           filter.tags.forEach((tag) => tag.checked = false)
@@ -354,23 +461,23 @@ async function declareSwcPartnerNews() {
 
     render() {
       return html`
-      <div class="partner-news">
-        <div class="partner-news-sidebar-wrapper">
-          <div class="partner-news-sidebar">
+      <div class="partner-cards">
+        <div class="partner-cards-sidebar-wrapper">
+          <div class="partner-cards-sidebar">
             <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
               <sp-search id="search" size="m" value=${this.searchTerm} @input="${this.handleSearch}" @reset="${this.handleClearSearch}">
               </sp-search>
             </sp-theme>
-            ${this.desktopView
+            ${!this.mobileView
               ? html`
                 <div class="sidebar-header">
                   <h3 class="sidebar-title">Filter</h3>
-                  <button class="clear-all-btn" @click="${this.handleResetActions}">Clear all</button>
+                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}">Clear all</button>
                 </div>
-                <div class="chosen-filters-wrapper">
-                  ${this.chosenFilters}
+                <div class="sidebar-chosen-filters-wrapper">
+                  ${this.chosenFilters && this.chosenFilters.htmlContent}
                 </div>
-                <div class="filters-wrapper">
+                <div class="sidebar-filters-wrapper">
                   ${this.filters}
                 </div>
               `
@@ -378,21 +485,26 @@ async function declareSwcPartnerNews() {
             }
           </div>
         </div>
-        <div class="partner-news-content">
-          <div class="partner-news-header">
-            <div class="partner-news-title-wrapper">
-              <h3 class="partner-news-title">${this.blockData.title}</h3>
-              <span class="cards-results"><strong>${this.cards?.length}</strong> results</span>
+        <div class="partner-cards-content">
+          <div class="partner-cards-header">
+            <div class="partner-cards-title-wrapper">
+              <h3 class="partner-cards-title">${this.blockData.title}</h3>
+              <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> results</span>
             </div>
-            <div class="partner-news-sort-wrapper">
-              ${!this.desktopView
+            <div class="partner-cards-sort-wrapper">
+              ${this.mobileView
                 ? html `
                   <button class="filters-btn-mobile" @click="${this.openFiltersMobile}">
                     <span class="filters-btn-mobile-icon"></span>
                     <span class="filters-btn-mobile-title">Filters</span>
-                    <span class="filters-btn-mobile-total ${this.selectedFilters.length ? '' : 'hidden'}">${this.selectedFilters.length}</span>
+                    ${this.chosenFilters
+                      ? html `
+                         <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
+                      `
+                      : ''
+                    }
                   </button>
-                ` 
+                `
                 : ''
               }
               <sp-theme theme="spectrum" color="light" scale="medium" class="picker-wrapper">
@@ -402,57 +514,63 @@ async function declareSwcPartnerNews() {
               </sp-theme>
             </div>
           </div>
-          <div class="partner-news-collection">
+          <div class="partner-cards-collection">
             ${this.allCards.length
-              ? this.newsCards
+              ? this.partnerCards
               : html`
-                  <div class="progress-circle-wrapper">
-                    <sp-theme theme="spectrum" color="light" scale="medium">
-                      <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
-                    </sp-theme>
-                  </div>
-                `
-        }
+                <div class="progress-circle-wrapper">
+                  <sp-theme theme="spectrum" color="light" scale="medium">
+                    <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
+                  </sp-theme>
+                </div>
+              `
+            }
           </div>
           <div class="pagination-wrapper">
-            <div class="pages-list">
-              <button class="prev-btn ${this.selectedPageNum === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}">Prev</button>
-                  ${this.pagination}
-              <button class="next-btn ${this.selectedPageNum === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}">Next</button>
+            <div class="pagination-pages-list">
+              <button class="pagination-prev-btn ${this.selectedPageNum === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}">Prev</button>
+                ${this.pagination}
+              <button class="pagination-next-btn ${this.selectedPageNum === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}">Next</button>
             </div>
-            <span class="total-results">1-${this.cardsPerPage} of ${this.cards?.length} results</span>
+            <span class="pagination-total-results">1-${Math.min(this.cards?.length ?? 0, this.cardsPerPage) } of ${this.cards?.length} results</span>
           </div>
         </div>
       </div>
 
-      <div class="filters-wrapper-mobile-content">
-        <div class="filters-mobile-header">
-          <button class="back-btn"></button> 
-          <span class="filters-mobile-header-title">Filter by</span>
-        </div>
-        <div class="filters-mobile-content">
-          ${this.filtersMobile}
-        </div>
-        <div class="filters-mobile-footer">
-          <span>${this.cards?.length} Results</span>
-          <div class="filters-mobile-footer-buttons">
-            <button class="clear-all-btn-mobile" @click="${this.handleResetActions}">Clear All</button>
-            <sp-theme theme="spectrum" color="light" scale="medium">
-              <sp-button>Apply</sp-button>
-            </sp-theme>
+      ${this.mobileView
+        ? html `
+          <div class="all-filters-wrapper-mobile">
+            <div class="all-filters-header-mobile">
+              <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}"></button>
+              <span class="all-filters-header-title-mobile">Filter by</span>
+            </div>
+            <div class="all-filters-list-mobile">
+              ${this.filtersMobile}
+            </div>
+            <div class="all-filters-footer-mobile">
+              <span class="all-filters-footer-results-mobile">${this.cards?.length} Results</span>
+              <div class="all-filters-footer-buttons-mobile">
+                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}">Clear All</button>
+                <sp-theme theme="spectrum" color="light" scale="medium">
+                  <sp-button @click="${this.closeFiltersMobile}">Apply</sp-button>
+                </sp-theme>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      
+        `
+        : ''
+      }
     `;
     }
   }
-  customElements.define('partner-news', PartnerNews);
+  customElements.define('partner-cards', PartnerCards);
 }
 
 export default async function init(el) {
-  performance.mark('partner-news:start');
+  performance.mark('partner-cards:start');
   const miloLibs = getLibs();
+  const sectionIndex = el.parentNode.getAttribute('data-idx');
+
   let blockData = {
     'title': '',
     'filters': [],
@@ -514,7 +632,7 @@ export default async function init(el) {
   })
 
   const deps = await Promise.all([
-    declareSwcPartnerNews(),
+    declarePartnerCards(),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -524,13 +642,14 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/icons/chevron.js`),
   ]);
 
-  const app = document.createElement('partner-news');
-  app.className = 'content partner-news-wrapper';
+  const app = document.createElement('partner-cards');
+  app.className = 'content partner-cards-wrapper';
   app.blockData = blockData;
+  app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
   await deps;
-  performance.mark('partner-news:end');
-  performance.measure('partner-news block', 'partner-news:start', 'partner-news:end');
+  performance.mark('partner-cards:end');
+  performance.measure('partner-cards block', 'partner-cards:start', 'partner-cards:end');
   return app;
 }
