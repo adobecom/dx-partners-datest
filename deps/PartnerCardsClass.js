@@ -97,7 +97,7 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const response = await fetch('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=US&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=5&debug=true&flatFile=false&expanded=true');
+      const response = await fetch('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=US&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=&debug=true&flatFile=false&expanded=true');
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -341,16 +341,19 @@ export class PartnerCards extends LitElement {
     if (this.blockData.filters.length) {
       const selectedFiltersKeys = Object.keys(this.selectedFilters);
       if (selectedFiltersKeys.length) {
-        this.cards = this.cards.filter((card) =>
-          selectedFiltersKeys.every((key) =>
-            card.arbitrary.some((arbitraryTag) => {
-              if (key === arbitraryTag.key) {
-                return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
-              }
-              return false;
-            })
-          )
-        );
+        this.cards = this.cards.filter((card) => {
+            let cardArbitraryArr = [...card.arbitrary];
+            const firstObj = card.arbitrary[0];
+            if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr.shift();
+
+            return selectedFiltersKeys.every((key) =>
+              cardArbitraryArr.some((arbitraryTag) => {
+                const [arbitraryTagKey, arbitraryTagValue] = Object.entries(arbitraryTag)[0];
+                if (key === arbitraryTagKey) return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
+                return false;
+              })
+            )
+        });
       } else {
         const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
         this.urlSearchParams = updatedSearchParams;
