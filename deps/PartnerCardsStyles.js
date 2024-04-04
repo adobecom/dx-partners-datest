@@ -785,6 +785,11 @@ export var partnerCardsStyles = css`
 `;
 
 export var newsCardStyles = css`
+
+  .news-card * {
+    box-sizing: border-box;
+  }
+  
   .news-card {
     display: flex;
     flex-direction: column;
@@ -793,7 +798,7 @@ export var newsCardStyles = css`
     border-radius: 4px;
     overflow: hidden;
     width: 100%;
-    height: 380px;
+    height: 400px;
   }
   
   .news-card:hover {
