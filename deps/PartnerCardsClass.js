@@ -342,17 +342,18 @@ export class PartnerCards extends LitElement {
       const selectedFiltersKeys = Object.keys(this.selectedFilters);
       if (selectedFiltersKeys.length) {
         this.cards = this.cards.filter((card) => {
-            let cardArbitraryArr = [...card.arbitrary];
-            const firstObj = card.arbitrary[0];
-            if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr.shift();
+          let cardArbitraryArr = [...card.arbitrary];
+          const firstObj = card.arbitrary[0];
+          if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr = cardArbitraryArr.slice(1);
 
-            return selectedFiltersKeys.every((key) =>
-              cardArbitraryArr.some((arbitraryTag) => {
-                const [arbitraryTagKey, arbitraryTagValue] = Object.entries(arbitraryTag)[0];
-                if (key === arbitraryTagKey) return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
-                return false;
-              })
-            )
+          return selectedFiltersKeys.every((key) =>
+            cardArbitraryArr.some((arbitraryTag) => {
+              if (key === arbitraryTag.key) {
+                return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
+              }
+              return false;
+            })
+          )
         });
       } else {
         const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
