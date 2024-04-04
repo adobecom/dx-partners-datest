@@ -304,6 +304,10 @@ export var partnerCardsStyles = css`
     }
   }
   
+  .partner-cards-header .partner-cards-sort-wrapper {
+    margin-right: -2px;
+  }
+  
   @media screen and (max-width: 1200px) {
     .partner-cards-header .partner-cards-sort-wrapper {
       width: 100%;
