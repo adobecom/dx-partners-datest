@@ -739,6 +739,11 @@ export class PartnerNews extends PartnerCards {
     this.updatePaginatedCards();
   }
 
+  handleResetActions() {
+    super.handleResetActions();
+    this.handleResetDateTags(this.blockData.dateFilter.tags);
+  }
+
   updatePaginatedCards() {
     const countPages = this.paginationCounter * this.cardsPerPage;
     this.paginatedCards = this.cards.slice(0, countPages);
@@ -756,12 +761,13 @@ export class PartnerNews extends PartnerCards {
 
   handleResetDateTags(tags) {
     this.paginationCounter = 1;
+
     tags.forEach((filterTag, index) => {
       if (index === 0) {
         filterTag.checked = true;
         this.selectedDateFilter = filterTag;
       } else {
-        filterTag.checked = false
+        filterTag.checked = false;
       }
     });
   }
