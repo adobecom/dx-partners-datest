@@ -1,5 +1,5 @@
 import { getLibs } from '../../scripts/utils.js';
-import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
+import { partnerCardsStyles, newsCardStyles, numericPaginationStyles, loadMorePaginationStyles, dateFilterStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
 
@@ -17,7 +17,7 @@ function formatDate(cardDate) {
   return formattedDate;
 }
 
-export class NewsCard extends LitElement {
+class NewsCard extends LitElement {
   static properties = {
     data: { type: Object }
   };
@@ -42,6 +42,7 @@ export class NewsCard extends LitElement {
     `;
   }
 }
+customElements.define('news-card', NewsCard);
 
 export class PartnerCards extends LitElement {
   static styles = css`
@@ -52,15 +53,14 @@ export class PartnerCards extends LitElement {
     #sort {
       padding: 2px 2px 3px;
     }
-`;
+  `;
 
   static properties = {
     blockData: { type: Object },
     cards: { type: Array },
     paginatedCards: { type: Array },
     searchTerm: { type: String },
-    totalPages: { type: Number },
-    selectedPageNum: { type: Number },
+    paginationCounter: { type: Number },
     selectedSortOrder: { type: String, attribute: 'data-sort', reflect: true },
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
@@ -69,19 +69,22 @@ export class PartnerCards extends LitElement {
 
   constructor() {
     super();
-    this.apiData = {};  //do we need this?
     this.allCards = [];
     this.cards = [];
     this.paginatedCards = [];
     this.searchTerm = '';
-    this.totalPages = 0;
-    this.selectedPageNum = 1;
-    this.cardsPerPage = 6;
+    this.paginationCounter = 1;
+    this.cardsPerPage = 3;
     this.selectedSortOrder = '';
     this.selectedFilters = {};
     this.urlSearchParams = {};
     this.mobileView = window.innerWidth <= 1200;
-    window.addEventListener('resize', this.updateView.bind(this));
+    this.updateView = this.updateView.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('resize', this.updateView);
   }
 
   updateView() {
@@ -91,7 +94,7 @@ export class PartnerCards extends LitElement {
   async firstUpdated() {
     await super.firstUpdated();
     await this.fetchData();
-    this.selectedSortOrder = this.blockData.sort.selected;
+    if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
     if (this.blockData.filters.length) await this.initUrlSearchParams();
   }
 
@@ -101,9 +104,9 @@ export class PartnerCards extends LitElement {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      this.apiData = await response.json();
-      if (this.apiData?.cards) {
-        this.allCards = this.cards = this.apiData.cards;
+      const apiData = await response.json();
+      if (apiData?.cards) {
+        this.allCards = this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
       }
     } catch (error) {
@@ -140,10 +143,10 @@ export class PartnerCards extends LitElement {
 
   updated(changedProperties) {
     if (changedProperties.has('searchTerm')
-      || changedProperties.has('selectedPageNum')
+      || changedProperties.has('paginationCounter')
       || changedProperties.has('selectedSortOrder')
       || changedProperties.has('selectedFilters')) {
-      if (!changedProperties.has('selectedPageNum')) this.selectedPageNum = 1;
+      if (!changedProperties.has('paginationCounter')) this.paginationCounter = 1;
       this.handleActions();
     }
   }
@@ -176,23 +179,7 @@ export class PartnerCards extends LitElement {
     )}`;
   }
 
-  get pagination() {
-    if (!this.cards.length) return;
-
-    const min = 1;
-    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
-
-    const pagesNumArray = Array.from({ length: this.totalPages }, (_, i) => i + min);
-    return html`${repeat(
-      pagesNumArray,
-      (pageNum) => pageNum,
-      (pageNum) => html`<button
-        class="page-btn ${this.selectedPageNum === pageNum ? 'selected' : ''}"
-        @click="${() => this.handlePageNum(pageNum)}">
-        ${pageNum}
-      </button>`
-    )}`;
-  }
+  get pagination() {}
 
   get filters() {
     if (!this.blockData.filters.length) return;
@@ -307,6 +294,10 @@ export class PartnerCards extends LitElement {
     )}`;
   }
 
+  expandFilter(clickedFilter) {
+    clickedFilter.classList.toggle('expanded');
+  }
+
   openFiltersMobile() {
     const element = this.shadowRoot.querySelector('.all-filters-wrapper-mobile');
     element.classList.add('open');
@@ -317,66 +308,10 @@ export class PartnerCards extends LitElement {
     element.classList.remove('open');
   }
 
-  expandFilter(clickedFilter) {
-    clickedFilter.classList.toggle('expanded');
-  }
-
   handleActions() {
-    //searching
-    this.cards = this.allCards.filter((card) =>
-      card.contentArea?.title.toLowerCase().includes(this.searchTerm) ||
-      card.contentArea?.description.toLowerCase().includes(this.searchTerm)
-    );
-
-    //sorting
-    const sortFunctions = {
-      'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
-      'oldest': (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
-      'a-z': (a, b) => a.contentArea.title.localeCompare(b.contentArea?.title),
-      'z-a': (a, b) => b.contentArea.title.localeCompare(a.contentArea?.title)
-    };
-    this.cards.sort(sortFunctions[this.selectedSortOrder]);
-
-    //filtering
-    if (this.blockData.filters.length) {
-      const selectedFiltersKeys = Object.keys(this.selectedFilters);
-      if (selectedFiltersKeys.length) {
-        this.cards = this.cards.filter((card) => {
-          let cardArbitraryArr = [...card.arbitrary];
-          const firstObj = card.arbitrary[0];
-          if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr = cardArbitraryArr.slice(1);
-
-          return selectedFiltersKeys.every((key) =>
-            cardArbitraryArr.some((arbitraryTag) => {
-              if (key === arbitraryTag.key) {
-                return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
-              }
-              return false;
-            })
-          )
-        });
-      } else {
-        const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
-        this.urlSearchParams = updatedSearchParams;
-      }
-
-      //urlSearchParams
-      const searchParamsEntries = Object.entries(this.urlSearchParams);
-      if (searchParamsEntries.length) {
-        const searchString = searchParamsEntries.map(([key, value]) =>
-          `${key}=${value.join(',')}`
-        ).join('&');
-
-        const url = new URL(window.location.href);
-        url.search = `?${searchString}`;
-        window.history.pushState({}, '', url);
-      }
-    }
-
-    //pagination
-    const startIndex = this.selectedPageNum === 1 ? 0 : (this.selectedPageNum - 1) * this.cardsPerPage;
-    const endIndex = this.selectedPageNum * this.cardsPerPage;
-    this.paginatedCards = this.cards.slice(startIndex, endIndex);
+    this.handleSearchAction();
+    if (this.blockData.sort.items.length) this.handleSortAction();
+    if (this.blockData.filters.length) this.handleFilterAction();
   }
 
   handleResetActions() {
@@ -390,6 +325,13 @@ export class PartnerCards extends LitElement {
     });
   }
 
+  handleSearchAction() {
+    this.cards = this.allCards.filter((card) =>
+      card.contentArea?.title.toLowerCase().includes(this.searchTerm) ||
+      card.contentArea?.description.toLowerCase().includes(this.searchTerm)
+    );
+  }
+
   handleSearch(event){
     this.searchTerm = event.target.value.toLowerCase();
   }
@@ -398,8 +340,53 @@ export class PartnerCards extends LitElement {
     this.searchTerm = '';
   }
 
+  handleSortAction() {
+    const sortFunctions = {
+      'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
+      'oldest': (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
+      'a-z': (a, b) => a.contentArea.title.localeCompare(b.contentArea?.title),
+      'z-a': (a, b) => b.contentArea.title.localeCompare(a.contentArea?.title)
+    };
+    this.cards.sort(sortFunctions[this.selectedSortOrder]);
+  }
+
   handleSort(event) {
     if (event.target.value !== this.selectedSortOrder) this.selectedSortOrder = event.target.value;
+  }
+
+  handleFilterAction() {
+    const selectedFiltersKeys = Object.keys(this.selectedFilters);
+    if (selectedFiltersKeys.length) {
+      this.cards = this.cards.filter((card) => {
+        let cardArbitraryArr = [...card.arbitrary];
+        const firstObj = card.arbitrary[0];
+        if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr = cardArbitraryArr.slice(1);
+
+        return selectedFiltersKeys.every((key) =>
+          cardArbitraryArr.some((arbitraryTag) => {
+            if (key === arbitraryTag.key) {
+              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
+            }
+            return false;
+          })
+        )
+      });
+    } else {
+      const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
+      this.urlSearchParams = updatedSearchParams;
+    }
+
+    //urlSearchParams
+    const searchParamsEntries = Object.entries(this.urlSearchParams);
+    if (searchParamsEntries.length) {
+      const searchString = searchParamsEntries.map(([key, value]) =>
+        `${key}=${value.join(',')}`
+      ).join('&');
+
+      const url = new URL(window.location.href);
+      url.search = `?${searchString}`;
+      window.history.pushState({}, '', url);
+    }
   }
 
   handleTag(event, tag, filterKey) {
@@ -487,16 +474,9 @@ export class PartnerCards extends LitElement {
     };
   }
 
-  handlePageNum(pageNum) {
-    if (this.selectedPageNum !== pageNum) this.selectedPageNum = pageNum;
-  }
-
-  handlePrevPage() {
-    if ( this.selectedPageNum > 1 ) this.selectedPageNum--;
-  }
-
-  handleNextPage() {
-    if (this.selectedPageNum < this.totalPages) this.selectedPageNum++;
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('resize', this.updateView);
   }
 
   render() {
@@ -537,7 +517,7 @@ export class PartnerCards extends LitElement {
                   <button class="filters-btn-mobile" @click="${this.openFiltersMobile}">
                     <span class="filters-btn-mobile-icon"></span>
                     <span class="filters-btn-mobile-title">Filters</span>
-                    ${this.chosenFilters
+                    ${this.chosenFilters?.tagsCount
                       ? html `
                         <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
                       `
@@ -567,11 +547,7 @@ export class PartnerCards extends LitElement {
             }
           </div>
           <div class="pagination-wrapper">
-            <div class="pagination-pages-list">
-              <button class="pagination-prev-btn ${this.selectedPageNum === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}">Prev</button>
-              ${this.pagination}
-              <button class="pagination-next-btn ${this.selectedPageNum === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}">Next</button>
-            </div>
+            ${this.pagination}
             <span class="pagination-total-results">1-${Math.min(this.cards?.length ?? 0, this.cardsPerPage) } of ${this.cards?.length} results</span>
           </div>
         </div>
@@ -601,5 +577,302 @@ export class PartnerCards extends LitElement {
         : ''
       }
     `;
+  }
+}
+
+export class PartnerNews extends PartnerCards {
+
+  static styles = [
+    PartnerCards.styles,
+    css`${loadMorePaginationStyles}`,
+    css`${dateFilterStyles}`
+  ];
+
+  static properties = {
+    ...PartnerCards.properties,
+    selectedDateFilter: { type: Object }
+  };
+
+  constructor() {
+    super();
+    this.selectedDateFilter = {};
+  }
+
+  async firstUpdated() {
+    await super.firstUpdated();
+    this.selectedDateFilter = this.blockData.dateFilter.tags[0];
+  }
+
+  updated(changedProperties) {
+    super.updated(changedProperties);
+    if (changedProperties.has('selectedDateFilter')) this.handleActions();
+  }
+
+  get pagination() {
+    if (this.cards.length === this.paginatedCards.length) {
+      return ''
+    } else {
+      return html `<button class="load-more-btn" @click="${this.handleLoadMore}">Load more</button>`
+    }
+  }
+
+  get dateFilter() {
+    const { dateFilter: filter } = this.blockData;
+
+    return  html`
+      <div class="filter">
+        <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
+          <span class="filter-label">${filter.value}</span>
+          <sp-icon-chevron-down class="filter-chevron-icon" />
+        </button>
+        <button class="filter-selected-tags-count-btn ${this.selectedDateFilter.default || !Object.keys(this.selectedDateFilter).length ? 'hidden' : ''}" @click="${(e) => this.handleResetDateTags(filter.tags)}">
+          <span class="filter-selected-tags-total-num">1</span>
+        </button>
+        <ul class="filter-list">
+          <sp-theme theme="spectrum" color="light" scale="medium">
+            ${this.getDateFilterTags(filter)}
+          </sp-theme>
+        </ul>
+      </div>
+    `;
+  }
+
+  get filters() {
+    return html `
+      ${this.dateFilter}
+      ${super.filters}
+    `
+  }
+
+  get dateFilterMobile() {
+    const { dateFilter: filter } = this.blockData;
+
+    return html`
+      <div class="filter-wrapper-mobile">
+        <div class="filter-mobile">
+          <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>
+            <div class="filter-header-content-mobile">
+              <h3 class="filter-header-name-mobile">${filter.value}</h3>
+               ${this.selectedDateFilter.default 
+                 ? ''
+                 : html `
+                   <div class="filter-header-selected-tags-mobile">
+                     <span class="filter-header-selected-tags-text-mobile">${this.selectedDateFilter.value}</span>
+                     <span className="filter-header-selected-tags-count-mobile">+ 1</span>
+                   </div>
+                 `
+                }
+            </div>
+            <sp-icon-chevron-down class="filter-header-chevron-icon" />
+          </button>
+          <ul class="filter-tags-mobile">
+            <sp-theme theme="spectrum" color="light" scale="medium">
+              ${this.getDateFilterTags(filter)}
+            </sp-theme>
+          </ul>
+          <div class="filter-footer-mobile-wrapper">
+            <div class="filter-footer-mobile">
+              <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
+              <div class="filter-footer-buttons-mobile">
+                <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetDateTags(filter.tags)}">Clear All</button>
+                <sp-theme theme="spectrum" color="light" scale="medium">
+                  <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>Apply</sp-button>
+                </sp-theme>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  get filtersMobile() {
+    return html `
+      ${this.dateFilterMobile}
+      ${super.filtersMobile}
+    `
+  }
+
+  get chosenFilters() {
+    const parentChosenFilters = super.chosenFilters;
+    if (!parentChosenFilters && this.selectedDateFilter.default) return;
+
+    let htmlContent = parentChosenFilters ? parentChosenFilters.htmlContent : '';
+    let tagsCount = parentChosenFilters ? parentChosenFilters.tagsCount : 0;
+
+    if (!this.selectedDateFilter.default && Object.keys(this.selectedDateFilter).length) {
+      htmlContent = html `
+        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleResetDateTags(this.blockData.dateFilter.tags)}">
+          ${this.selectedDateFilter.value}
+        </button>
+        ${htmlContent}
+      `;
+      tagsCount += 1;
+    }
+
+    return { htmlContent, tagsCount };
+  }
+
+  getDateFilterTags(filter) {
+    if (filter.key !== 'date') return;
+
+    const { tags } = filter;
+
+    return html`${repeat(
+      tags,
+      (tag) => tag.key,
+      (tag) => html`<li>
+        <button class="date-filter-tag" @click="${() => this.handleDateTag(tags, tag)}">
+          <span class="date-filter-tag-label">${tag.value}</span>
+          ${tag.checked
+            ? html `<sp-icon-checkmark300 class="date-filter-tag-checkmark" />`
+            : ''
+          }
+        </button>
+      </li>`,
+    )}`;
+  }
+
+  handleActions() {
+    super.handleActions();
+    this.handleDateFilterAction();
+    this.updatePaginatedCards();
+  }
+
+  updatePaginatedCards() {
+    const countPages = this.paginationCounter * this.cardsPerPage;
+    this.paginatedCards = this.cards.slice(0, countPages);
+  }
+
+  handleDateTag(tags, tag) {
+    this.paginationCounter = 1;
+    if (tag.checked) {
+      this.handleResetDateTags(tags);
+    } else {
+      this.selectedDateFilter = tag;
+      tags.forEach(filterTag => filterTag.checked = filterTag.key === tag.key);
+    }
+  }
+
+  handleResetDateTags(tags) {
+    this.paginationCounter = 1;
+    tags.forEach((filterTag, index) => {
+      if (index === 0) {
+        filterTag.checked = true;
+        this.selectedDateFilter = filterTag;
+      } else {
+        filterTag.checked = false
+      }
+    });
+  }
+
+  handleDateFilterAction() {
+    const { key } = this.selectedDateFilter;
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    if (key === 'current-month') {
+      this.cards = this.cards.filter(card => {
+        const cardDate = new Date(card.cardDate);
+        const cardMonth = cardDate.getMonth();
+        const cardYear = cardDate.getFullYear();
+        return cardMonth === currentMonth && cardYear === currentYear;
+      })
+    }
+    else if (key === 'previous-month') {
+      let previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      let yearOfPreviousMonth = currentMonth === 0 ? currentYear - 1 : currentYear;
+      this.cards = this.cards.filter(card => {
+        const cardDate = new Date(card.cardDate);
+        const cardMonth = cardDate.getMonth();
+        const cardYear = cardDate.getFullYear();
+        return cardMonth === previousMonth && cardYear === yearOfPreviousMonth;
+      })
+    }
+    else if (key === 'last-90-days') {
+      currentDate.setHours(0, 0, 0, 0);
+      const startDate = new Date(currentDate);
+      startDate.setDate(startDate.getDate() - 90);
+      this.cards = this.cards.filter(card => {
+        const cardDate = new Date(card.cardDate);
+        return cardDate >= startDate && cardDate <= currentDate;
+      })
+    } else {
+      return;
+    }
+  }
+
+  handleLoadMore() {
+    this.paginationCounter += 1;
+  }
+}
+
+export class KnowledgeBaseOverview extends PartnerCards {
+
+  static properties = {
+    ...PartnerCards.properties,
+    totalPages: { type: Number },
+  };
+
+  constructor() {
+    super();
+    this.totalPages = 0;
+  }
+
+  static styles = [
+    PartnerCards.styles,
+    css`${numericPaginationStyles}`
+  ];
+
+  get paginationList() {
+    if (!this.cards.length) return;
+
+    const min = 1;
+    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
+
+    const pagesNumArray = Array.from({ length: this.totalPages }, (_, i) => i + min);
+    return html`${repeat(
+      pagesNumArray,
+      (pageNum) => pageNum,
+      (pageNum) => html`<button
+        class="page-btn ${this.paginationCounter === pageNum ? 'selected' : ''}"
+        @click="${() => this.handlePageNum(pageNum)}">
+        ${pageNum}
+      </button>`
+    )}`;
+  }
+
+  get pagination() {
+    return html `
+      <div class="pagination-pages-list">
+        <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}">Prev</button>
+        ${this.paginationList}
+        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}">Next</button>
+      </div>
+    `;
+  }
+
+  handleActions() {
+    super.handleActions();
+    this.updatePaginatedCards();
+  }
+
+  updatePaginatedCards() {
+    const startIndex = this.paginationCounter === 1 ? 0 : (this.paginationCounter - 1) * this.cardsPerPage;
+    const endIndex = this.paginationCounter * this.cardsPerPage;
+    this.paginatedCards = this.cards.slice(startIndex, endIndex);
+  }
+
+  handlePageNum(pageNum) {
+    if (this.paginationCounter !== pageNum) this.paginationCounter = pageNum;
+  }
+
+  handlePrevPage() {
+    if ( this.paginationCounter > 1 ) this.paginationCounter--;
+  }
+
+  handleNextPage() {
+    if (this.paginationCounter < this.totalPages) this.paginationCounter++;
   }
 }

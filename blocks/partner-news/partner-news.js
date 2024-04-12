@@ -1,23 +1,33 @@
 import { getLibs } from '../../scripts/utils.js';
-import { NewsCard, PartnerCards } from './../../deps/PartnerCardsClass.js';
+import { PartnerNews } from './../../deps/PartnerCardsClass.js';
 
-export async function declarePartnerCards() {
-  if (customElements.get('partner-cards') || customElements.get('news-card')) return;
-
-  customElements.define('partner-cards', PartnerCards);
-  customElements.define('news-card', NewsCard);
+export async function declarePartnerNews() {
+  if (customElements.get('partner-news')) return;
+  customElements.define('partner-news', PartnerNews);
 }
 
 export default async function init(el) {
-  performance.mark('partner-cards:start');
+  performance.mark('partner-news:start');
   const miloLibs = getLibs();
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
+  const dateFilter = {
+    key: 'date',
+    value: 'Date',
+    tags: [
+      { key: 'show-all', parentKey: 'date', value: 'Show all', checked: true, default: true },
+      { key: 'current-month', parentKey: 'date', value: 'Current Month', checked: false },
+      { key: 'previous-month', parentKey: 'date', value: 'Previous Month', checked: false },
+      { key: 'last-90-days', parentKey: 'date', value: 'Last 90 days', checked: false },
+    ]
+  };
+
   let blockData = {
     'title': '',
+    'dateFilter': dateFilter,
     'filters': [],
     'sort': {
-      'selected': '',
+      'default': '',
       items: []
     }
   }
@@ -58,7 +68,7 @@ export default async function init(el) {
           key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
           value: sortValues[sortIndex]
         })),
-        selected: sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0]
+        default: sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0]
       };
 
       blockData.sort = sortData;
@@ -74,7 +84,7 @@ export default async function init(el) {
   })
 
   const deps = await Promise.all([
-    declarePartnerCards(),
+    declarePartnerNews(),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -82,16 +92,17 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/picker.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/icons/chevron.js`),
+    import(`${miloLibs}/features/spectrum-web-components/dist/icons/checkmark.js`),
   ]);
 
-  const app = document.createElement('partner-cards');
+  const app = document.createElement('partner-news');
   app.className = 'content partner-cards-wrapper';
   app.blockData = blockData;
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
   await deps;
-  performance.mark('partner-cards:end');
-  performance.measure('partner-cards block', 'partner-cards:start', 'partner-cards:end');
+  performance.mark('partner-news:end');
+  performance.measure('partner-news block', 'partner-news:start', 'partner-news:end');
   return app;
 }

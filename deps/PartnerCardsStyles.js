@@ -420,8 +420,6 @@ export var partnerCardsStyles = css`
   
   .pagination-wrapper {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     align-items: center;
     font-size: 0.875rem;
     padding-top: 20px;
@@ -916,5 +914,83 @@ export var newsCardStyles = css`
     word-break: break-word;
     max-height: 3.9375rem;
     padding: 0;
+  }
+`;
+
+export var loadMorePaginationStyles = css`
+  .pagination-wrapper {
+    justify-content: center;
+    flex-direction: column-reverse;
+  }
+  
+  .pagination-wrapper .load-more-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: .875rem;
+    line-height: 1.063rem;
+    font-weight: 700;
+    min-width: 60px;
+    max-width: 100%;
+    height: 32px;
+    max-height: 32px;
+    padding-left: 14px;
+    padding-right: 14px;
+    color: #222222;
+    border: 2px solid #222222;
+    border-radius: 16px;
+    background-color: #ffffff00;
+    cursor: pointer;
+    transition: border-color .3s ease-in-out,background-color .3s ease-in-out;
+  }
+  
+  .pagination-wrapper .load-more-btn:hover {
+    text-decoration: none;
+    border-color: #222222;
+    background-color: #222222;
+    color: #ffffff;
+  }
+`;
+
+export var numericPaginationStyles = css`
+  .pagination-wrapper {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  
+  @media screen and (max-width: 1200px) {
+    .pagination-wrapper {
+      justify-content: center;
+    }
+  }
+`;
+
+export var dateFilterStyles = css`
+  .date-filter-tag {
+    background-color: transparent;
+    border: none;
+    padding: 0 6px;
+    height: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  .date-filter-tag-label {
+    width: calc(100% - 12px);
+    font-size: .875rem;
+    line-height: 1.3;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  
+  .date-filter-tag-checkmark {
+    color: ${blueColor};
+    width: 12px;
+    height: 12px;
   }
 `;
