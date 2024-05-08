@@ -1,5 +1,5 @@
-import { getLibs } from '../../scripts/utils.js';
-import { PartnerNews } from './../../deps/PartnerCardsClass.js';
+import { getLibs, replaceText } from '../../scripts/utils.js';
+import { PartnerNews } from './../../deps/PartnerNews.js';
 
 export async function declarePartnerNews() {
   if (customElements.get('partner-news')) return;
@@ -8,29 +8,44 @@ export async function declarePartnerNews() {
 
 export default async function init(el) {
   performance.mark('partner-news:start');
-  const miloLibs = getLibs();
-  const sectionIndex = el.parentNode.getAttribute('data-idx');
 
-  const dateFilter = {
-    key: 'date',
-    value: 'Date',
-    tags: [
-      { key: 'show-all', parentKey: 'date', value: 'Show all', checked: true, default: true },
-      { key: 'current-month', parentKey: 'date', value: 'Current Month', checked: false },
-      { key: 'previous-month', parentKey: 'date', value: 'Previous Month', checked: false },
-      { key: 'last-90-days', parentKey: 'date', value: 'Last 90 days', checked: false },
-    ]
-  };
+  const miloLibs = getLibs();
+  const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
+  const config = getConfig();
+
+  const sectionIndex = el.parentNode.getAttribute('data-idx');
 
   let blockData = {
     'title': '',
-    'dateFilter': dateFilter,
     'filters': [],
     'sort': {
       'default': '',
       items: []
-    }
-  }
+    },
+  };
+
+  let localizedText = {
+    '{{apply}}': '',
+    '{{clear-all}}': '',
+    '{{filter}}': '',
+    '{{filter-by}}': '',
+    '{{filters}}': '',
+    '{{no-results-title}}': '',
+    '{{no-results-description}}': '',
+    '{{of}}': '',
+    '{{results}}': '',
+    '{{search}}': '',
+    '{{current-month}}': '',
+    '{{date}}': '',
+    '{{last-90-day}}': '',
+    '{{load-more}}': '',
+    '{{previous-month}}': '',
+    '{{show-all}}': ''
+  };
+
+  const localizationPromises = Object.keys(localizedText).map(async (key) => {
+    localizedText[key] = await replaceText(key, config);
+  });
 
   const blockDataActions = {
     'title': (cols) => {
@@ -85,6 +100,7 @@ export default async function init(el) {
 
   const deps = await Promise.all([
     declarePartnerNews(),
+    localizationPromises,
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -94,6 +110,20 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/icons/chevron.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/icons/checkmark.js`),
   ]);
+
+  const dateFilter = {
+    key: 'date',
+    value: localizedText['{{date}}'],
+    tags: [
+      { key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true },
+      { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
+      { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
+      { key: 'last-90-day', value: localizedText['{{last-90-day}}'], parentKey: 'date', checked: false },
+    ]
+  };
+
+  blockData.dateFilter = dateFilter;
+  blockData.localizedText = localizedText;
 
   const app = document.createElement('partner-news');
   app.className = 'content partner-cards-wrapper';

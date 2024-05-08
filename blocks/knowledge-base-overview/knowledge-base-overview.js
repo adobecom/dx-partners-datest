@@ -1,5 +1,5 @@
-import { getLibs } from '../../scripts/utils.js';
-import { KnowledgeBaseOverview } from './../../deps/PartnerCardsClass.js';
+import {getLibs, replaceText} from '../../scripts/utils.js';
+import { KnowledgeBaseOverview } from './../../deps/KnowledgeBaseOverview.js';
 
 export async function declarePartnerCards() {
   if (customElements.get('knowledge-base-overview')) return;
@@ -8,7 +8,11 @@ export async function declarePartnerCards() {
 
 export default async function init(el) {
   performance.mark('knowledge-base-overview:start');
+
   const miloLibs = getLibs();
+  const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
+  const config = getConfig();
+
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
   let blockData = {
@@ -17,8 +21,28 @@ export default async function init(el) {
     'sort': {
       'default': '',
       items: []
-    }
+    },
   }
+
+  let localizedText = {
+    '{{apply}}': '',
+    '{{clear-all}}': '',
+    '{{filter}}': '',
+    '{{filter-by}}': '',
+    '{{filters}}': '',
+    '{{no-results-title}}': '',
+    '{{no-results-description}}': '',
+    '{{of}}': '',
+    '{{results}}': '',
+    '{{search}}': '',
+    '{{current-month}}': '',
+    '{{next}}': '',
+    '{{prev}}': ''
+  };
+
+  const localizationPromises = Object.keys(localizedText).map(async (key) => {
+    localizedText[key] = await replaceText(key, config);
+  });
 
   const blockDataActions = {
     'title': (cols) => {
@@ -73,6 +97,7 @@ export default async function init(el) {
 
   const deps = await Promise.all([
     declarePartnerCards(),
+    localizationPromises,
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -81,6 +106,8 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/icons/chevron.js`),
   ]);
+
+  blockData.localizedText = localizedText;
 
   const app = document.createElement('knowledge-base-overview');
   app.className = 'content partner-cards-wrapper';

@@ -45,3 +45,6 @@ const miloLibs = setLibs('/libs');
 
 const { createTag, localizeLink } = await import(`${miloLibs}/utils/utils.js`);
 export { createTag, localizeLink };
+
+const { replaceText } = await import(`${miloLibs}/features/placeholders.js`);
+export { replaceText };

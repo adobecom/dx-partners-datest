@@ -1,5 +1,5 @@
 import { getLibs } from '../../scripts/utils.js';
-import { partnerCardsStyles, newsCardStyles, numericPaginationStyles, loadMorePaginationStyles, dateFilterStyles } from './PartnerCardsStyles.js';
+import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
 
@@ -94,8 +94,8 @@ export class PartnerCards extends LitElement {
   async firstUpdated() {
     await super.firstUpdated();
     await this.fetchData();
+    if (this.blockData.filters.length) this.initUrlSearchParams();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
-    if (this.blockData.filters.length) await this.initUrlSearchParams();
   }
 
   async fetchData() {
@@ -110,11 +110,11 @@ export class PartnerCards extends LitElement {
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
       }
     } catch (error) {
-      console.log('err', error);
+      console.error('Error fetching data:', error);
     }
   }
 
-  async initUrlSearchParams () {
+  initUrlSearchParams () {
     const { search } = location || window.location;
 
     this.urlSearchParams = search
@@ -132,7 +132,10 @@ export class PartnerCards extends LitElement {
             const filterTag = filter.tags.find(tag => tag.key === searchTag);
             if (filterTag) {
               filterTag.checked = true;
-              this.selectedFilters[filter.key] = [...(this.selectedFilters[filter.key] || []), filterTag];
+              this.selectedFilters = {
+                ...this.selectedFilters,
+                [filter.key]: [...(this.selectedFilters[filter.key] || []), filterTag]
+              };
             }
           })
         }
@@ -160,8 +163,8 @@ export class PartnerCards extends LitElement {
       )}`;
     } else {
       return html`<div class="no-results">
-        <strong class="no-results-title">No Results Found</strong>
-        <p class="no-results-description">Try checking your spelling or broadening your search.</p>
+        <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
+        <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
       </div>`
     }
   }
@@ -246,11 +249,11 @@ export class PartnerCards extends LitElement {
               </ul>
               <div class="filter-footer-mobile-wrapper">
                 <div class="filter-footer-mobile">
-                  <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
+                  <span class="filter-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
                   <div class="filter-footer-buttons-mobile">
-                    <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}">Clear All</button>
+                    <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}">${this.blockData.localizedText['{{clear-all}}']}</button>
                     <sp-theme theme="spectrum" color="light" scale="medium">
-                      <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>Apply</sp-button>
+                      <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>${this.blockData.localizedText['{{apply}}']}</sp-button>
                     </sp-theme>
                   </div>
                 </div>
@@ -485,14 +488,14 @@ export class PartnerCards extends LitElement {
         <div class="partner-cards-sidebar-wrapper">
           <div class="partner-cards-sidebar">
             <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
-              <sp-search id="search" size="m" value=${this.searchTerm} @input="${this.handleSearch}" @reset="${this.handleClearSearch}">
+              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @reset="${this.handleClearSearch}">
               </sp-search>
             </sp-theme>
             ${!this.mobileView
               ? html`
                 <div class="sidebar-header">
-                  <h3 class="sidebar-title">Filter</h3>
-                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}">Clear all</button>
+                  <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
+                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 </div>
                 <div class="sidebar-chosen-filters-wrapper">
                   ${this.chosenFilters && this.chosenFilters.htmlContent}
@@ -509,14 +512,14 @@ export class PartnerCards extends LitElement {
           <div class="partner-cards-header">
             <div class="partner-cards-title-wrapper">
               <h3 class="partner-cards-title">${this.blockData.title}</h3>
-              <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> results</span>
+              <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> ${this.blockData.localizedText['{{results}}']}</span>
             </div>
             <div class="partner-cards-sort-wrapper">
               ${this.mobileView
                 ? html `
                   <button class="filters-btn-mobile" @click="${this.openFiltersMobile}">
                     <span class="filters-btn-mobile-icon"></span>
-                    <span class="filters-btn-mobile-title">Filters</span>
+                    <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
                     ${this.chosenFilters?.tagsCount
                       ? html `
                         <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
@@ -548,7 +551,7 @@ export class PartnerCards extends LitElement {
           </div>
           <div class="pagination-wrapper">
             ${this.pagination}
-            <span class="pagination-total-results">1-${Math.min(this.cards?.length ?? 0, this.cardsPerPage) } of ${this.cards?.length} results</span>
+            <span class="pagination-total-results">1-${Math.min(this.cards?.length ?? 0, this.cardsPerPage) } ${this.blockData.localizedText['{{of}}']} ${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
           </div>
         </div>
       </div>
@@ -558,17 +561,17 @@ export class PartnerCards extends LitElement {
           <div class="all-filters-wrapper-mobile">
             <div class="all-filters-header-mobile">
               <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}"></button>
-              <span class="all-filters-header-title-mobile">Filter by</span>
+              <span class="all-filters-header-title-mobile">${this.blockData.localizedText['{{filter-by}}']}</span>
             </div>
             <div class="all-filters-list-mobile">
               ${this.filtersMobile}
             </div>
             <div class="all-filters-footer-mobile">
-              <span class="all-filters-footer-results-mobile">${this.cards?.length} Results</span>
+              <span class="all-filters-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
               <div class="all-filters-footer-buttons-mobile">
-                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}">Clear All</button>
+                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 <sp-theme theme="spectrum" color="light" scale="medium">
-                  <sp-button @click="${this.closeFiltersMobile}">Apply</sp-button>
+                  <sp-button @click="${this.closeFiltersMobile}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                 </sp-theme>
               </div>
             </div>
@@ -577,308 +580,5 @@ export class PartnerCards extends LitElement {
         : ''
       }
     `;
-  }
-}
-
-export class PartnerNews extends PartnerCards {
-
-  static styles = [
-    PartnerCards.styles,
-    css`${loadMorePaginationStyles}`,
-    css`${dateFilterStyles}`
-  ];
-
-  static properties = {
-    ...PartnerCards.properties,
-    selectedDateFilter: { type: Object }
-  };
-
-  constructor() {
-    super();
-    this.selectedDateFilter = {};
-  }
-
-  async firstUpdated() {
-    await super.firstUpdated();
-    this.selectedDateFilter = this.blockData.dateFilter.tags[0];
-  }
-
-  updated(changedProperties) {
-    super.updated(changedProperties);
-    if (changedProperties.has('selectedDateFilter')) this.handleActions();
-  }
-
-  get pagination() {
-    if (this.cards.length === this.paginatedCards.length) {
-      return ''
-    } else {
-      return html `<button class="load-more-btn" @click="${this.handleLoadMore}">Load more</button>`
-    }
-  }
-
-  get dateFilter() {
-    const { dateFilter: filter } = this.blockData;
-
-    return  html`
-      <div class="filter">
-        <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
-          <span class="filter-label">${filter.value}</span>
-          <sp-icon-chevron-down class="filter-chevron-icon" />
-        </button>
-        <button class="filter-selected-tags-count-btn ${this.selectedDateFilter.default || !Object.keys(this.selectedDateFilter).length ? 'hidden' : ''}" @click="${(e) => this.handleResetDateTags(filter.tags)}">
-          <span class="filter-selected-tags-total-num">1</span>
-        </button>
-        <ul class="filter-list">
-          <sp-theme theme="spectrum" color="light" scale="medium">
-            ${this.getDateFilterTags(filter)}
-          </sp-theme>
-        </ul>
-      </div>
-    `;
-  }
-
-  get filters() {
-    return html `
-      ${this.dateFilter}
-      ${super.filters}
-    `
-  }
-
-  get dateFilterMobile() {
-    const { dateFilter: filter } = this.blockData;
-
-    return html`
-      <div class="filter-wrapper-mobile">
-        <div class="filter-mobile">
-          <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>
-            <div class="filter-header-content-mobile">
-              <h3 class="filter-header-name-mobile">${filter.value}</h3>
-               ${this.selectedDateFilter.default 
-                 ? ''
-                 : html `
-                   <div class="filter-header-selected-tags-mobile">
-                     <span class="filter-header-selected-tags-text-mobile">${this.selectedDateFilter.value}</span>
-                     <span className="filter-header-selected-tags-count-mobile">+ 1</span>
-                   </div>
-                 `
-                }
-            </div>
-            <sp-icon-chevron-down class="filter-header-chevron-icon" />
-          </button>
-          <ul class="filter-tags-mobile">
-            <sp-theme theme="spectrum" color="light" scale="medium">
-              ${this.getDateFilterTags(filter)}
-            </sp-theme>
-          </ul>
-          <div class="filter-footer-mobile-wrapper">
-            <div class="filter-footer-mobile">
-              <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
-              <div class="filter-footer-buttons-mobile">
-                <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetDateTags(filter.tags)}">Clear All</button>
-                <sp-theme theme="spectrum" color="light" scale="medium">
-                  <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>Apply</sp-button>
-                </sp-theme>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `
-  }
-
-  get filtersMobile() {
-    return html `
-      ${this.dateFilterMobile}
-      ${super.filtersMobile}
-    `
-  }
-
-  get chosenFilters() {
-    const parentChosenFilters = super.chosenFilters;
-    if (!parentChosenFilters && this.selectedDateFilter.default) return;
-
-    let htmlContent = parentChosenFilters ? parentChosenFilters.htmlContent : '';
-    let tagsCount = parentChosenFilters ? parentChosenFilters.tagsCount : 0;
-
-    if (!this.selectedDateFilter.default && Object.keys(this.selectedDateFilter).length) {
-      htmlContent = html `
-        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleResetDateTags(this.blockData.dateFilter.tags)}">
-          ${this.selectedDateFilter.value}
-        </button>
-        ${htmlContent}
-      `;
-      tagsCount += 1;
-    }
-
-    return { htmlContent, tagsCount };
-  }
-
-  getDateFilterTags(filter) {
-    if (filter.key !== 'date') return;
-
-    const { tags } = filter;
-
-    return html`${repeat(
-      tags,
-      (tag) => tag.key,
-      (tag) => html`<li>
-        <button class="date-filter-tag" @click="${() => this.handleDateTag(tags, tag)}">
-          <span class="date-filter-tag-label">${tag.value}</span>
-          ${tag.checked
-            ? html `<sp-icon-checkmark300 class="date-filter-tag-checkmark" />`
-            : ''
-          }
-        </button>
-      </li>`,
-    )}`;
-  }
-
-  handleActions() {
-    super.handleActions();
-    this.handleDateFilterAction();
-    this.updatePaginatedCards();
-  }
-
-  handleResetActions() {
-    super.handleResetActions();
-    this.handleResetDateTags(this.blockData.dateFilter.tags);
-  }
-
-  updatePaginatedCards() {
-    const countPages = this.paginationCounter * this.cardsPerPage;
-    this.paginatedCards = this.cards.slice(0, countPages);
-  }
-
-  handleDateTag(tags, tag) {
-    this.paginationCounter = 1;
-    if (tag.checked) {
-      this.handleResetDateTags(tags);
-    } else {
-      this.selectedDateFilter = tag;
-      tags.forEach(filterTag => filterTag.checked = filterTag.key === tag.key);
-    }
-  }
-
-  handleResetDateTags(tags) {
-    this.paginationCounter = 1;
-
-    tags.forEach((filterTag, index) => {
-      if (index === 0) {
-        filterTag.checked = true;
-        this.selectedDateFilter = filterTag;
-      } else {
-        filterTag.checked = false;
-      }
-    });
-  }
-
-  handleDateFilterAction() {
-    const { key } = this.selectedDateFilter;
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-
-    if (key === 'current-month') {
-      this.cards = this.cards.filter(card => {
-        const cardDate = new Date(card.cardDate);
-        const cardMonth = cardDate.getMonth();
-        const cardYear = cardDate.getFullYear();
-        return cardMonth === currentMonth && cardYear === currentYear;
-      })
-    }
-    else if (key === 'previous-month') {
-      let previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      let yearOfPreviousMonth = currentMonth === 0 ? currentYear - 1 : currentYear;
-      this.cards = this.cards.filter(card => {
-        const cardDate = new Date(card.cardDate);
-        const cardMonth = cardDate.getMonth();
-        const cardYear = cardDate.getFullYear();
-        return cardMonth === previousMonth && cardYear === yearOfPreviousMonth;
-      })
-    }
-    else if (key === 'last-90-days') {
-      currentDate.setHours(0, 0, 0, 0);
-      const startDate = new Date(currentDate);
-      startDate.setDate(startDate.getDate() - 90);
-      this.cards = this.cards.filter(card => {
-        const cardDate = new Date(card.cardDate);
-        return cardDate >= startDate && cardDate <= currentDate;
-      })
-    } else {
-      return;
-    }
-  }
-
-  handleLoadMore() {
-    this.paginationCounter += 1;
-  }
-}
-
-export class KnowledgeBaseOverview extends PartnerCards {
-
-  static properties = {
-    ...PartnerCards.properties,
-    totalPages: { type: Number },
-  };
-
-  constructor() {
-    super();
-    this.totalPages = 0;
-  }
-
-  static styles = [
-    PartnerCards.styles,
-    css`${numericPaginationStyles}`
-  ];
-
-  get paginationList() {
-    if (!this.cards.length) return;
-
-    const min = 1;
-    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
-
-    const pagesNumArray = Array.from({ length: this.totalPages }, (_, i) => i + min);
-    return html`${repeat(
-      pagesNumArray,
-      (pageNum) => pageNum,
-      (pageNum) => html`<button
-        class="page-btn ${this.paginationCounter === pageNum ? 'selected' : ''}"
-        @click="${() => this.handlePageNum(pageNum)}">
-        ${pageNum}
-      </button>`
-    )}`;
-  }
-
-  get pagination() {
-    return html `
-      <div class="pagination-pages-list">
-        <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}">Prev</button>
-        ${this.paginationList}
-        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}">Next</button>
-      </div>
-    `;
-  }
-
-  handleActions() {
-    super.handleActions();
-    this.updatePaginatedCards();
-  }
-
-  updatePaginatedCards() {
-    const startIndex = this.paginationCounter === 1 ? 0 : (this.paginationCounter - 1) * this.cardsPerPage;
-    const endIndex = this.paginationCounter * this.cardsPerPage;
-    this.paginatedCards = this.cards.slice(startIndex, endIndex);
-  }
-
-  handlePageNum(pageNum) {
-    if (this.paginationCounter !== pageNum) this.paginationCounter = pageNum;
-  }
-
-  handlePrevPage() {
-    if ( this.paginationCounter > 1 ) this.paginationCounter--;
-  }
-
-  handleNextPage() {
-    if (this.paginationCounter < this.totalPages) this.paginationCounter++;
   }
 }

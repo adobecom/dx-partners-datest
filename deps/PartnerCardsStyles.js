@@ -293,6 +293,7 @@ export var partnerCardsStyles = css`
     line-height: 1.3125rem;
     margin-right: 20px;
     min-width: 80px;
+    text-transform: lowercase;
   }
   
   @media screen and (max-width: 1200px) {
@@ -496,6 +497,7 @@ export var partnerCardsStyles = css`
   
   .pagination-wrapper .pagination-total-results {
     font-weight: 700;
+    text-transform: lowercase;
   }
   
   @media screen and (max-width: 1200px) {

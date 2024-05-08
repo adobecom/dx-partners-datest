@@ -21,7 +21,7 @@ const LIBS = '/libs';
 // Add any config options.
 const CONFIG = {
   // codeRoot: '',
-  // contentRoot: '',
+  contentRoot: '/SPP/spp-shared',
   // imsClientId: 'college',
   // geoRouting: 'off',
   // fallbackRouting: 'off',
