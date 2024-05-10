@@ -68,7 +68,7 @@ export var partnerCardsStyles = css`
   }
   
   .partner-cards-sidebar .sidebar-clear-btn {
-    color: #bcbcbc;
+    color: #9d9d9d;
     font-size: .875rem;
     line-height: 1rem;
     font-weight: 700;
@@ -487,7 +487,7 @@ export var partnerCardsStyles = css`
   
   .pagination-wrapper .pagination-prev-btn.disabled,
   .pagination-wrapper .pagination-next-btn.disabled {
-    color: #e5e5e5;
+    color: #9d9d9d;
   }
   
   .pagination-wrapper .page-btn.selected {
