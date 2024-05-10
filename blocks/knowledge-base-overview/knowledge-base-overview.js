@@ -26,6 +26,7 @@ export default async function init(el) {
 
   let localizedText = {
     '{{apply}}': '',
+    '{{back}}': '',
     '{{clear-all}}': '',
     '{{filter}}': '',
     '{{filter-by}}': '',
@@ -33,6 +34,7 @@ export default async function init(el) {
     '{{no-results-title}}': '',
     '{{no-results-description}}': '',
     '{{of}}': '',
+    '{{previous}}': '',
     '{{results}}': '',
     '{{search}}': '',
     '{{current-month}}': '',

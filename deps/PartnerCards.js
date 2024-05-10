@@ -196,11 +196,11 @@ export class PartnerCards extends LitElement {
 
         return html`
           <div class="filter">
-            <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
+            <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)} aria-label="${filter.value}">
               <span class="filter-label">${filter.value}</span>
               <sp-icon-chevron-down class="filter-chevron-icon" />
             </button>
-            <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}">
+            <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${tagsCount}">
               <span class="filter-selected-tags-total-num">${tagsCount}</span>
             </button>
             <ul class="filter-list">
@@ -227,7 +227,7 @@ export class PartnerCards extends LitElement {
         return html`
           <div class="filter-wrapper-mobile">
             <div class="filter-mobile">
-              <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>
+              <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${filter.value}">
                 <div class="filter-header-content-mobile">
                   <h3 class="filter-header-name-mobile">${filter.value}</h3>
                   ${tagsCount
@@ -251,9 +251,9 @@ export class PartnerCards extends LitElement {
                 <div class="filter-footer-mobile">
                   <span class="filter-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
                   <div class="filter-footer-buttons-mobile">
-                    <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                    <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                     <sp-theme theme="spectrum" color="light" scale="medium">
-                      <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>${this.blockData.localizedText['{{apply}}']}</sp-button>
+                      <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                     </sp-theme>
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export class PartnerCards extends LitElement {
       extractedTags.sort((a, b) => a.value.localeCompare(b.value)),
       (tag) => tag.key,
       (tag) => html`
-        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleRemoveTag(tag)}">
+        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleRemoveTag(tag)}" aria-label="${tag.value}">
           ${tag.value}
         </button>`
     )}`;
@@ -495,7 +495,7 @@ export class PartnerCards extends LitElement {
               ? html`
                 <div class="sidebar-header">
                   <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
-                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 </div>
                 <div class="sidebar-chosen-filters-wrapper">
                   ${this.chosenFilters && this.chosenFilters.htmlContent}
@@ -517,7 +517,7 @@ export class PartnerCards extends LitElement {
             <div class="partner-cards-sort-wrapper">
               ${this.mobileView
                 ? html `
-                  <button class="filters-btn-mobile" @click="${this.openFiltersMobile}">
+                  <button class="filters-btn-mobile" @click="${this.openFiltersMobile}" aria-label="${this.blockData.localizedText['{{filters}}']}">
                     <span class="filters-btn-mobile-icon"></span>
                     <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
                     ${this.chosenFilters?.tagsCount
@@ -560,7 +560,7 @@ export class PartnerCards extends LitElement {
         ? html `
           <div class="all-filters-wrapper-mobile">
             <div class="all-filters-header-mobile">
-              <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}"></button>
+              <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{back}}']}"></button>
               <span class="all-filters-header-title-mobile">${this.blockData.localizedText['{{filter-by}}']}</span>
             </div>
             <div class="all-filters-list-mobile">
@@ -569,9 +569,9 @@ export class PartnerCards extends LitElement {
             <div class="all-filters-footer-mobile">
               <span class="all-filters-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
               <div class="all-filters-footer-buttons-mobile">
-                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 <sp-theme theme="spectrum" color="light" scale="medium">
-                  <sp-button @click="${this.closeFiltersMobile}">${this.blockData.localizedText['{{apply}}']}</sp-button>
+                  <sp-button @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                 </sp-theme>
               </div>
             </div>

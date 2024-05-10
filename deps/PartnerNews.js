@@ -36,7 +36,7 @@ export class PartnerNews extends PartnerCards {
     if (this.cards.length === this.paginatedCards.length) {
       return ''
     } else {
-      return html `<button class="load-more-btn" @click="${this.handleLoadMore}">${this.blockData.localizedText['{{load-more}}']}</button>`
+      return html `<button class="load-more-btn" @click="${this.handleLoadMore}" aria-label="${this.blockData.localizedText['{{load-more}}']}">${this.blockData.localizedText['{{load-more}}']}</button>`
     }
   }
 
@@ -45,11 +45,11 @@ export class PartnerNews extends PartnerCards {
 
     return  html`
       <div class="filter">
-        <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)}>
+        <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)} aria-label="${filter.value}">
           <span class="filter-label">${filter.value}</span>
           <sp-icon-chevron-down class="filter-chevron-icon" />
         </button>
-        <button class="filter-selected-tags-count-btn ${this.selectedDateFilter.default || !Object.keys(this.selectedDateFilter).length ? 'hidden' : ''}" @click="${(e) => this.handleResetDateTags(filter.tags)}">
+        <button class="filter-selected-tags-count-btn ${this.selectedDateFilter.default || !Object.keys(this.selectedDateFilter).length ? 'hidden' : ''}" @click="${(e) => this.handleResetDateTags(filter.tags)}" aria-label="${this.selectedDateFilter.default ? 0 : 1}">
           <span class="filter-selected-tags-total-num">1</span>
         </button>
         <ul class="filter-list">
@@ -74,7 +74,7 @@ export class PartnerNews extends PartnerCards {
     return html`
       <div class="filter-wrapper-mobile">
         <div class="filter-mobile">
-          <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>
+          <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${filter.value}">
             <div class="filter-header-content-mobile">
               <h3 class="filter-header-name-mobile">${filter.value}</h3>
                ${this.selectedDateFilter.default
@@ -98,9 +98,9 @@ export class PartnerNews extends PartnerCards {
             <div class="filter-footer-mobile">
               <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
               <div class="filter-footer-buttons-mobile">
-                <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetDateTags(filter.tags)}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetDateTags(filter.tags)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 <sp-theme theme="spectrum" color="light" scale="medium">
-                  <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))}>${this.blockData.localizedText['{{apply}}']}</sp-button>
+                  <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                 </sp-theme>
               </div>
             </div>
@@ -126,7 +126,7 @@ export class PartnerNews extends PartnerCards {
 
     if (!this.selectedDateFilter.default && Object.keys(this.selectedDateFilter).length) {
       htmlContent = html `
-        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleResetDateTags(this.blockData.dateFilter.tags)}">
+        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleResetDateTags(this.blockData.dateFilter.tags)}" aria-label="${this.selectedDateFilter.value}">
           ${this.selectedDateFilter.value}
         </button>
         ${htmlContent}
@@ -146,7 +146,7 @@ export class PartnerNews extends PartnerCards {
       tags,
       (tag) => tag.key,
       (tag) => html`<li>
-        <button class="date-filter-tag" @click="${() => this.handleDateTag(tags, tag)}">
+        <button class="date-filter-tag" @click="${() => this.handleDateTag(tags, tag)}" aria-label="${tag.value}">
           <span class="date-filter-tag-label">${tag.value}</span>
           ${tag.checked
         ? html `<sp-icon-checkmark300 class="date-filter-tag-checkmark" />`

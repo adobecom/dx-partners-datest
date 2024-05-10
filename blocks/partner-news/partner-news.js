@@ -26,6 +26,7 @@ export default async function init(el) {
 
   let localizedText = {
     '{{apply}}': '',
+    '{{back}}': '',
     '{{clear-all}}': '',
     '{{filter}}': '',
     '{{filter-by}}': '',
