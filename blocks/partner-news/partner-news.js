@@ -1,7 +1,7 @@
 import { getLibs, replaceText } from '../../scripts/utils.js';
 import { PartnerNews } from './../../deps/PartnerNews.js';
 
-export async function declarePartnerNews() {
+async function declarePartnerNews() {
   if (customElements.get('partner-news')) return;
   customElements.define('partner-news', PartnerNews);
 }
@@ -25,28 +25,31 @@ export default async function init(el) {
   };
 
   let localizedText = {
-    '{{apply}}': '',
-    '{{back}}': '',
-    '{{clear-all}}': '',
-    '{{filter}}': '',
-    '{{filter-by}}': '',
-    '{{filters}}': '',
-    '{{no-results-title}}': '',
-    '{{no-results-description}}': '',
-    '{{of}}': '',
-    '{{results}}': '',
-    '{{search}}': '',
-    '{{current-month}}': '',
-    '{{date}}': '',
-    '{{last-90-day}}': '',
-    '{{load-more}}': '',
-    '{{previous-month}}': '',
-    '{{show-all}}': ''
+    '{{apply}}': 'Apply',
+    '{{back}}': 'Back',
+    '{{clear-all}}': 'Clear all',
+    '{{current-month}}': 'Current month',
+    '{{date}}': 'Date',
+    '{{filter}}': 'Filter',
+    '{{filter-by}}': 'Filter by',
+    '{{filters}}': 'Filters',
+    '{{last-90-days}}': 'Last 90 days',
+    '{{load-more}}': 'Load more',
+    '{{no-results-description}}': 'Try checking your spelling or broadening your search.',
+    '{{no-results-title}}': 'No Results Found',
+    '{{of}}': 'Of',
+    '{{previous-month}}': 'Previous month',
+    '{{results}}': 'Results',
+    '{{search}}': 'Search',
+    '{{show-all}}': 'Show all'
   };
 
-  const localizationPromises = Object.keys(localizedText).map(async (key) => {
-    localizedText[key] = await replaceText(key, config);
-  });
+  async function localizationPromises() {
+    return Promise.all(Object.keys(localizedText).map(async (key) => {
+      const value = await replaceText(key, config);
+      if (value.length) localizedText[key] = value;
+    }));
+  }
 
   const blockDataActions = {
     'title': (cols) => {
@@ -101,7 +104,7 @@ export default async function init(el) {
 
   const deps = await Promise.all([
     declarePartnerNews(),
-    localizationPromises,
+    localizationPromises(),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -119,7 +122,7 @@ export default async function init(el) {
       { key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true },
       { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
       { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
-      { key: 'last-90-day', value: localizedText['{{last-90-day}}'], parentKey: 'date', checked: false },
+      { key: 'last-90-days', value: localizedText['{{last-90-days}}'], parentKey: 'date', checked: false },
     ]
   };
 
@@ -127,7 +130,7 @@ export default async function init(el) {
   blockData.localizedText = localizedText;
 
   const app = document.createElement('partner-news');
-  app.className = 'content partner-cards-wrapper';
+  app.className = 'content partner-news-wrapper';
   app.blockData = blockData;
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);

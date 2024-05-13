@@ -1,7 +1,7 @@
 import {getLibs, replaceText} from '../../scripts/utils.js';
 import { KnowledgeBaseOverview } from './../../deps/KnowledgeBaseOverview.js';
 
-export async function declarePartnerCards() {
+async function declareKnowledgeBaseOverview() {
   if (customElements.get('knowledge-base-overview')) return;
   customElements.define('knowledge-base-overview', KnowledgeBaseOverview);
 }
@@ -21,30 +21,32 @@ export default async function init(el) {
     'sort': {
       'default': '',
       items: []
-    },
+    }
   }
 
   let localizedText = {
-    '{{apply}}': '',
-    '{{back}}': '',
-    '{{clear-all}}': '',
-    '{{filter}}': '',
-    '{{filter-by}}': '',
-    '{{filters}}': '',
-    '{{no-results-title}}': '',
-    '{{no-results-description}}': '',
-    '{{of}}': '',
-    '{{previous}}': '',
-    '{{results}}': '',
-    '{{search}}': '',
-    '{{current-month}}': '',
-    '{{next}}': '',
-    '{{prev}}': ''
+    '{{apply}}': 'Apply',
+    '{{back}}': 'Back',
+    '{{clear-all}}': 'Clear all',
+    '{{filter}}': 'Filter',
+    '{{filter-by}}': 'Filter by',
+    '{{filters}}': 'Filters',
+    '{{next}}': 'Next',
+    '{{no-results-description}}': 'Try checking your spelling or broadening your search.',
+    '{{no-results-title}}': 'No Results Found',
+    '{{of}}': 'Of',
+    '{{prev}}': 'Prev',
+    '{{previous}}': 'Previous',
+    '{{results}}': 'Results',
+    '{{search}}': 'Search',
   };
 
-  const localizationPromises = Object.keys(localizedText).map(async (key) => {
-    localizedText[key] = await replaceText(key, config);
-  });
+  async function localizationPromises() {
+    return Promise.all(Object.keys(localizedText).map(async (key) => {
+      const value = await replaceText(key, config);
+      if (value.length) localizedText[key] = value;
+    }));
+  }
 
   const blockDataActions = {
     'title': (cols) => {
@@ -98,8 +100,8 @@ export default async function init(el) {
   })
 
   const deps = await Promise.all([
-    declarePartnerCards(),
-    localizationPromises,
+    declareKnowledgeBaseOverview(),
+    localizationPromises(),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
@@ -112,7 +114,7 @@ export default async function init(el) {
   blockData.localizedText = localizedText;
 
   const app = document.createElement('knowledge-base-overview');
-  app.className = 'content partner-cards-wrapper';
+  app.className = 'content knowledge-base-overview-wrapper';
   app.blockData = blockData;
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);

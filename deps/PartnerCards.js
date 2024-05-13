@@ -74,7 +74,7 @@ export class PartnerCards extends LitElement {
     this.paginatedCards = [];
     this.searchTerm = '';
     this.paginationCounter = 1;
-    this.cardsPerPage = 3;
+    this.cardsPerPage = 6;
     this.selectedSortOrder = '';
     this.selectedFilters = {};
     this.urlSearchParams = {};
@@ -339,10 +339,6 @@ export class PartnerCards extends LitElement {
     this.searchTerm = event.target.value.toLowerCase();
   }
 
-  handleClearSearch() {
-    this.searchTerm = '';
-  }
-
   handleSortAction() {
     const sortFunctions = {
       'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
@@ -488,8 +484,7 @@ export class PartnerCards extends LitElement {
         <div class="partner-cards-sidebar-wrapper">
           <div class="partner-cards-sidebar">
             <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
-              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @reset="${this.handleClearSearch}">
-              </sp-search>
+              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
             </sp-theme>
             ${!this.mobileView
               ? html`
