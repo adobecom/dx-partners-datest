@@ -343,8 +343,6 @@ export class PartnerCards extends LitElement {
     const sortFunctions = {
       'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
       'oldest': (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
-      'a-z': (a, b) => a.contentArea.title.localeCompare(b.contentArea?.title),
-      'z-a': (a, b) => b.contentArea.title.localeCompare(a.contentArea?.title)
     };
     this.cards.sort(sortFunctions[this.selectedSortOrder]);
   }
@@ -526,7 +524,7 @@ export class PartnerCards extends LitElement {
                 : ''
               }
               <sp-theme theme="spectrum" color="light" scale="medium" class="picker-wrapper">
-                <sp-picker id="sort" value=${this.selectedSortOrder} quiet placement="bottom-end" size="m" @change="${this.handleSort}">
+                <sp-picker id="sort" value=${this.selectedSortOrder} quiet size="m" @change="${this.handleSort}">
                   ${this.sortItems}
                 </sp-picker>
               </sp-theme>
