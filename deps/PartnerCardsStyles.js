@@ -523,8 +523,9 @@ export var partnerCardsStyles = css`
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #fff;
+      background-color: lightblue;
       height: 100vh;
+      overflow: visible;
     }
   }
   
