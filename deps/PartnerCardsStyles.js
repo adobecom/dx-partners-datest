@@ -11,7 +11,9 @@ export var partnerCardsStyles = css`
     font-family: adobe-clean, Segoe UI, Roboto, sans-serif;
   }
   
+  .partner-cards,
   .partner-cards *,
+  .all-filters-wrapper-mobile,
   .all-filters-wrapper-mobile * {
     box-sizing: border-box;
   }
@@ -523,7 +525,7 @@ export var partnerCardsStyles = css`
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: lightblue;
+      background-color: red;
       height: 100vh;
       overflow: visible;
     }
@@ -564,7 +566,7 @@ export var partnerCardsStyles = css`
     flex-direction: column;
     align-items: center;
     overflow-y: auto;
-    margin-bottom: auto;
+    height: 100%;
   }
   
   .all-filters-wrapper-mobile .filter-wrapper-mobile {
@@ -749,8 +751,9 @@ export var partnerCardsStyles = css`
     align-items: center;
     border-top: 1px solid #eaeaea;
     padding: 16px 20px;
-    position: fixed;
+    position: sticky;
     bottom: env(safe-area-inset-bottom);
+    background-color: #fff;
   }
   
   .all-filters-wrapper-mobile .all-filters-footer-results-mobile,
