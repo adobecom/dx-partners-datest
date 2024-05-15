@@ -11,7 +11,8 @@ export var partnerCardsStyles = css`
     font-family: adobe-clean, Segoe UI, Roboto, sans-serif;
   }
   
-  .partner-cards * {
+  .partner-cards *,
+  .all-filters-wrapper-mobile * {
     box-sizing: border-box;
   }
   
@@ -741,11 +742,14 @@ export var partnerCardsStyles = css`
   }
 
   .all-filters-wrapper-mobile .all-filters-footer-mobile {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-top: 1px solid #eaeaea;
     padding: 16px 20px;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom);
   }
   
   .all-filters-wrapper-mobile .all-filters-footer-results-mobile,
