@@ -349,7 +349,7 @@ export var partnerCardsStyles = css`
     width: 18px;
     height: 18px;
     margin-right: 8px;
-    background-color: red;
+    background-color: #fff;
     background: no-repeat url(/img/icons/filters.svg) 0 0;
   }
   
@@ -525,7 +525,7 @@ export var partnerCardsStyles = css`
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: red;
+      background-color: #fff;
       height: 100vh;
       overflow: visible;
     }
@@ -559,6 +559,10 @@ export var partnerCardsStyles = css`
     font-style: normal;
     word-break: break-word;
     text-align: left;
+  }
+  
+  .all-filters-wrapper-mobile .all-filters-header-title-mobile:first-letter {
+    text-transform: uppercase;
   }
   
   .all-filters-wrapper-mobile .all-filters-list-mobile {
