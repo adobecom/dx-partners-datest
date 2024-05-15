@@ -533,6 +533,7 @@ export var partnerCardsStyles = css`
     align-items: center;
     padding: 14px 12px;
     border-bottom: 1px solid #eaeaea;
+    background-color: #fff;
   }
   
   .all-filters-wrapper-mobile .all-filters-header-back-btn-mobile {
@@ -564,6 +565,7 @@ export var partnerCardsStyles = css`
     align-items: center;
     height: 100%;
     overflow-y: auto;
+    background-color: #fff;
   }
   
   .all-filters-wrapper-mobile .filter-wrapper-mobile {
@@ -750,6 +752,7 @@ export var partnerCardsStyles = css`
     padding: 16px 20px;
     position: fixed;
     bottom: env(safe-area-inset-bottom);
+    background-color: #fff;
   }
   
   .all-filters-wrapper-mobile .all-filters-footer-results-mobile,
