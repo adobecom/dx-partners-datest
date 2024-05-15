@@ -525,7 +525,6 @@ export var partnerCardsStyles = css`
       bottom: 0;
       background-color: #fff;
       height: 100vh;
-      opacity: .99;
     }
   }
   
@@ -563,8 +562,8 @@ export var partnerCardsStyles = css`
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100%;
     overflow-y: auto;
+    margin-bottom: auto;
   }
   
   .all-filters-wrapper-mobile .filter-wrapper-mobile {
