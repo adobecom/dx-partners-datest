@@ -1,21 +1,7 @@
 <!-- Modifying this file will impact your performance -->
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <!-- TODO: evaluate if we can serve /scripts directly from Akamai -->
-<script>
-  let scriptSrc = "/scripts/scripts.js";
-  let fallbackScriptSrc = "/scripts/scripts.js";
-  if (window.location.hostname === "partners.stage.adobe.com") {
-    scriptSrc = "/technologypartners/scripts/scripts.js";
-    fallbackScriptSrc = "/technologypartners/scripts/scripts.js";
-  }
-  let fallbackScript = document.createElement('script');
-  fallbackScript.src = fallbackScriptSrc;
-  fallbackScript.setAttribute("nomodule", true);
-  document.head.append(fallbackScript);
-  let script = document.createElement('script');
-  script.src = scriptSrc
-  script.setAttribute("type", "module");
-  document.head.append(script);
-</script>
+<script src="/eds/scripts/fallback.js" nomodule></script>
+<script src="/eds/scripts/scripts.js" type="module"></script>
 <style>body { display: none; }</style>
 <link rel="icon" href="data:,">
