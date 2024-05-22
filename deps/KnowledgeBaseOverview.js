@@ -64,14 +64,23 @@ export class KnowledgeBaseOverview extends PartnerCards {
   }
 
   handlePageNum(pageNum) {
-    if (this.paginationCounter !== pageNum) this.paginationCounter = pageNum;
+    if (this.paginationCounter !== pageNum) {
+      this.paginationCounter = pageNum;
+      this.handleActions();
+    }
   }
 
   handlePrevPage() {
-    if ( this.paginationCounter > 1 ) this.paginationCounter--;
+    if ( this.paginationCounter > 1 ) {
+      this.paginationCounter--;
+      this.handleActions();
+    }
   }
 
   handleNextPage() {
-    if (this.paginationCounter < this.totalPages) this.paginationCounter++;
+    if (this.paginationCounter < this.totalPages) {
+      this.paginationCounter++;
+      this.handleActions();
+    }
   }
 }

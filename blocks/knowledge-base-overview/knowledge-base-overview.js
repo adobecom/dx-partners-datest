@@ -1,4 +1,4 @@
-import {getLibs, replaceText} from '../../scripts/utils.js';
+import { getLibs, replaceText, getConfig } from '../../scripts/utils.js';
 import { KnowledgeBaseOverview } from './../../deps/KnowledgeBaseOverview.js';
 
 async function declareKnowledgeBaseOverview() {
@@ -6,11 +6,17 @@ async function declareKnowledgeBaseOverview() {
   customElements.define('knowledge-base-overview', KnowledgeBaseOverview);
 }
 
+async function localizationPromises(localizedText, config) {
+  return Promise.all(Object.keys(localizedText).map(async (key) => {
+    const value = await replaceText(key, config);
+    if (value.length) localizedText[key] = value;
+  }));
+}
+
 export default async function init(el) {
   performance.mark('knowledge-base-overview:start');
 
   const miloLibs = getLibs();
-  const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
   const config = getConfig();
 
   const sectionIndex = el.parentNode.getAttribute('data-idx');
@@ -19,7 +25,7 @@ export default async function init(el) {
     'title': '',
     'filters': [],
     'sort': {
-      'default': '',
+      'default': {},
       items: []
     }
   }
@@ -40,13 +46,6 @@ export default async function init(el) {
     '{{results}}': 'Results',
     '{{search}}': 'Search',
   };
-
-  async function localizationPromises() {
-    return Promise.all(Object.keys(localizedText).map(async (key) => {
-      const value = await replaceText(key, config);
-      if (value.length) localizedText[key] = value;
-    }));
-  }
 
   const blockDataActions = {
     'title': (cols) => {
@@ -79,15 +78,15 @@ export default async function init(el) {
       const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
       const sortValues = Array.from(sortValuesEl.querySelectorAll('li'), (li) => li.innerText.trim());
 
-      const sortData = {
-        items: sortKeys.map((sortKey, sortIndex) => ({
-          key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
-          value: sortValues[sortIndex]
-        })),
-        default: sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0]
-      };
+      const sortItems = sortKeys.map((sortKey, sortIndex) => ({
+        key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
+        value: sortValues[sortIndex]
+      }));
 
-      blockData.sort = sortData;
+      const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
+      const defaultValue = sortItems.find(e => e.key === defaultKey).value
+
+      blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
     }
   }
 
@@ -101,14 +100,12 @@ export default async function init(el) {
 
   const deps = await Promise.all([
     declareKnowledgeBaseOverview(),
-    localizationPromises(),
+    localizationPromises(localizedText, config),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/checkbox.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/button.js`),
-    import(`${miloLibs}/features/spectrum-web-components/dist/picker.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
-    import(`${miloLibs}/features/spectrum-web-components/dist/icons/chevron.js`),
   ]);
 
   blockData.localizedText = localizedText;

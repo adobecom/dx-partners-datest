@@ -170,10 +170,11 @@ export var partnerCardsStyles = css`
   }
   
   .partner-cards-sidebar .filter .filter-chevron-icon {
-    display: flex;
-    width: 18px;
-    height: auto;
-    color: #bcbcbc;
+    border: solid #bcbcbc;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
   }
   
   .partner-cards-sidebar .filter .filter-selected-tags-count-btn {
@@ -217,7 +218,8 @@ export var partnerCardsStyles = css`
   }
   
   .partner-cards-sidebar .filter.expanded .filter-chevron-icon {
-    transform: rotate(-180deg);
+    transform: rotate(-135deg);
+    margin-top: 5px;
   }
   
   .partner-cards-sidebar .filter .filter-list {
@@ -373,10 +375,92 @@ export var partnerCardsStyles = css`
     overflow: hidden;
   }
   
-  @media screen and (min-width: 1201px) {
-    .partner-cards-header .picker-wrapper {
-      margin-top: 11px;
-    }
+  .partner-cards-header .partner-cards-sort-wrapper .sort-wrapper {
+    position: relative;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-btn {
+    padding-left: 4px;
+    padding-right: 4px;
+    width: 100%;
+    max-width: 140px;
+    background-color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-btn .sort-btn-text {
+    font-size: .875rem;
+    line-height: 1.875rem;
+    color: #505050;
+    word-break: break-word;
+    text-align: left;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-btn .filter-chevron-icon {
+    border: solid #505050;
+    border-width: 0 1px 1px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
+    margin-left: 15px;
+    margin-bottom: 2px;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list {
+    display: none;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list.expanded {
+    position: absolute;
+    display: block;
+    right: 0;
+    top: 30px;
+    z-index: 10;
+    background-color: #fff;
+    border-radius: 5px;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 3px 15px rgba(80, 80, 80, .1);
+    max-width: 200px;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item {
+    background-color: #fff;
+    border: none;
+    padding: 10px 15px;
+    text-align: left;
+    cursor: pointer;
+    color: #505050;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item:first-child {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item:hover {
+    background-color: #f4f4f4;
+  }
+  
+  .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item.selected {
+    color: ${blueColor};
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-10 -10 34 34' aria-hidden='true' role='img' fill='%231473e6' aria-label='Checkmark300' width='30' height='30' %3E%3Cpath d='M5.102 12.514a1.09 1.09 0 0 1-.834-.39L.988 8.19A1.085 1.085 0 0 1 2.656 6.8l2.421 2.906 6.243-7.947a1.085 1.085 0 0 1 1.707 1.34L5.955 12.1a1.09 1.09 0 0 1-.838.415z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right;
   }
 
   .partner-cards-collection {
@@ -686,11 +770,12 @@ export var partnerCardsStyles = css`
     min-width: 30px;
   }
   
-  .filter-wrapper-mobile .filter-header-chevron-icon  {
-    transform: rotate(-90deg);
-    color: #d3d3d3;
-    width: 24px;
-    height: auto;
+  .filter-wrapper-mobile .filter-header-chevron-icon {
+    border: solid #bcbcbc;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(-45deg);
   }
 
   .filter-wrapper-mobile.expanded .filter-header-chevron-icon {

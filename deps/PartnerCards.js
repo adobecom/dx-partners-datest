@@ -50,9 +50,6 @@ export class PartnerCards extends LitElement {
     #search {
       width: 100%;
     }
-    #sort {
-      padding: 2px 2px 3px;
-    }
   `;
 
   static properties = {
@@ -61,7 +58,7 @@ export class PartnerCards extends LitElement {
     paginatedCards: { type: Array },
     searchTerm: { type: String },
     paginationCounter: { type: Number },
-    selectedSortOrder: { type: String, attribute: 'data-sort', reflect: true },
+    selectedSortOrder: { type: Object },
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
     mobileView: { type: Boolean }
@@ -74,8 +71,8 @@ export class PartnerCards extends LitElement {
     this.paginatedCards = [];
     this.searchTerm = '';
     this.paginationCounter = 1;
-    this.cardsPerPage = 6;
-    this.selectedSortOrder = '';
+    this.cardsPerPage = 3;
+    this.selectedSortOrder = {};
     this.selectedFilters = {};
     this.urlSearchParams = {};
     this.mobileView = window.innerWidth <= 1200;
@@ -106,6 +103,7 @@ export class PartnerCards extends LitElement {
       }
       const apiData = await response.json();
       if (apiData?.cards) {
+        apiData.cards.forEach((card, index) => card.orderNum = index + 1);
         this.allCards = this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
       }
@@ -144,16 +142,6 @@ export class PartnerCards extends LitElement {
     }
   }
 
-  updated(changedProperties) {
-    if (changedProperties.has('searchTerm')
-      || changedProperties.has('paginationCounter')
-      || changedProperties.has('selectedSortOrder')
-      || changedProperties.has('selectedFilters')) {
-      if (!changedProperties.has('paginationCounter')) this.paginationCounter = 1;
-      this.handleActions();
-    }
-  }
-
   get partnerCards() {
     if (this.paginatedCards.length) {
       return html`${repeat(
@@ -175,14 +163,27 @@ export class PartnerCards extends LitElement {
     return html`${repeat(
       this.blockData.sort.items,
       (item) => item.key,
-      (item) => html`<sp-menu-item
-        value="${item.key}">
+      (item) => html`<button
+        class="sort-item ${this.selectedSortOrder.key === item.key ? 'selected' : ''}"
+        value="${item.key}"
+        @click="${() => this.handleSort(item)}">
         ${item.value}
-      </sp-menu-item>`,
+      </button>`,
     )}`;
   }
 
   get pagination() {}
+
+  get cardsCounter() {
+    if (!this.paginatedCards.length) {
+      return 0;
+    }
+
+    const { orderNum: firstElOrderNum } = this.paginatedCards[0];
+    const lastIndex = this.paginatedCards.length - 1;
+    const { orderNum: lastElOrderNum } = this.paginatedCards[lastIndex];
+    return `${firstElOrderNum} - ${lastElOrderNum}`;
+  }
 
   get filters() {
     if (!this.blockData.filters.length) return;
@@ -196,9 +197,9 @@ export class PartnerCards extends LitElement {
 
         return html`
           <div class="filter">
-            <button class="filter-header" @click=${(e) => this.expandFilter(e.currentTarget.parentNode)} aria-label="${filter.value}">
+            <button class="filter-header" @click=${(e) => this.toggleFilter(e.currentTarget.parentNode)} aria-label="${filter.value}">
               <span class="filter-label">${filter.value}</span>
-              <sp-icon-chevron-down class="filter-chevron-icon" />
+              <span class="filter-chevron-icon" />
             </button>
             <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${tagsCount}">
               <span class="filter-selected-tags-total-num">${tagsCount}</span>
@@ -227,7 +228,7 @@ export class PartnerCards extends LitElement {
         return html`
           <div class="filter-wrapper-mobile">
             <div class="filter-mobile">
-              <button class="filter-header-mobile" @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${filter.value}">
+              <button class="filter-header-mobile" @click=${(e) => this.toggleFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${filter.value}">
                 <div class="filter-header-content-mobile">
                   <h3 class="filter-header-name-mobile">${filter.value}</h3>
                   ${tagsCount
@@ -240,7 +241,7 @@ export class PartnerCards extends LitElement {
                     : ''
                   }
                 </div>
-                <sp-icon-chevron-down class="filter-header-chevron-icon" />
+                <span class="filter-header-chevron-icon" />
               </button>
               <ul class="filter-tags-mobile">
                 <sp-theme theme="spectrum" color="light" scale="medium">
@@ -253,7 +254,7 @@ export class PartnerCards extends LitElement {
                   <div class="filter-footer-buttons-mobile">
                     <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                     <sp-theme theme="spectrum" color="light" scale="medium">
-                      <sp-button @click=${(e) => this.expandFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
+                      <sp-button @click=${(e) => this.toggleFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                     </sp-theme>
                   </div>
                 </div>
@@ -297,7 +298,12 @@ export class PartnerCards extends LitElement {
     )}`;
   }
 
-  expandFilter(clickedFilter) {
+  toggleSort() {
+    const element = this.shadowRoot.querySelector('.sort-list');
+    element.classList.toggle('expanded')
+  }
+
+  toggleFilter(clickedFilter) {
     clickedFilter.classList.toggle('expanded');
   }
 
@@ -315,7 +321,11 @@ export class PartnerCards extends LitElement {
     this.handleSearchAction();
     if (this.blockData.sort.items.length) this.handleSortAction();
     if (this.blockData.filters.length) this.handleFilterAction();
+    this.additionalActions();
+    this.cards.forEach((card, index) => card.orderNum = index + 1);
   }
+
+  additionalActions() {}
 
   handleResetActions() {
     this.searchTerm = '';
@@ -323,10 +333,19 @@ export class PartnerCards extends LitElement {
     this.blockData.filters.forEach(filter => {
       filter.tags.forEach(tag => tag.checked = false);
 
-      const { [filter.key]: _removedKeyParams, ...updatedUrlSearchParams  } = this.urlSearchParams
-      this.urlSearchParams = updatedUrlSearchParams;
+      const { [filter.key]: _removedKeyParams, ...remainingParams  } = this.urlSearchParams
+      this.urlSearchParams = remainingParams;
     });
+    const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
+    this.urlSearchParams = updatedSearchParams;
+
+    this.additionalResetActions();
+    this.paginationCounter = 1;
+    this.handleActions();
+    this.handleUrlSearchParams();
   }
+
+  additionalResetActions() {}
 
   handleSearchAction() {
     this.cards = this.allCards.filter((card) =>
@@ -337,6 +356,9 @@ export class PartnerCards extends LitElement {
 
   handleSearch(event){
     this.searchTerm = event.target.value.toLowerCase();
+
+    this.paginationCounter = 1;
+    this.handleActions();
   }
 
   handleSortAction() {
@@ -344,25 +366,35 @@ export class PartnerCards extends LitElement {
       'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
       'oldest': (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
     };
-    this.cards.sort(sortFunctions[this.selectedSortOrder]);
+    this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
   }
 
-  handleSort(event) {
-    if (event.target.value !== this.selectedSortOrder) this.selectedSortOrder = event.target.value;
+  handleSort(selectedItem) {
+    this.toggleSort();
+
+    if (selectedItem.key !== this.selectedSortOrder.key) {
+      this.selectedSortOrder = selectedItem;
+
+      this.paginationCounter = 1;
+      this.handleActions();
+    }
   }
 
   handleFilterAction() {
     const selectedFiltersKeys = Object.keys(this.selectedFilters);
+
     if (selectedFiltersKeys.length) {
       this.cards = this.cards.filter((card) => {
+        if (!card.arbitrary.length) return;
+
         let cardArbitraryArr = [...card.arbitrary];
         const firstObj = card.arbitrary[0];
         if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr = cardArbitraryArr.slice(1);
 
         return selectedFiltersKeys.every((key) =>
           cardArbitraryArr.some((arbitraryTag) => {
-            if (key === arbitraryTag.key) {
-              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value);
+            if (key === arbitraryTag.key.toLowerCase()) {
+              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value.toLowerCase());
             }
             return false;
           })
@@ -372,18 +404,23 @@ export class PartnerCards extends LitElement {
       const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
       this.urlSearchParams = updatedSearchParams;
     }
+  }
 
-    //urlSearchParams
+  handleUrlSearchParams() {
     const searchParamsEntries = Object.entries(this.urlSearchParams);
+    let url = new URL(window.location.href);
+
     if (searchParamsEntries.length) {
       const searchString = searchParamsEntries.map(([key, value]) =>
         `${key}=${value.join(',')}`
       ).join('&');
 
-      const url = new URL(window.location.href);
       url.search = `?${searchString}`;
-      window.history.pushState({}, '', url);
+    } else {
+      url.search = '';
     }
+
+    window.history.pushState({}, '', url);
   }
 
   handleTag(event, tag, filterKey) {
@@ -414,6 +451,10 @@ export class PartnerCards extends LitElement {
         [filterKey]: [tag.key]
       };
     }
+
+    this.paginationCounter = 1;
+    this.handleActions();
+    this.handleUrlSearchParams();
   }
 
   handleRemoveTag(tag) {
@@ -440,6 +481,10 @@ export class PartnerCards extends LitElement {
       const { [filterKey]: _removedKeyParams,  ...updatedUrlSearchParams } = this.urlSearchParams;
       this.urlSearchParams = updatedUrlSearchParams;
     }
+
+    this.paginationCounter = 1;
+    this.handleActions();
+    this.handleUrlSearchParams();
   }
 
   handleResetTags(filterKey) {
@@ -454,6 +499,10 @@ export class PartnerCards extends LitElement {
         filter.tags.forEach((tag) => tag.checked = false)
       }
     });
+
+    this.paginationCounter = 1;
+    this.handleActions();
+    this.handleUrlSearchParams();
   }
 
   countSelectedTags(filterKey) {
@@ -523,11 +572,16 @@ export class PartnerCards extends LitElement {
                 `
                 : ''
               }
-              <sp-theme theme="spectrum" color="light" scale="medium" class="picker-wrapper">
-                <sp-picker id="sort" value=${this.selectedSortOrder} quiet size="m" @change="${this.handleSort}">
+              <div class="sort-wrapper">
+                <button class="sort-btn" @click="${this.toggleSort}">
+                  <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
+                  <span class="filter-chevron-icon" />
+                </button>
+                <div class="sort-list">
                   ${this.sortItems}
-                </sp-picker>
-              </sp-theme>
+                </div>
+              </div>
+              
             </div>
           </div>
           <div class="partner-cards-collection">
@@ -542,10 +596,15 @@ export class PartnerCards extends LitElement {
               `
             }
           </div>
-          <div class="pagination-wrapper">
-            ${this.pagination}
-            <span class="pagination-total-results">1-${Math.min(this.cards?.length ?? 0, this.cardsPerPage) } ${this.blockData.localizedText['{{of}}']} ${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
-          </div>
+          ${this.cards.length
+            ? html`
+              <div class="pagination-wrapper">
+                ${this.pagination}
+                <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
+              </div>
+            `
+            : ''
+            }
         </div>
       </div>
 
