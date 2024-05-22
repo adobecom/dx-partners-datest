@@ -352,7 +352,7 @@ export var partnerCardsStyles = css`
     height: 18px;
     margin-right: 8px;
     background-color: #fff;
-    background: no-repeat url(/img/icons/filters.svg) 0 0;
+    background: no-repeat url(/eds/img/icons/filters.svg) 0 0;
   }
   
   .partner-cards-header .partner-cards-sort-wrapper .filters-btn-mobile-title {
@@ -630,7 +630,7 @@ export var partnerCardsStyles = css`
     line-height: 0;
     border: none;
     border-radius: 50%;
-    background: transparent url(/img/icons/back.svg) no-repeat 50% 50%;
+    background: transparent url(/eds/img/icons/back.svg) no-repeat 50% 50%;
     outline: 0;
     cursor: pointer;
   }
