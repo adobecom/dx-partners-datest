@@ -22,7 +22,7 @@ const LIBS = '/libs';
 const CONFIG = {
   // codeRoot: '',
   contentRoot: '/SPP/spp-shared',
-  // imsClientId: 'college',
+  imsClientId: 'APP_GRAVITY_RUNTIME',
   // geoRouting: 'off',
   // fallbackRouting: 'off',
   locales: {
