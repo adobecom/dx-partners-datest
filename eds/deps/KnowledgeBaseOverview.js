@@ -1,4 +1,4 @@
-import { getLibs } from '../../scripts/utils.js';
+import { getLibs } from '../scripts/utils.js';
 const miloLibs = getLibs();
 const { html, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
 import { numericPaginationStyles } from "./PartnerCardsStyles.js";

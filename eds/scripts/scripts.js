@@ -20,7 +20,7 @@ const LIBS = '/libs';
 
 // Add any config options.
 const CONFIG = {
-  // codeRoot: '',
+  codeRoot: '/eds',
   contentRoot: '/SPP/spp-shared',
   imsClientId: 'APP_GRAVITY_RUNTIME',
   // geoRouting: 'off',

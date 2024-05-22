@@ -1,5 +1,5 @@
 import { getLibs, replaceText, getConfig } from '../../scripts/utils.js';
-import { PartnerNews } from './../../deps/PartnerNews.js';
+import { PartnerNews } from '../../deps/PartnerNews.js';
 
 async function declarePartnerNews() {
   if (customElements.get('partner-news')) return;

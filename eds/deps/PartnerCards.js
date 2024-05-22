@@ -1,4 +1,4 @@
-import { getLibs } from '../../scripts/utils.js';
+import { getLibs } from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
