@@ -146,7 +146,7 @@ export class PartnerCards extends LitElement {
     if (this.paginatedCards.length) {
       return html`${repeat(
         this.paginatedCards,
-        (card) => card.contentArea?.title,
+        (card) => card.id,
         (card) => html`<news-card class="card-wrapper" .data=${card}></news-card>`,
       )}`;
     } else {
