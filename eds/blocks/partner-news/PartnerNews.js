@@ -91,7 +91,7 @@ export class PartnerNews extends PartnerCards {
           </ul>
           <div class="filter-footer-mobile-wrapper">
             <div class="filter-footer-mobile">
-              <span class="filter-footer-results-mobile">${this.cards?.length} Results</span>
+              <span class="filter-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
               <div class="filter-footer-buttons-mobile">
                 <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetDateTags(filter.tags)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 <sp-theme theme="spectrum" color="light" scale="medium">
