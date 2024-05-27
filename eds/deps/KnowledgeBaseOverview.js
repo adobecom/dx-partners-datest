@@ -34,7 +34,7 @@ export class KnowledgeBaseOverview extends PartnerCards {
       (pageNum) => html`<button
         class="page-btn ${this.paginationCounter === pageNum ? 'selected' : ''}"
         @click="${() => this.handlePageNum(pageNum)}"
-        aria-label="${pageNum}">
+        aria-label="${this.blockData.localizedText['{{page}}']} ${pageNum}">
         ${pageNum}
       </button>`
     )}`;
@@ -43,10 +43,10 @@ export class KnowledgeBaseOverview extends PartnerCards {
   get pagination() {
     return html `
       <div class="pagination-pages-list">
-        <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}" aria-label="${this.blockData.localizedText['{{previous}}']}">
+        <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}" aria-label="${this.blockData.localizedText['{{previous-page}}']}">
           ${this.blockData.localizedText['{{prev}}']}</button>
         ${this.paginationList}
-        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}" aria-label="${this.blockData.localizedText['{{next}}']}">
+        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}" aria-label="${this.blockData.localizedText['{{next-page}}']}">
           ${this.blockData.localizedText['{{next}}']}</button>
       </div>
     `;
