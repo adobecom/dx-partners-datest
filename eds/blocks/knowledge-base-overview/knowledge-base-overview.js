@@ -1,5 +1,5 @@
-import { getLibs, replaceText, getConfig } from '../../scripts/utils.js';
-import { KnowledgeBaseOverview } from './../../deps/KnowledgeBaseOverview.js';
+import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
+import { KnowledgeBaseOverview } from './KnowledgeBaseOverview.js';
 
 function declareKnowledgeBaseOverview() {
   if (customElements.get('knowledge-base-overview')) return;

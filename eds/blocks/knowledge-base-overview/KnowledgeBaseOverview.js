@@ -1,8 +1,8 @@
-import { getLibs } from '../scripts/utils.js';
+import { getLibs } from './../../scripts/utils.js';
 const miloLibs = getLibs();
 const { html, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
-import { numericPaginationStyles } from "./PartnerCardsStyles.js";
-import { PartnerCards } from "./PartnerCards.js";
+import { numericPaginationStyles } from './../../components/PartnerCardsStyles.js';
+import { PartnerCards } from "./../../components/PartnerCards.js";
 
 export class KnowledgeBaseOverview extends PartnerCards {
 
@@ -58,7 +58,7 @@ export class KnowledgeBaseOverview extends PartnerCards {
   }
 
   updatePaginatedCards() {
-    const startIndex = this.paginationCounter = (this.paginationCounter - 1) * this.cardsPerPage;
+    const startIndex = (this.paginationCounter - 1) * this.cardsPerPage;
     const endIndex = this.paginationCounter * this.cardsPerPage;
     this.paginatedCards = this.cards.slice(startIndex, endIndex);
   }

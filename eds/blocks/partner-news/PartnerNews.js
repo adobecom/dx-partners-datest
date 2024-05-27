@@ -1,9 +1,8 @@
-import { getLibs } from '../scripts/utils.js';
+import { getLibs } from './../../scripts/utils.js';
 const miloLibs = getLibs();
-
 const { html, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
-import { dateFilterStyles, loadMorePaginationStyles } from "./PartnerCardsStyles.js";
-import { PartnerCards } from "./PartnerCards.js";
+import { dateFilterStyles, loadMorePaginationStyles } from "./../../components/PartnerCardsStyles.js";
+import { PartnerCards } from "./../../components/PartnerCards.js";
 
 export class PartnerNews extends PartnerCards {
 
