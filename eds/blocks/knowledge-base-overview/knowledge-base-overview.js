@@ -1,7 +1,7 @@
 import { getLibs, replaceText, getConfig } from '../../scripts/utils.js';
 import { KnowledgeBaseOverview } from './../../deps/KnowledgeBaseOverview.js';
 
-async function declareKnowledgeBaseOverview() {
+function declareKnowledgeBaseOverview() {
   if (customElements.get('knowledge-base-overview')) return;
   customElements.define('knowledge-base-overview', KnowledgeBaseOverview);
 }
@@ -50,7 +50,7 @@ export default async function init(el) {
   const blockDataActions = {
     'title': (cols) => {
       const [titleEl] = cols;
-      blockData.title = titleEl.innerHTML.trim();
+      blockData.title = titleEl.innerText.trim();
     },
     'filter': (cols) => {
       const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
@@ -91,7 +91,7 @@ export default async function init(el) {
   }
 
   const rows = Array.from(el.children);
-  rows.forEach((row, rdx) => {
+  rows.forEach((row) => {
     const cols = Array.from(row.children);
     const rowTitle = cols[0].innerText.trim().toLowerCase();
     const colsContent = cols.slice(1);
@@ -99,7 +99,6 @@ export default async function init(el) {
   })
 
   const deps = await Promise.all([
-    declareKnowledgeBaseOverview(),
     localizationPromises(localizedText, config),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
@@ -107,6 +106,8 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/button.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
   ]);
+
+  declareKnowledgeBaseOverview();
 
   blockData.localizedText = localizedText;
 
@@ -116,7 +117,6 @@ export default async function init(el) {
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
-  await deps;
   performance.mark('knowledge-base-overview:end');
   performance.measure('knowledge-base-overview block', 'knowledge-base-overview:start', 'knowledge-base-overview:end');
   return app;

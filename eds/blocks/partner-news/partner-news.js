@@ -1,7 +1,7 @@
 import { getLibs, replaceText, getConfig } from '../../scripts/utils.js';
 import { PartnerNews } from '../../deps/PartnerNews.js';
 
-async function declarePartnerNews() {
+function declarePartnerNews() {
   if (customElements.get('partner-news')) return;
   customElements.define('partner-news', PartnerNews);
 }
@@ -53,7 +53,7 @@ export default async function init(el) {
   const blockDataActions = {
     'title': (cols) => {
       const [titleEl] = cols;
-      blockData.title = titleEl.innerHTML.trim();
+      blockData.title = titleEl.innerText.trim();
     },
     'filter': (cols) => {
       const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
@@ -94,7 +94,7 @@ export default async function init(el) {
   }
 
   const rows = Array.from(el.children);
-  rows.forEach((row, rdx) => {
+  rows.forEach((row) => {
     const cols = Array.from(row.children);
     const rowTitle = cols[0].innerText.trim().toLowerCase();
     const colsContent = cols.slice(1);
@@ -102,7 +102,6 @@ export default async function init(el) {
   })
 
   const deps = await Promise.all([
-    declarePartnerNews(),
     localizationPromises(localizedText, config),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/search.js`),
@@ -110,6 +109,8 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/button.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
   ]);
+
+  declarePartnerNews();
 
   const dateFilter = {
     key: 'date',
@@ -131,7 +132,6 @@ export default async function init(el) {
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
-  await deps;
   performance.mark('partner-news:end');
   performance.measure('partner-news block', 'partner-news:start', 'partner-news:end');
   return app;

@@ -58,7 +58,7 @@ export class KnowledgeBaseOverview extends PartnerCards {
   }
 
   updatePaginatedCards() {
-    const startIndex = this.paginationCounter === 1 ? 0 : (this.paginationCounter - 1) * this.cardsPerPage;
+    const startIndex = this.paginationCounter = (this.paginationCounter - 1) * this.cardsPerPage;
     const endIndex = this.paginationCounter * this.cardsPerPage;
     this.paginatedCards = this.cards.slice(startIndex, endIndex);
   }
