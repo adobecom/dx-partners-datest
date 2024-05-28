@@ -32,6 +32,12 @@ const CONFIG = {
   },
 };
 
+(function removeAccessToken() {
+  if (window.location.hash.startsWith('#access_token')) {
+    window.location.hash = '';
+  }
+}());
+
 // Load LCP image immediately
 (function loadLCPImage() {
   const lcpImg = document.querySelector('img');
