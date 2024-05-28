@@ -114,19 +114,14 @@ export class PartnerCards extends LitElement {
 
   initUrlSearchParams () {
     const { search } = location || window.location;
+    this.urlSearchParams = new URLSearchParams(search);
 
-    this.urlSearchParams = search
-      ? search.substring(1).split('&').reduce((acc, el) => {
-        const [key, value] = el.split('=');
-        acc[key] = value.split(',');
-        return acc;
-      }, {})
-      : {};
+    if (this.urlSearchParams.has('filters', 'yes')) {
+      this.blockData.filters = this.blockData.filters.map((filter) => {
+        if (this.urlSearchParams.has(filter.key)) {
+          const filtersSearchTags = this.urlSearchParams.get(filter.key).split(',');
 
-    if (this.urlSearchParams.filters) {
-      this.blockData.filters = this.blockData.filters.map(filter => {
-        if (this.urlSearchParams[filter.key]) {
-          this.urlSearchParams[filter.key].forEach(searchTag => {
+          filtersSearchTags.forEach(searchTag => {
             const filterTag = filter.tags.find(tag => tag.key === searchTag);
             if (filterTag) {
               filterTag.checked = true;
@@ -332,13 +327,9 @@ export class PartnerCards extends LitElement {
     this.selectedFilters = {};
     this.blockData.filters.forEach(filter => {
       filter.tags.forEach(tag => tag.checked = false);
-
-      const { [filter.key]: _removedKeyParams, ...remainingParams  } = this.urlSearchParams
-      this.urlSearchParams = remainingParams;
+      this.urlSearchParams.delete(filter.key);
     });
-    const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
-    this.urlSearchParams = updatedSearchParams;
-
+    this.urlSearchParams.delete('filters');
     this.additionalResetActions();
     this.paginationCounter = 1;
     this.handleActions();
@@ -401,21 +392,16 @@ export class PartnerCards extends LitElement {
         )
       });
     } else {
-      const { ['filters']: _removedFilterKey, ...updatedSearchParams } = this.urlSearchParams;
-      this.urlSearchParams = updatedSearchParams;
+      this.urlSearchParams.delete('filters');
     }
   }
 
   handleUrlSearchParams() {
-    const searchParamsEntries = Object.entries(this.urlSearchParams);
     let url = new URL(window.location.href);
 
-    if (searchParamsEntries.length) {
-      const searchString = searchParamsEntries.map(([key, value]) =>
-        `${key}=${value.join(',')}`
-      ).join('&');
-
-      url.search = `?${searchString}`;
+    const searchParamsString = this.urlSearchParams.toString();
+    if (searchParamsString.length) {
+      url.search = decodeURIComponent(searchParamsString);
     } else {
       url.search = '';
     }
@@ -436,20 +422,21 @@ export class PartnerCards extends LitElement {
         ...this.selectedFilters,
         [filterKey]: [...this.selectedFilters[filterKey], tag]
       };
-      this.urlSearchParams = {
-        ...this.urlSearchParams,
-        [filterKey]: [...this.urlSearchParams[filterKey], tag.key]
-      }
+
+      let filterSearchValue = this.urlSearchParams.get(filterKey);
+      filterSearchValue += ',' + tag.key;
+      this.urlSearchParams.set(filterKey, filterSearchValue);
     } else {
+      if (!Object.keys(this.selectedFilters).length) {
+        this.urlSearchParams.append('filters', 'yes');
+      }
+
       this.selectedFilters = {
         ...this.selectedFilters,
         [filterKey]: [tag]
       };
-      this.urlSearchParams = {
-        ...this.urlSearchParams,
-        'filters': ['yes'],
-        [filterKey]: [tag.key]
-      };
+
+      this.urlSearchParams.append(filterKey, tag.key);
     }
 
     this.paginationCounter = 1;
@@ -462,24 +449,20 @@ export class PartnerCards extends LitElement {
     const { key: tagKey, parentKey: filterKey } = tag;
 
     const updatedFilterTags = [...this.selectedFilters[filterKey]].filter(filterTag => filterTag.key !== tagKey);
-    const updatedSearchFilterTags = [...this.urlSearchParams[filterKey]].filter(filterTag => filterTag !== tagKey);
 
-    if (updatedFilterTags.length && updatedSearchFilterTags.length) {
+    if (updatedFilterTags.length) {
       this.selectedFilters = {
         ...this.selectedFilters,
         [filterKey]: updatedFilterTags
       };
 
-      this.urlSearchParams = {
-        ...this.urlSearchParams,
-        [filterKey]: updatedSearchFilterTags
-      };
+      const filterSearchParams = this.urlSearchParams.get(filterKey).split(',');
+      const updatedSearchFilterTags = filterSearchParams.filter(param => param !== tagKey);
+      this.urlSearchParams.set(filterKey, updatedSearchFilterTags.toString());
     } else {
       const { [filterKey]: _removedKeyFilters, ...updatedSelectedFilters } = this.selectedFilters;
       this.selectedFilters = updatedSelectedFilters;
-
-      const { [filterKey]: _removedKeyParams,  ...updatedUrlSearchParams } = this.urlSearchParams;
-      this.urlSearchParams = updatedUrlSearchParams;
+      this.urlSearchParams.delete(filterKey);
     }
 
     this.paginationCounter = 1;
@@ -490,9 +473,7 @@ export class PartnerCards extends LitElement {
   handleResetTags(filterKey) {
     const { [filterKey]: _removedKeyFilters, ...updatedSelectedFilters } = this.selectedFilters;
     this.selectedFilters = {...updatedSelectedFilters};
-
-    const { [filterKey]: _removedKeyParams, ...updatedUrlSearchParams } = this.urlSearchParams;
-    this.urlSearchParams = updatedUrlSearchParams;
+    this.urlSearchParams.delete(filterKey);
 
     this.blockData.filters.forEach(filter => {
       if (filter.key === filterKey) {
