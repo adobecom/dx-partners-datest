@@ -134,6 +134,7 @@ export class PartnerCards extends LitElement {
         }
         return filter;
       })
+      this.handleActions();
     }
   }
 
