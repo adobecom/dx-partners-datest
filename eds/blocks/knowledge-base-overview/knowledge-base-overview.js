@@ -27,7 +27,8 @@ export default async function init(el) {
     'sort': {
       'default': {},
       items: []
-    }
+    },
+    'cardsPerPage': 9
   }
 
   let localizedText = {
@@ -76,7 +77,7 @@ export default async function init(el) {
       blockData.filters.push(filterObj);
     },
     'sort': (cols) => {
-      const [sortKeysEl, sortValuesEl] = cols
+      const [sortKeysEl, sortValuesEl] = cols;
       const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
       const sortValues = Array.from(sortValuesEl.querySelectorAll('li'), (li) => li.innerText.trim());
 
@@ -86,9 +87,15 @@ export default async function init(el) {
       }));
 
       const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
-      const defaultValue = sortItems.find(e => e.key === defaultKey).value
+      const defaultValue = sortItems.find(e => e.key === defaultKey).value;
 
       blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
+    },
+    'cards per page': (cols) => {
+      const [cardsPerPageEl] = cols;
+      const cardsPerPageStr = cardsPerPageEl.innerText.trim();
+      const cardsPerPageNum = parseInt(cardsPerPageStr);
+      if (cardsPerPageNum) blockData.cardsPerPage = cardsPerPageNum;
     }
   }
 

@@ -71,7 +71,7 @@ export class PartnerCards extends LitElement {
     this.paginatedCards = [];
     this.searchTerm = '';
     this.paginationCounter = 1;
-    this.cardsPerPage = 3;
+    this.cardsPerPage = 12;
     this.selectedSortOrder = {};
     this.selectedFilters = {};
     this.urlSearchParams = {};
@@ -93,6 +93,8 @@ export class PartnerCards extends LitElement {
     await this.fetchData();
     if (this.blockData.filters.length) this.initUrlSearchParams();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
+    if (this.blockData.cardsPerPage) this.cardsPerPage = this.blockData.cardsPerPage;
+    this.handleActions();
   }
 
   async fetchData() {
@@ -134,7 +136,6 @@ export class PartnerCards extends LitElement {
         }
         return filter;
       })
-      this.handleActions();
     }
   }
 
