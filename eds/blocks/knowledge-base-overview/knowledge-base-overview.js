@@ -119,6 +119,7 @@ export default async function init(el) {
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
+  await deps;
   performance.mark('knowledge-base-overview:end');
   performance.measure('knowledge-base-overview block', 'knowledge-base-overview:start', 'knowledge-base-overview:end');
   return app;

@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from './../../../eds/blocks/knowledge-base-overview/knowledge-base-overview.js';
-import { PartnerCards } from "../../../eds/deps/PartnerCards";
+import { PartnerCards } from "./../../../eds/components/PartnerCards.js";
 
 const cardsString = await readFile({ path: './mocks/cards.json' });
 const cards = JSON.parse(cardsString);

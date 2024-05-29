@@ -132,6 +132,7 @@ export default async function init(el) {
   app.setAttribute('data-idx', sectionIndex);
   el.replaceWith(app);
 
+  await deps;
   performance.mark('partner-news:end');
   performance.measure('partner-news block', 'partner-news:start', 'partner-news:end');
   return app;
