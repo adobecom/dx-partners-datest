@@ -440,6 +440,7 @@ export var partnerCardsStyles = css`
     text-align: left;
     cursor: pointer;
     color: #505050;
+    text-transform: capitalize;
   }
   
   .partner-cards-header .partner-cards-sort-wrapper .sort-list .sort-item:first-child {
