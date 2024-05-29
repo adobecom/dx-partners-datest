@@ -381,8 +381,16 @@ export var partnerCardsStyles = css`
     padding-left: 20px;
   }
   
+  @media screen and (max-width: 1200px) {
+    .partner-cards-header .partner-cards-sort-wrapper .sort-wrapper {
+      border-left: none;
+      padding-left: 0;
+    }
+  }
+  
   .partner-cards-header .partner-cards-sort-wrapper .sort-btn {
     padding-right: 4px;
+    padding-left: 0;
     width: 100%;
     max-width: 140px;
     background-color: #fff;
