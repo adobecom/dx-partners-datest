@@ -555,16 +555,18 @@ export class PartnerCards extends LitElement {
                 `
                 : ''
               }
-              <div class="sort-wrapper">
-                <button class="sort-btn" @click="${this.toggleSort}">
-                  <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
-                  <span class="filter-chevron-icon" />
-                </button>
-                <div class="sort-list">
-                  ${this.sortItems}
-                </div>
-              </div>
-              
+              ${this.blockData.sort.items.length 
+                ? html `<div class="sort-wrapper">
+                  <button class="sort-btn" @click="${this.toggleSort}">
+                    <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
+                    <span class="filter-chevron-icon" />
+                  </button>
+                  <div class="sort-list">
+                    ${this.sortItems}
+                  </div>
+                </div>`
+                : ''
+              }
             </div>
           </div>
           <div class="partner-cards-collection">

@@ -290,15 +290,14 @@ export var partnerCardsStyles = css`
   }
   
   .partner-cards-header .partner-cards-title-wrapper .partner-cards-cards-results {
-    padding: 4px 20px 4px 0;
-    border-right: 1px solid ${borderColor};
+    padding: 4px 0;
     max-height: 3.9375rem;
     color: #505050;
     font-size: .875rem;
     line-height: 1.3125rem;
-    margin-right: 20px;
     min-width: 80px;
     text-transform: lowercase;
+    text-align: right;
   }
   
   @media screen and (max-width: 1200px) {
@@ -377,10 +376,12 @@ export var partnerCardsStyles = css`
   
   .partner-cards-header .partner-cards-sort-wrapper .sort-wrapper {
     position: relative;
+    border-left: 1px solid ${borderColor};
+    margin-left: 20px;
+    padding-left: 20px;
   }
   
   .partner-cards-header .partner-cards-sort-wrapper .sort-btn {
-    padding-left: 4px;
     padding-right: 4px;
     width: 100%;
     max-width: 140px;
