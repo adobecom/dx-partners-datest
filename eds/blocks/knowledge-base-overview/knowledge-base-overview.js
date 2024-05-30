@@ -28,7 +28,8 @@ export default async function init(el) {
       'default': {},
       items: []
     },
-    'cardsPerPage': 9
+    'cardsPerPage': 9,
+    'collectionTags': ''
   }
 
   let localizedText = {
@@ -88,7 +89,6 @@ export default async function init(el) {
 
       const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
       const defaultValue = sortItems.find(e => e.key === defaultKey).value;
-
       blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
     },
     'cards per page': (cols) => {
@@ -96,6 +96,12 @@ export default async function init(el) {
       const cardsPerPageStr = cardsPerPageEl.innerText.trim();
       const cardsPerPageNum = parseInt(cardsPerPageStr);
       if (cardsPerPageNum) blockData.cardsPerPage = cardsPerPageNum;
+    },
+    'collection tags': (cols) => {
+      const [collectionTagsEl] = cols;
+      const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
+      const collectionTagsParamStr = collectionTags.filter(e => e.length).join(',');
+      blockData.collectionTags = collectionTagsParamStr;
     }
   }
 

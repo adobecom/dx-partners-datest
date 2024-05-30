@@ -99,7 +99,9 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const response = await fetch('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=US&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=&debug=true&flatFile=false&expanded=true');
+      let api = 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&contentTypeTags=&secondSource=&secondaryTags=&excludeContentWithTags=&language=en&country=US&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=&debug=true&flatFile=false&expanded=true';
+      if (this.blockData.collectionTags.length) api += '&collectionTags=' + this.blockData.collectionTags;
+      const response = await fetch(api);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
