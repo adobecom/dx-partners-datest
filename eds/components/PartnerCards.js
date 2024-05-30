@@ -386,8 +386,10 @@ export class PartnerCards extends LitElement {
 
         return selectedFiltersKeys.every((key) =>
           cardArbitraryArr.some((arbitraryTag) => {
-            if (key === arbitraryTag.key.toLowerCase()) {
-              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value.toLowerCase());
+            const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
+            const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
+            if (key === arbitraryTagKeyStr) {
+              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
             }
             return false;
           })

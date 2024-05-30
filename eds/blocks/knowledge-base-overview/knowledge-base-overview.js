@@ -57,7 +57,7 @@ export default async function init(el) {
     },
     'filter': (cols) => {
       const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
-      const filterKey = filterKeyEl.innerText.trim().toLowerCase();
+      const filterKey = filterKeyEl.innerText.trim().toLowerCase().replaceAll(' ', '-');
       const filterValue = filterValueEl.innerText.trim();
       const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
       const filterTagsValue = Array.from(filterTagsValueEl.querySelectorAll('li'), (li) => li.innerText.trim());
