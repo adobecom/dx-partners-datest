@@ -81,7 +81,89 @@ export class PartnerCards extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.setBlockData();
     window.addEventListener('resize', this.updateView);
+  }
+
+  setBlockData() {
+    this.blockData = {
+      ...this.blockData,
+      'title': '',
+      'filters': [],
+      'sort': {
+        'default': {},
+        items: []
+      },
+      'collectionTags': '',
+      'language': '',
+      'country': ''
+    };
+
+    const blockDataActions = {
+      'title': (cols) => {
+        const [titleEl] = cols;
+        this.blockData.title = titleEl.innerText.trim();
+      },
+      'filter': (cols) => {
+        const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
+        const filterKey = filterKeyEl.innerText.trim().toLowerCase().replaceAll(' ', '-');
+        const filterValue = filterValueEl.innerText.trim();
+        const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
+        const filterTagsValue = Array.from(filterTagsValueEl.querySelectorAll('li'), (li) => li.innerText.trim());
+
+        if (!filterKey || !filterTagsKeys.length) return;
+
+        let filterObj = {
+          key: filterKey,
+          value: filterValue,
+          tags: filterTagsKeys.map((tagKey, tagIndex) => ({
+            key: tagKey.replaceAll(' ', '-'),
+            parentKey: filterKey,
+            value: filterTagsValue[tagIndex],
+            checked: false
+          }))
+        };
+        this.blockData.filters.push(filterObj);
+      },
+      'sort': (cols) => {
+        const [sortKeysEl, sortValuesEl] = cols;
+        const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
+        const sortValues = Array.from(sortValuesEl.querySelectorAll('li'), (li) => li.innerText.trim());
+
+        const sortItems = sortKeys.map((sortKey, sortIndex) => ({
+          key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
+          value: sortValues[sortIndex]
+        }));
+
+        const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
+        const defaultValue = sortItems.find(e => e.key === defaultKey).value;
+        this.blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
+      },
+      'cards-per-page': (cols) => {
+        const [cardsPerPageEl] = cols;
+        const cardsPerPageStr = cardsPerPageEl.innerText.trim();
+        const cardsPerPageNum = parseInt(cardsPerPageStr);
+        if (cardsPerPageNum) this.blockData.cardsPerPage = cardsPerPageNum;
+      },
+      'collection-tags': (cols) => {
+        const [collectionTagsEl] = cols;
+        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
+        const collectionTagsParamStr = collectionTags.filter(e => e.length).join(',');
+        this.blockData.collectionTags = collectionTagsParamStr;
+      }
+    }
+
+    const rows = Array.from(this.blockData.tableData);
+    rows.forEach((row) => {
+      const cols = Array.from(row.children);
+      const rowTitle = cols[0].innerText.trim().toLowerCase().replaceAll(' ', '-');
+      const colsContent = cols.slice(1);
+      if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
+    })
+
+    const ietfArr = this.blockData.ietf.split('-');
+    this.blockData.language = ietfArr[0];
+    this.blockData.country = ietfArr[1];
   }
 
   updateView() {
@@ -99,7 +181,20 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const response = await fetch('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&contentTypeTags=&secondSource=&secondaryTags=&collectionTags=&excludeContentWithTags=&language=en&country=US&complexQuery=&excludeIds=&currentEntityId=&featuredCards=&environment=&draft=false&size=&debug=true&flatFile=false&expanded=true');
+      const api = new URL('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
+
+      const { collectionTags, language, country } = this.blockData;
+
+      if (collectionTags) {
+        api.searchParams.set('collectionTags', collectionTags);
+      }
+
+      if (language && country) {
+        api.searchParams.set('language', language);
+        api.searchParams.set('country', country);
+      }
+
+      const response = await fetch(api.toString());
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -386,8 +481,10 @@ export class PartnerCards extends LitElement {
 
         return selectedFiltersKeys.every((key) =>
           cardArbitraryArr.some((arbitraryTag) => {
-            if (key === arbitraryTag.key.toLowerCase()) {
-              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTag.value.toLowerCase());
+            const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
+            const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
+            if (key === arbitraryTagKeyStr) {
+              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
             }
             return false;
           })
