@@ -213,20 +213,25 @@ export class PartnerCards extends LitElement {
   }
 
   getPartnerDataCollectionTag () {
-    let cookies = document.cookie.split(';').map(cookie => cookie.trim());
-    let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
-    if(!partnerDataCookie) return '';
-    const { level } = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
-    const portal = this.blockData.ietf === 'en-US' ? this.getProgramType(window.location.pathname.split('/')[1]) : this.getProgramType(window.location.pathname.split('/')[2]);
-    if(!portal) return '';
-    return `caas:adobe-partners/${portal}/partner-level/${level}`
+    try {
+      let cookies = document.cookie.split(';').map(cookie => cookie.trim());
+      let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+      if (!partnerDataCookie) return '';
+      const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
+      const portal = this.getProgramType(window.location.pathname);
+      if (!portal || !level) return '';
+      return `caas:adobe-partners/${portal}/partner-level/${level}`
+    } catch(error) {
+      console.error('Error parsing partner data object:', error);
+      return '';
+    }
   }
 
   getProgramType(path) {
-    switch(path) {
-      case 'solutionpartners': return 'spp';
-      case 'technologypartners': return 'tpp';
-      case 'channelpartners': return 'cpp';
+    switch(true) {
+      case /solutionpartners/.test(path): return 'spp';
+      case /technologypartners/.test(path): return 'tpp';
+      case /channelpartners/.test(path): return 'cpp';
       default: return '';
     }
   }
