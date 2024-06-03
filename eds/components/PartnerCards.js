@@ -194,7 +194,7 @@ export class PartnerCards extends LitElement {
         api.searchParams.set('country', country);
       }
 
-      const response = await fetch(api);
+      const response = await fetch(api.toString());
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
