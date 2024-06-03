@@ -161,8 +161,6 @@ export class PartnerCards extends LitElement {
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
     })
 
-    if (this.blockData.ietf === 'en-US')  return;
-
     const ietfArr = this.blockData.ietf.split('-');
     this.blockData.language = ietfArr[0];
     this.blockData.country = ietfArr[1];
@@ -183,16 +181,17 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      let api = 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true';
+      const api = new URL('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
 
       const { collectionTags, language, country } = this.blockData;
 
       if (collectionTags) {
-        api += `&collectionTags=${collectionTags}`;
+        api.searchParams.set('collectionTags', collectionTags);
       }
 
       if (language && country) {
-        api += `&language=${language}&country=${country}`;
+        api.searchParams.set('language', language);
+        api.searchParams.set('country', country);
       }
 
       const response = await fetch(api);
