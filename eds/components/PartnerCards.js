@@ -185,8 +185,11 @@ export class PartnerCards extends LitElement {
 
       const { collectionTags, language, country } = this.blockData;
 
-      if (collectionTags) {
-        api.searchParams.set('collectionTags', collectionTags);
+      const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
+      const mergedCollectionTags = collectionTags ? `${collectionTags}&${partnerDataCollectionTag}` : partnerDataCollectionTag;
+
+      if (mergedCollectionTags) {
+        api.searchParams.set('collectionTags', mergedCollectionTags);
       }
 
       if (language && country) {
@@ -206,6 +209,25 @@ export class PartnerCards extends LitElement {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  }
+
+  getPartnerDataCollectionTag () {
+    let cookies = document.cookie.split(';').map(cookie => cookie.trim());
+    let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+    if(!partnerDataCookie) return '';
+    const { level } = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
+    const portal = this.blockData.ietf === 'en-US' ? this.getProgramType(window.location.pathname.split('/')[1]) : this.getProgramType(window.location.pathname.split('/')[2]);
+    if(!portal) return '';
+    return `caas:adobe-partners/${portal}/partner-level/${level}`
+  }
+
+  getProgramType(path) {
+    switch(path) {
+      case 'solutionpartners': return 'spp';
+      case 'technologypartners': return 'tpp';
+      case 'channelpartners': return 'cpp';
+      default: return '';
     }
   }
 
