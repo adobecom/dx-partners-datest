@@ -186,7 +186,9 @@ export class PartnerCards extends LitElement {
       const { collectionTags, language, country } = this.blockData;
 
       const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
-      const mergedCollectionTags = collectionTags ? `${collectionTags}&${partnerDataCollectionTag}` : partnerDataCollectionTag;
+      const mergedCollectionTags = collectionTags ? `${collectionTags},${partnerDataCollectionTag}` : partnerDataCollectionTag;
+      console.log("Caoo", mergedCollectionTags);
+
 
       if (mergedCollectionTags) {
         api.searchParams.set('collectionTags', mergedCollectionTags);
