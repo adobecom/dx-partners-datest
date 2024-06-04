@@ -187,7 +187,6 @@ export class PartnerCards extends LitElement {
 
       const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
       const mergedCollectionTags = collectionTags ? `${collectionTags},${partnerDataCollectionTag}` : partnerDataCollectionTag;
-      console.log("Caoo", mergedCollectionTags);
 
 
       if (mergedCollectionTags) {
