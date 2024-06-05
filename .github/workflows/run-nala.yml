@@ -7,7 +7,7 @@ on:
 jobs:
   action:
     name: Running E2E & IT
-    if: contains(github.event.pull_request.labels.*.name, 'run-nala')
+    if: contains(github.event.pull_request.labels.*.name, 'run-on-dx')
     runs-on: ubuntu-latest
 
     steps:
