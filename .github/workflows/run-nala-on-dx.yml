@@ -1,5 +1,5 @@
 
-name: Nala Tests
+name: DX-Partners Nala Tests
 
 on:
   pull_request:
