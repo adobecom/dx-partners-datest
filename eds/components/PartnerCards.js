@@ -18,12 +18,20 @@ function formatDate(cardDate) {
 }
 
 class NewsCard extends LitElement {
-  excludedHostnames = ['localhost', 'partners.adobe.com'];
   static properties = {
     data: { type: Object }
   };
 
   static styles = newsCardStyles;
+
+  transformCardUrl(url) {
+    if(window.location.host === 'partners.adobe.com')
+      return url;
+    else if(window.location.host.includes('localhost'))
+      return url.replace(/^(https?:\/\/)[^\/]+/, `http://${window.location.host}`);
+    else
+      return url.replace(/^(https?:\/\/)[^\/]+/, `$1${window.location.host}`);
+  }
 
   render() {
     return html`
@@ -36,7 +44,7 @@ class NewsCard extends LitElement {
           </div>
           <div class="card-footer">
             <span class="card-date">${formatDate(this.data.cardDate)}</span>
-            <a class="card-btn" href="${this.excludedHostnames.includes(window.location.hostname) ? this.data.contentArea?.url : this.data.contentArea?.url.replace(/^(https?:\/\/)[^\/]+/, `$1${window.location.hostname}`)}">${this.data.footer[0]?.right[0]?.text}</a>
+            <a class="card-btn" href="${this.transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
           </div>
         </div>
       </div>
