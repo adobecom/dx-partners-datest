@@ -242,6 +242,7 @@ export var partnerCardsStyles = css`
     font-size: .875rem;
     line-height: 1rem;
     width: 100%;
+    overflow-wrap: anywhere;
   }
   
   .partner-cards-sidebar .filter-list li:hover {
@@ -821,6 +822,7 @@ export var partnerCardsStyles = css`
   
   .filter-wrapper-mobile.expanded .filter-tags-mobile sp-checkbox {
     width: 100%;
+    overflow-wrap: anywhere;
   }
   
   .filter-wrapper-mobile .filter-footer-mobile-wrapper {
