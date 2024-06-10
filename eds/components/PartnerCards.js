@@ -25,6 +25,10 @@ class NewsCard extends LitElement {
   static styles = newsCardStyles;
 
   transformCardUrl(url) {
+    if (!url) {
+      console.error('URL is null or undefined');
+      return '';
+    }
     return window.location.host === 'partners.adobe.com' ? url : url.replace(/^(https?:\/\/)[^\/]+/, `${window.location.protocol}//${window.location.host}`);
   }
 
@@ -206,7 +210,7 @@ export class PartnerCards extends LitElement {
       if (apiData?.cards) {
         if(window.location.hostname === 'partners.adobe.com') {
           apiData.cards = apiData.cards.filter(card => {
-            return !card.contentArea.url.includes('/drafts/');
+            return !card.contentArea.url?.includes('/drafts/');
           });
         }
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
