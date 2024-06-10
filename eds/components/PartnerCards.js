@@ -185,14 +185,6 @@ export class PartnerCards extends LitElement {
 
       const { collectionTags, language, country } = this.blockData;
 
-      // const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
-      // const mergedCollectionTags = collectionTags ? `${collectionTags},${partnerDataCollectionTag}` : partnerDataCollectionTag;
-      //
-      //
-      // if (mergedCollectionTags) {
-      //   api.searchParams.set('collectionTags', mergedCollectionTags);
-      // }
-
       if(collectionTags) {
         api.searchParams.set('collectionTags', collectionTags);
       }
@@ -242,24 +234,6 @@ export class PartnerCards extends LitElement {
       return '';
     }
   }
-
-  // getPartnerDataCollectionTag () {
-  //   try {
-  //     let cookies = document.cookie.split(';').map(cookie => cookie.trim());
-  //     let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
-  //     if (!partnerDataCookie) return '';
-  //     const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
-  //     const portal = this.getProgramType(window.location.pathname);
-  //     if (!portal || !level) return '';
-  //     else if(portal && level)
-  //       return ``
-  //     else
-  //       return `caas:adobe-partners/${portal}/partner-level/${level}`
-  //   } catch(error) {
-  //     console.error('Error parsing partner data object:', error);
-  //     return '';
-  //   }
-  // }
 
   getProgramType(path) {
     switch(true) {
