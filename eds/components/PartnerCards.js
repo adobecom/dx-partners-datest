@@ -185,12 +185,21 @@ export class PartnerCards extends LitElement {
 
       const { collectionTags, language, country } = this.blockData;
 
-      const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
-      const mergedCollectionTags = collectionTags ? `${collectionTags},${partnerDataCollectionTag}` : partnerDataCollectionTag;
+      // const partnerDataCollectionTag = this.getPartnerDataCollectionTag();
+      // const mergedCollectionTags = collectionTags ? `${collectionTags},${partnerDataCollectionTag}` : partnerDataCollectionTag;
+      //
+      //
+      // if (mergedCollectionTags) {
+      //   api.searchParams.set('collectionTags', mergedCollectionTags);
+      // }
 
+      if(collectionTags) {
+        api.searchParams.set('collectionTags', collectionTags);
+      }
 
-      if (mergedCollectionTags) {
-        api.searchParams.set('collectionTags', mergedCollectionTags);
+      const partnerDataComplexQueryParam = this.getPartnerDataComplexQueryParam();
+      if(partnerDataComplexQueryParam) {
+        api.searchParams.set('complexQuery', partnerDataComplexQueryParam);
       }
 
       if (language && country) {
@@ -213,20 +222,44 @@ export class PartnerCards extends LitElement {
     }
   }
 
-  getPartnerDataCollectionTag () {
+  getPartnerDataComplexQueryParam () {
     try {
+      const portal = this.getProgramType(window.location.pathname);
       let cookies = document.cookie.split(';').map(cookie => cookie.trim());
       let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
-      if (!partnerDataCookie) return '';
+
+      if (!partnerDataCookie) return `(("caas:adobe-partners/${portal}/partner-level/public")OR(""))`;
       const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
-      const portal = this.getProgramType(window.location.pathname);
-      if (!portal || !level) return '';
-      return `caas:adobe-partners/${portal}/partner-level/${level}`
+      if(!portal)
+        return '';
+
+      if (!level)
+        return `(("caas:adobe-partners/${portal}/partner-level/public")OR(""))`;
+
+      return `(("caas:adobe-partners/${portal}/partner-level/${level}")OR("caas:adobe-partners/${portal}/partner-level/public"))`;
     } catch(error) {
       console.error('Error parsing partner data object:', error);
       return '';
     }
   }
+
+  // getPartnerDataCollectionTag () {
+  //   try {
+  //     let cookies = document.cookie.split(';').map(cookie => cookie.trim());
+  //     let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+  //     if (!partnerDataCookie) return '';
+  //     const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
+  //     const portal = this.getProgramType(window.location.pathname);
+  //     if (!portal || !level) return '';
+  //     else if(portal && level)
+  //       return ``
+  //     else
+  //       return `caas:adobe-partners/${portal}/partner-level/${level}`
+  //   } catch(error) {
+  //     console.error('Error parsing partner data object:', error);
+  //     return '';
+  //   }
+  // }
 
   getProgramType(path) {
     switch(true) {
