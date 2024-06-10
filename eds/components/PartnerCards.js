@@ -29,7 +29,13 @@ class NewsCard extends LitElement {
       console.error('URL is null or undefined');
       return '';
     }
-    return window.location.host === 'partners.adobe.com' ? url : url.replace(/^(https?:\/\/)[^\/]+/, `${window.location.protocol}//${window.location.host}`);
+    if(window.location.host === 'partners.adobe.com') {
+      return url;
+    }
+    const newUrl = new URL(url);
+    newUrl.protocol = window.location.protocol;
+    newUrl.host = window.location.host;
+    return newUrl;
   }
 
   render() {
