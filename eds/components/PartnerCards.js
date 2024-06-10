@@ -25,12 +25,7 @@ class NewsCard extends LitElement {
   static styles = newsCardStyles;
 
   transformCardUrl(url) {
-    if(window.location.host === 'partners.adobe.com')
-      return url;
-    else if(window.location.host.includes('localhost'))
-      return url.replace(/^(https?:\/\/)[^\/]+/, `http://${window.location.host}`);
-    else
-      return url.replace(/^(https?:\/\/)[^\/]+/, `$1${window.location.host}`);
+    return window.location.host === 'partners.adobe.com' ? url : url.replace(/^(https?:\/\/)[^\/]+/, `${window.location.protocol}//${window.location.host}`);
   }
 
   render() {
