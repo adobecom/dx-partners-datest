@@ -152,9 +152,10 @@ export var partnerCardsStyles = css`
     width: 100%;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     color: #464646;
     transition: color .3s ease-in-out;
+    padding: 12px 5px 14px;
   }
   
   .partner-cards-sidebar .filter .filter-header:hover {
@@ -166,7 +167,8 @@ export var partnerCardsStyles = css`
     font-size: .875rem;
     line-height: 1rem;
     font-weight: 700;
-    padding: 14px 0;
+    text-align: left;
+    max-width: 122px;
   }
   
   .partner-cards-sidebar .filter .filter-chevron-icon {
@@ -175,12 +177,13 @@ export var partnerCardsStyles = css`
     display: inline-block;
     padding: 3px;
     transform: rotate(45deg);
+    margin-top: 2px;
   }
   
   .partner-cards-sidebar .filter .filter-selected-tags-count-btn {
     position: absolute;
-    top: 10px;
-    right: 25px;
+    top: 8px;
+    right: 18px;
     border: none;
     background-color: ${blueColor};
     min-width: 24px;
