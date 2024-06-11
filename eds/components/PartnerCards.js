@@ -24,6 +24,20 @@ class NewsCard extends LitElement {
 
   static styles = newsCardStyles;
 
+  transformCardUrl(url) {
+    if (!url) {
+      console.error('URL is null or undefined');
+      return '';
+    }
+    if(window.location.host === 'partners.adobe.com') {
+      return url;
+    }
+    const newUrl = new URL(url);
+    newUrl.protocol = window.location.protocol;
+    newUrl.host = window.location.host;
+    return newUrl;
+  }
+
   render() {
     return html`
       <div class="news-card">
@@ -35,7 +49,7 @@ class NewsCard extends LitElement {
           </div>
           <div class="card-footer">
             <span class="card-date">${formatDate(this.data.cardDate)}</span>
-            <a class="card-btn" href="${this.data.contentArea?.url}">${this.data.footer[0]?.right[0]?.text}</a>
+            <a class="card-btn" href="${this.transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
           </div>
         </div>
       </div>
@@ -181,7 +195,7 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const api = new URL('https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
+      const api = new URL('https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
 
       const { collectionTags, language, country } = this.blockData;
 
@@ -200,6 +214,11 @@ export class PartnerCards extends LitElement {
       }
       const apiData = await response.json();
       if (apiData?.cards) {
+        if(window.location.hostname === 'partners.adobe.com') {
+          apiData.cards = apiData.cards.filter(card => {
+            return !card.contentArea.url?.includes('/drafts/');
+          });
+        }
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
         this.allCards = this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
