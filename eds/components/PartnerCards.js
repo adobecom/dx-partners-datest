@@ -89,6 +89,8 @@ export class PartnerCards extends LitElement {
     this.selectedSortOrder = {};
     this.selectedFilters = {};
     this.urlSearchParams = {};
+    this.collectionTags = [];
+    this.hasResponseData = false;
     this.mobileView = window.innerWidth <= 1200;
     this.updateView = this.updateView.bind(this);
   }
@@ -108,10 +110,11 @@ export class PartnerCards extends LitElement {
         'default': {},
         items: []
       },
-      'collectionTags': '',
       'language': '',
       'country': ''
     };
+
+    this.collectionTags = [ this.blockData.collectionTags ];
 
     const blockDataActions = {
       'title': (cols) => {
@@ -162,8 +165,7 @@ export class PartnerCards extends LitElement {
       'collection-tags': (cols) => {
         const [collectionTagsEl] = cols;
         const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
-        const collectionTagsParamStr = collectionTags.filter(e => e.length).join(',');
-        this.blockData.collectionTags = collectionTagsParamStr;
+        this.collectionTags = [...this.collectionTags, ...collectionTags];
       }
     }
 
@@ -173,7 +175,7 @@ export class PartnerCards extends LitElement {
       const rowTitle = cols[0].innerText.trim().toLowerCase().replaceAll(' ', '-');
       const colsContent = cols.slice(1);
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
-    })
+    });
 
     const ietfArr = this.blockData.ietf.split('-');
     this.blockData.language = ietfArr[0];
@@ -196,24 +198,8 @@ export class PartnerCards extends LitElement {
   async fetchData() {
     try {
       const api = new URL('https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
-
-      const { collectionTags, language, country } = this.blockData;
-
-      if(collectionTags) {
-        api.searchParams.set('collectionTags', collectionTags);
-      }
-
-      const partnerDataComplexQueryParam = this.getPartnerDataComplexQueryParam();
-      if(partnerDataComplexQueryParam) {
-        api.searchParams.set('complexQuery', partnerDataComplexQueryParam);
-      }
-
-      if (language && country) {
-        api.searchParams.set('language', language);
-        api.searchParams.set('country', country);
-      }
-
-      const response = await fetch(api.toString());
+      const apiWithParams = this.setApiParams(api);
+      const response = await fetch(apiWithParams);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -227,27 +213,52 @@ export class PartnerCards extends LitElement {
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
         this.allCards = this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
+        this.hasResponseData = true;
+      } else {
+        this.hasResponseData = false;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   }
 
-  getPartnerDataComplexQueryParam () {
+  setApiParams(api) {
+    const portal = this.getProgramType(window.location.pathname);
+
+    if (portal) {
+      const portalCollectionTag = `caas:adobe-partners/${portal}`;
+      if (!this.collectionTags.length || !this.collectionTags.includes(portalCollectionTag)) {
+        this.collectionTags = [...this.collectionTags, portalCollectionTag];
+      }
+
+      const partnerDataComplexQueryParam = this.getPartnerDataComplexQueryParam(portal);
+      if (partnerDataComplexQueryParam) api.searchParams.set('complexQuery', partnerDataComplexQueryParam);
+    }
+
+    if(this.collectionTags.length) {
+      const collectionTagsStr = this.collectionTags.filter(e => e.length).join(',');
+      api.searchParams.set('collectionTags', collectionTagsStr);
+    }
+
+    const { language, country } = this.blockData;
+    if (language && country) {
+      api.searchParams.set('language', language);
+      api.searchParams.set('country', country);
+    }
+
+    return api.toString();
+  }
+
+  getPartnerDataComplexQueryParam (portal) {
     try {
-      const portal = this.getProgramType(window.location.pathname);
-      let cookies = document.cookie.split(';').map(cookie => cookie.trim());
-      let partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+      const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+      const partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+      if (!partnerDataCookie) return `(("caas:adobe-partners/${portal}/partner-level/public"))`;
 
-      if (!partnerDataCookie) return `(("caas:adobe-partners/${portal}/partner-level/public")OR(""))`;
       const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
-      if(!portal)
-        return '';
+      if (!level) return `(("caas:adobe-partners/${portal}/partner-level/public"))`;
 
-      if (!level)
-        return `(("caas:adobe-partners/${portal}/partner-level/public")OR(""))`;
-
-      return `(("caas:adobe-partners/${portal}/partner-level/${level}")OR("caas:adobe-partners/${portal}/partner-level/public"))`;
+      return `(("caas:adobe-partners/${portal}/partner-level/${level}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
     } catch(error) {
       console.error('Error parsing partner data object:', error);
       return '';
@@ -721,7 +732,7 @@ export class PartnerCards extends LitElement {
             </div>
           </div>
           <div class="partner-cards-collection">
-            ${this.allCards.length
+            ${this.hasResponseData
               ? this.partnerCards
               : html`
                 <div class="progress-circle-wrapper">
