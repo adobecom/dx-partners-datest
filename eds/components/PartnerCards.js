@@ -214,8 +214,6 @@ export class PartnerCards extends LitElement {
         this.allCards = this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = true;
-      } else {
-        this.hasResponseData = false;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
