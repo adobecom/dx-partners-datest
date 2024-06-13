@@ -14,6 +14,7 @@ describe('knowledge-base-overview block', () => {
     sinon.stub(PartnerCards.prototype, 'firstUpdated').callsFake(async function() {
       this.allCards = this.cards = cards;
       this.paginatedCards = this.cards.slice(0, 3);
+      this.hasResponseData = true;
     });
 
     await import('./../../../eds/scripts/scripts.js');
