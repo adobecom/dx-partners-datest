@@ -270,7 +270,7 @@ export class PartnerCards extends LitElement {
     switch(true) {
       case /solutionpartners/.test(path): return 'spp';
       case /technologypartners/.test(path): return 'tpp';
-      case /channelpartners/.test(path): return 'apc';
+      case /channelpartners/.test(path): return 'cpp';
       default: return '';
     }
   }
