@@ -197,7 +197,7 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const api = new URL('https://14257-chimera.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
+      const api = new URL('https://www.adobe.com/chimera-api/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
       const apiWithParams = this.setApiParams(api);
       const response = await fetch(apiWithParams);
       if (!response.ok) {
