@@ -69,7 +69,7 @@ export default async function init(el) {
     'dateFilter': dateFilter,
     'cardsPerPage': 12,
     'ietf': config.locale.ietf,
-    'collectionTags': 'caas:adobe-partners/collections/news'
+    'collectionTags': '"caas:adobe-partners/collections/news"'
   }
 
   const app = document.createElement('partner-news');
