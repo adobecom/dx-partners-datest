@@ -164,7 +164,7 @@ export class PartnerCards extends LitElement {
       },
       'collection-tags': (cols) => {
         const [collectionTagsEl] = cols;
-        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
+        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => '"' + li.innerText.trim().toLowerCase() + '"');
         this.collectionTags = [...this.collectionTags, ...collectionTags];
       }
     }
@@ -221,22 +221,8 @@ export class PartnerCards extends LitElement {
   }
 
   setApiParams(api) {
-    const portal = this.getProgramType(window.location.pathname);
-
-    if (portal) {
-      const portalCollectionTag = `caas:adobe-partners/${portal}`;
-      if (!this.collectionTags.length || !this.collectionTags.includes(portalCollectionTag)) {
-        this.collectionTags = [...this.collectionTags, portalCollectionTag];
-      }
-
-      const partnerDataComplexQueryParam = this.getPartnerDataComplexQueryParam(portal);
-      if (partnerDataComplexQueryParam) api.searchParams.set('complexQuery', partnerDataComplexQueryParam);
-    }
-
-    if(this.collectionTags.length) {
-      const collectionTagsStr = this.collectionTags.filter(e => e.length).join(',');
-      api.searchParams.set('collectionTags', collectionTagsStr);
-    }
+    const complexQueryParams = this.getComplexQueryParams();
+    if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
 
     const { language, country } = this.blockData;
     if (language && country) {
@@ -247,7 +233,26 @@ export class PartnerCards extends LitElement {
     return api.toString();
   }
 
-  getPartnerDataComplexQueryParam (portal) {
+  getComplexQueryParams() {
+    const portal = this.getProgramType(window.location.pathname);
+    let partnerLevelParams;
+
+    if (portal) {
+      const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
+      if (!this.collectionTags.length || !this.collectionTags.includes(portalCollectionTag)) {
+        this.collectionTags = [...this.collectionTags, portalCollectionTag];
+      }
+
+      partnerLevelParams = this.getPartnerLevelParams(portal);
+    }
+
+    if (!this.collectionTags.length) return;
+
+    const collectionTagsStr = this.collectionTags.filter(e => e.length).join('+AND+');
+    return partnerLevelParams ? `((${collectionTagsStr}))+AND+${partnerLevelParams}` : `((${collectionTagsStr}))`;
+  }
+
+  getPartnerLevelParams(portal) {
     try {
       const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
       const cookies = document.cookie.split(';').map(cookie => cookie.trim());
