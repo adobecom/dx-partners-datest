@@ -19,7 +19,8 @@ export const [setLibs, getLibs] = (() => {
     (prodLibs, location) => {
       libs = (() => {
         const { hostname, search } = location || window.location;
-        if (!(hostname.includes('.hlx.') || hostname.includes('local'))) return prodLibs;
+        // TODO: check if better ways are possible for partners.stage.adobe.com
+        if (!(hostname.includes('.hlx.') || hostname.includes('local') || hostname === 'partners.stage.adobe.com')) return prodLibs;
         const branch = new URLSearchParams(search).get('milolibs') || 'main';
         if (branch === 'local') return 'http://localhost:6456/libs';
         return branch.includes('--') ? `https://${branch}.hlx.live/libs` : `https://${branch}--milo--adobecom.hlx.live/libs`;
@@ -40,3 +41,11 @@ export const [setLibs, getLibs] = (() => {
 export async function useMiloSample() {
   const { createTag } = await import(`${getLibs()}/utils/utils.js`);
 }
+
+const miloLibs = setLibs('/libs');
+
+const { createTag, localizeLink, getConfig } = await import(`${miloLibs}/utils/utils.js`);
+export { createTag, localizeLink, getConfig };
+
+const { replaceText } = await import(`${miloLibs}/features/placeholders.js`);
+export { replaceText };
