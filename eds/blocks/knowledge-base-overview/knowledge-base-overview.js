@@ -55,7 +55,8 @@ export default async function init(el) {
     'localizedText': localizedText,
     'tableData' : el.children,
     'cardsPerPage': 9,
-    'ietf': config.locale.ietf
+    'ietf': config.locale.ietf,
+    'collectionTags': 'caas:adobe-partners/collections/knowledge-base'
   }
 
   const app = document.createElement('knowledge-base-overview');
