@@ -249,14 +249,17 @@ export class PartnerCards extends LitElement {
 
   getPartnerDataComplexQueryParam (portal) {
     try {
+      const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
       const cookies = document.cookie.split(';').map(cookie => cookie.trim());
       const partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
-      if (!partnerDataCookie) return `(("caas:adobe-partners/${portal}/partner-level/public"))`;
+      if (!partnerDataCookie) return publicTag;
 
-      const {level} = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
-      if (!level) return `(("caas:adobe-partners/${portal}/partner-level/public"))`;
-
-      return `(("caas:adobe-partners/${portal}/partner-level/${level}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
+      const cookieValue = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
+      if (cookieValue && cookieValue[portal]) {
+          const cookieLevel = cookieValue[portal].level;
+          if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
+      }
+      return publicTag;
     } catch(error) {
       console.error('Error parsing partner data object:', error);
       return '';
@@ -267,7 +270,7 @@ export class PartnerCards extends LitElement {
     switch(true) {
       case /solutionpartners/.test(path): return 'spp';
       case /technologypartners/.test(path): return 'tpp';
-      case /channelpartners/.test(path): return 'cpp';
+      case /channelpartners/.test(path): return 'apc';
       default: return '';
     }
   }
