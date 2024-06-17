@@ -342,10 +342,9 @@ export class PartnerCards extends LitElement {
       return 0;
     }
 
-    const { orderNum: firstElOrderNum } = this.paginatedCards[0];
     const lastIndex = this.paginatedCards.length - 1;
     const { orderNum: lastElOrderNum } = this.paginatedCards[lastIndex];
-    return `${firstElOrderNum} - ${lastElOrderNum}`;
+    return lastElOrderNum;
   }
 
   get filters() {

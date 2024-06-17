@@ -52,6 +52,12 @@ export class KnowledgeBaseOverview extends PartnerCards {
     `;
   }
 
+  get cardsCounter() {
+    const lastElOrderNum = super.cardsCounter;
+    const { orderNum: firstElOrderNum } = this.paginatedCards[0];
+    return `${firstElOrderNum} - ${lastElOrderNum}`;
+  }
+
   handleActions() {
     super.handleActions();
     this.updatePaginatedCards();
