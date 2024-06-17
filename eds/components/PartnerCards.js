@@ -259,7 +259,7 @@ export class PartnerCards extends LitElement {
       const partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
       if (!partnerDataCookie) return publicTag;
 
-      const cookieValue = JSON.parse(partnerDataCookie.substring(('partner_data=').length).toLowerCase());
+      const cookieValue = JSON.parse(decodeURIComponent(partnerDataCookie.substring(('partner_data=').length).toLowerCase()));
       if (cookieValue && cookieValue[portal]) {
           const cookieLevel = cookieValue[portal].level;
           if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
