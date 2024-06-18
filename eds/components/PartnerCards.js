@@ -306,7 +306,6 @@ export class PartnerCards extends LitElement {
   }
 
   get partnerCards() {
-    console.log('pagination card', this.paginatedCards)
     if (this.paginatedCards.length) {
       return html`${repeat(
         this.paginatedCards,
