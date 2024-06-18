@@ -5,7 +5,7 @@ const { css } = await import (`${miloLibs}/deps/lit-all.min.js`);
 const borderColor = css`#eaeaea`;
 const blueColor = css`#1473e6`;
 
-export var partnerCardsStyles = css`
+export const partnerCardsStyles = css`
   h3, p, span, button, li, input {
     margin: 0;
     font-family: adobe-clean, Segoe UI, Roboto, sans-serif;
@@ -896,7 +896,7 @@ export var partnerCardsStyles = css`
   }
 `;
 
-export var newsCardStyles = css`
+export const newsCardStyles = css`
 
   .news-card * {
     box-sizing: border-box;
@@ -1031,7 +1031,7 @@ export var newsCardStyles = css`
   }
 `;
 
-export var loadMorePaginationStyles = css`
+export const loadMorePaginationStyles = css`
   .pagination-wrapper {
     justify-content: center;
     flex-direction: column-reverse;
@@ -1066,7 +1066,7 @@ export var loadMorePaginationStyles = css`
   }
 `;
 
-export var numericPaginationStyles = css`
+export const numericPaginationStyles = css`
   .pagination-wrapper {
     flex-wrap: wrap;
     justify-content: space-between;
@@ -1079,7 +1079,7 @@ export var numericPaginationStyles = css`
   }
 `;
 
-export var dateFilterStyles = css`
+export const dateFilterStyles = css`
   .date-filter-tag {
     background-color: transparent;
     border: none;

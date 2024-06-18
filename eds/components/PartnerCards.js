@@ -682,7 +682,7 @@ export class PartnerCards extends LitElement {
         <div class="partner-cards-sidebar-wrapper">
           <div class="partner-cards-sidebar">
             <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
-              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
+              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @submit="${(event) => event.preventDefault()}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
             </sp-theme>
             ${!this.mobileView
               ? html`
