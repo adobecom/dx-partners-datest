@@ -44,7 +44,7 @@ class NewsCard extends LitElement {
         <div class="card-header" style="background-image: url('${this.data.styles?.backgroundImage}')" alt="${this.data.styles?.backgroundAltText}"></div>
         <div class="card-content">
           <div class="card-text">
-            <p class="card-title">${this.data.contentArea?.title}</p>
+            <p class="card-title">${this.data.contentArea?.title !== 'card-metadata' ? this.data.contentArea?.title : ''}</p>
             <p class="card-description">${this.data.contentArea?.description}</p>
           </div>
           <div class="card-footer">
@@ -306,6 +306,7 @@ export class PartnerCards extends LitElement {
   }
 
   get partnerCards() {
+    console.log('pagination card', this.paginatedCards)
     if (this.paginatedCards.length) {
       return html`${repeat(
         this.paginatedCards,
