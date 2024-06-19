@@ -23,6 +23,20 @@ export class PartnerNews extends PartnerCards {
   }
 
   additionalFirstUpdated() {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(currentDate);
+    startDate.setDate(startDate.getDate() - 180);
+
+    this.allCards =  this.allCards.filter(card => {
+      const cardDate = new Date(card.cardDate);
+
+      if (cardDate >= startDate && cardDate <= currentDate) return true;
+
+      const isNeverExpires = card.tags.some((tag) => tag.id === "caas:adobe-partners/collections/news/never-expires");
+      return isNeverExpires;
+    })
+
     if (this.blockData.dateFilter) this.selectedDateFilter = this.blockData.dateFilter.tags[0];
   }
 
@@ -200,10 +214,10 @@ export class PartnerNews extends PartnerCards {
   handleDateFilterAction() {
     const { key } = this.selectedDateFilter;
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
 
     if (key === 'current-month' || key === 'previous-month') {
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
       let targetMonth = currentMonth;
       let targetYear = currentYear;
 
@@ -220,23 +234,19 @@ export class PartnerNews extends PartnerCards {
       })
     }
 
-    if (key === 'last-90-days' || key === 'show-all') {
+    if (key === 'last-90-days') {
       currentDate.setHours(0, 0, 0, 0);
       const startDate = new Date(currentDate);
-
-      if (key === 'last-90-days') startDate.setDate(startDate.getDate() - 90);
-      if (key === 'show-all') startDate.setDate(startDate.getDate() - 180);
+      startDate.setDate(startDate.getDate() - 90);
 
       this.cards = this.cards.filter(card => {
         const cardDate = new Date(card.cardDate);
-
-        if (cardDate >= startDate && cardDate <= currentDate) return true;
-
-        if (key === 'show-all') {
-          const isNeverExpires = card.tags.some((tag) => tag.id === "caas:adobe-partners/collections/news/never-expires");
-          return isNeverExpires;
-        }
+        return cardDate >= startDate && cardDate <= currentDate;
       })
+    }
+
+    if (key === 'show-all') {
+      return;
     }
   }
 
