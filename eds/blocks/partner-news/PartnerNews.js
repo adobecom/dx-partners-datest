@@ -22,9 +22,22 @@ export class PartnerNews extends PartnerCards {
     this.selectedDateFilter = {};
   }
 
-  async firstUpdated() {
-    await super.firstUpdated();
-    this.selectedDateFilter = this.blockData.dateFilter.tags[0];
+  additionalFirstUpdated() {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(currentDate);
+    startDate.setDate(startDate.getDate() - 180);
+
+    this.allCards =  this.allCards.filter(card => {
+      const cardDate = new Date(card.cardDate);
+
+      if (cardDate >= startDate && cardDate <= currentDate) return true;
+
+      const isNeverExpires = card.tags.some((tag) => tag.id === "caas:adobe-partners/collections/news/never-expires");
+      return isNeverExpires;
+    })
+
+    if (this.blockData.dateFilter) this.selectedDateFilter = this.blockData.dateFilter.tags[0];
   }
 
   get pagination() {
@@ -201,36 +214,38 @@ export class PartnerNews extends PartnerCards {
   handleDateFilterAction() {
     const { key } = this.selectedDateFilter;
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
 
-    if (key === 'current-month') {
+    if (key === 'current-month' || key === 'previous-month') {
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+      let targetMonth = currentMonth;
+      let targetYear = currentYear;
+
+      if (key === 'previous-month') {
+        targetMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        targetYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      }
+
       this.cards = this.cards.filter(card => {
         const cardDate = new Date(card.cardDate);
         const cardMonth = cardDate.getMonth();
         const cardYear = cardDate.getFullYear();
-        return cardMonth === currentMonth && cardYear === currentYear;
+        return cardMonth === targetMonth && cardYear === targetYear;
       })
     }
-    else if (key === 'previous-month') {
-      let previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      let yearOfPreviousMonth = currentMonth === 0 ? currentYear - 1 : currentYear;
-      this.cards = this.cards.filter(card => {
-        const cardDate = new Date(card.cardDate);
-        const cardMonth = cardDate.getMonth();
-        const cardYear = cardDate.getFullYear();
-        return cardMonth === previousMonth && cardYear === yearOfPreviousMonth;
-      })
-    }
-    else if (key === 'last-90-days') {
+
+    if (key === 'last-90-days') {
       currentDate.setHours(0, 0, 0, 0);
       const startDate = new Date(currentDate);
       startDate.setDate(startDate.getDate() - 90);
+
       this.cards = this.cards.filter(card => {
         const cardDate = new Date(card.cardDate);
         return cardDate >= startDate && cardDate <= currentDate;
       })
-    } else {
+    }
+
+    if (key === 'show-all') {
       return;
     }
   }
