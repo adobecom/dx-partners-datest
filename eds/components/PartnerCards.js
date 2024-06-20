@@ -1,4 +1,4 @@
-import { getLibs } from '../scripts/utils.js';
+import {getLibs, prodHosts} from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
@@ -75,7 +75,8 @@ export class PartnerCards extends LitElement {
     selectedSortOrder: { type: Object },
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
-    mobileView: { type: Boolean }
+    mobileView: { type: Boolean },
+    useStageCaasEndpoint: { type: Boolean }
   };
 
   constructor() {
@@ -200,7 +201,8 @@ export class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const api = new URL('https://www.adobe.com/chimera-api/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true');
+      const domain = `${(this.useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
+      const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
       const apiWithParams = this.setApiParams(api);
       const response = await fetch(apiWithParams);
       if (!response.ok) {
