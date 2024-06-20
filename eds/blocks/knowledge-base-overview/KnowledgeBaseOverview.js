@@ -14,6 +14,7 @@ export class KnowledgeBaseOverview extends PartnerCards {
   constructor() {
     super();
     this.totalPages = 0;
+    this.useStageCaasEndpoint = false;
   }
 
   static styles = [
