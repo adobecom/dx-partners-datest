@@ -68,8 +68,8 @@ export default async function init(el) {
     'tableData' : el.children,
     'dateFilter': dateFilter,
     'cardsPerPage': 12,
-    'ietf': config.locale.ietf,
-    'collectionTags': '"caas:adobe-partners/collections/news"'
+    'collectionTags': '"caas:adobe-partners/collections/news"',
+    'config': config
   }
 
   const app = document.createElement('partner-news');

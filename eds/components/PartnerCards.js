@@ -2,6 +2,7 @@ import { getLibs } from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
+import { replaceText } from './../scripts/utils.js';
 
 function formatDate(cardDate) {
   if (!cardDate) return;
@@ -121,38 +122,41 @@ export class PartnerCards extends LitElement {
         const [titleEl] = cols;
         this.blockData.title = titleEl.innerText.trim();
       },
-      'filter': (cols) => {
-        const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
+      'filter': async (cols) => {
+        const [filterKeyEl, filterTagsKeysEl] = cols;
         const filterKey = filterKeyEl.innerText.trim().toLowerCase().replaceAll(' ', '-');
-        const filterValue = filterValueEl.innerText.trim();
         const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
-        const filterTagsValue = Array.from(filterTagsValueEl.querySelectorAll('li'), (li) => li.innerText.trim());
 
         if (!filterKey || !filterTagsKeys.length) return;
 
+        const tags = await Promise.all(filterTagsKeys.map(async (tagKey) => ({
+          key: tagKey.replaceAll(' ', '-'),
+          parentKey: filterKey,
+          value: await replaceText(`{{${tagKey}}}`, this.blockData.config),
+          checked: false
+        })));
+
         let filterObj = {
           key: filterKey,
-          value: filterValue,
-          tags: filterTagsKeys.map((tagKey, tagIndex) => ({
-            key: tagKey.replaceAll(' ', '-'),
-            parentKey: filterKey,
-            value: filterTagsValue[tagIndex],
-            checked: false
-          }))
+          value: await replaceText(`{{${filterKey}}}`, this.blockData.config),
+          tags: tags
         };
+
         this.blockData.filters.push(filterObj);
       },
-      'sort': (cols) => {
-        const [sortKeysEl, sortValuesEl] = cols;
+      'sort': async (cols) => {
+        const [sortKeysEl] = cols;
         const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
-        const sortValues = Array.from(sortValuesEl.querySelectorAll('li'), (li) => li.innerText.trim());
 
-        const sortItems = sortKeys.map((sortKey, sortIndex) => ({
-          key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
-          value: sortValues[sortIndex]
+        if (!sortKeys.length) return;
+
+        const sortItems = await Promise.all(sortKeys.map(async (sortKey) => {
+          const key = sortKey.replace('_default', '');
+          const value = await replaceText(`{{${key}}}`, this.blockData.config);
+          return { key, value };
         }));
 
-        const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
+        const defaultKey = sortKeys.find(key => key.endsWith('_default'))?.replace('_default', '') || sortKeys[0];
         const defaultValue = sortItems.find(e => e.key === defaultKey).value;
         this.blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
       },
@@ -177,7 +181,7 @@ export class PartnerCards extends LitElement {
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
     });
 
-    const ietfArr = this.blockData.ietf.split('-');
+    const ietfArr = this.blockData.config.locale.ietf.split('-');
     this.blockData.language = ietfArr[0];
     this.blockData.country = ietfArr[1];
   }
