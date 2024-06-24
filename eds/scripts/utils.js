@@ -30,6 +30,12 @@ export const [setLibs, getLibs] = (() => {
   ];
 })();
 
+export const prodHosts = [
+  'main--dx-partners--adobecom.hlx.page',
+  'main--dx-partners--adobecom.hlx.live',
+  'partners.adobe.com'
+];
+
 /*
  * ------------------------------------------------------------
  * Edit above at your own risk.
