@@ -1,4 +1,4 @@
-import {getLibs, prodHosts} from '../scripts/utils.js';
+import {getLibs, prodHosts, replaceTextWrapper} from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
@@ -133,7 +133,7 @@ export class PartnerCards extends LitElement {
         const tags = await Promise.all(filterTagsKeys.map(async (tagKey) => ({
           key: tagKey.replaceAll(' ', '-'),
           parentKey: filterKey,
-          value: await replaceText(`{{${tagKey}}}`, this.blockData.config),
+          value: await replaceTextWrapper(`{{${tagKey}}}`, this.blockData.config),
           checked: false
         })));
 

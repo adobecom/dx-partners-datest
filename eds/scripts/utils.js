@@ -55,3 +55,9 @@ export { createTag, localizeLink, getConfig };
 
 const { replaceText } = await import(`${miloLibs}/features/placeholders.js`);
 export { replaceText };
+
+export async function replaceTextWrapper(key, config) {
+  const retVal = await replaceText(key, config);
+  console.log(`wrapping the replaceText, received ${retVal}`);
+  return retVal;
+}

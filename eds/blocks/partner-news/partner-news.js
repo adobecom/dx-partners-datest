@@ -9,12 +9,14 @@ function declarePartnerNews() {
 async function localizationPromises(localizedText, config) {
   return Promise.all(Object.keys(localizedText).map(async (key) => {
     const value = await replaceText(key, config);
+    console.log(`localizing done for: ${value}`);
     if (value.length) localizedText[key] = value;
   }));
 }
 
 export default async function init(el) {
   performance.mark('partner-news:start');
+  console.log('partner-news block start');
 
   const miloLibs = getLibs();
   const config = getConfig();
@@ -49,7 +51,7 @@ export default async function init(el) {
     import(`${miloLibs}/features/spectrum-web-components/dist/button.js`),
     import(`${miloLibs}/features/spectrum-web-components/dist/progress-circle.js`),
   ]);
-
+  console.log('loaded all deps');
   declarePartnerNews();
 
   const dateFilter = {
