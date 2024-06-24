@@ -144,6 +144,7 @@ export class PartnerCards extends LitElement {
         };
 
         this.blockData.filters.push(filterObj);
+        this.handleActions();
       },
       'sort': async (cols) => {
         const [sortKeysEl] = cols;
@@ -570,7 +571,7 @@ export class PartnerCards extends LitElement {
         )
       });
     } else {
-      this.urlSearchParams.delete('filters');
+      // this.urlSearchParams.delete('filters');
     }
   }
 
