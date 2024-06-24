@@ -1,4 +1,4 @@
-import {getLibs, prodHosts, replaceTextWrapper} from '../scripts/utils.js';
+import {getLibs, prodHosts, replaceText} from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
@@ -133,7 +133,7 @@ export class PartnerCards extends LitElement {
         const tags = await Promise.all(filterTagsKeys.map(async (tagKey) => ({
           key: tagKey.replaceAll(' ', '-'),
           parentKey: filterKey,
-          value: await replaceTextWrapper(`{{${tagKey}}}`, this.blockData.config),
+          value: await replaceText(`{{${tagKey}}}`, this.blockData.config),
           checked: false
         })));
 
@@ -144,6 +144,7 @@ export class PartnerCards extends LitElement {
         };
 
         this.blockData.filters.push(filterObj);
+        console.log('filter loaded');
       },
       'sort': async (cols) => {
         const [sortKeysEl] = cols;
@@ -359,6 +360,7 @@ export class PartnerCards extends LitElement {
   get filters() {
     if (!this.blockData.filters.length) return;
 
+    console.log('render filters');
     return html`${repeat(
       this.blockData.filters,
       (filter) => filter.key,
