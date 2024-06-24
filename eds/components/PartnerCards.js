@@ -143,7 +143,7 @@ export class PartnerCards extends LitElement {
         };
 
         this.blockData.filters = [...this.blockData.filters, filterObj];
-        console.log('filter loaded');
+        console.log('filter loaded 2');
       },
       'sort': async (cols) => {
         const [sortKeysEl] = cols;
