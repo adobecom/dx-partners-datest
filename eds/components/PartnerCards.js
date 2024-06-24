@@ -2,7 +2,6 @@ import {getLibs, prodHosts, replaceText} from '../scripts/utils.js';
 import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
-import { replaceText } from './../scripts/utils.js';
 
 function formatDate(cardDate) {
   if (!cardDate) return;
