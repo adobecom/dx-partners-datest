@@ -23,15 +23,14 @@ export class PartnerNews extends PartnerCards {
   }
 
   additionalFirstUpdated() {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    const startDate = new Date(currentDate);
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
     startDate.setDate(startDate.getDate() - 180);
 
     this.allCards =  this.allCards.filter(card => {
       const cardDate = new Date(card.cardDate);
 
-      if (cardDate >= startDate && cardDate <= currentDate) return true;
+      if (cardDate >= startDate) return true;
 
       const isNeverExpires = card.tags.some((tag) => tag.id === "caas:adobe-partners/collections/news/never-expires");
       return isNeverExpires;
