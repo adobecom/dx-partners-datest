@@ -1,4 +1,4 @@
-import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from './../../scripts/utils.js';
 import { PartnerNews } from './PartnerNews.js';
 
 function declarePartnerNews() {
@@ -41,12 +41,7 @@ export default async function init(el) {
     '{{show-all}}': 'Show all',
   };
 
-  const liList = Array.from(el.querySelectorAll('li'));
-  liList.forEach(liEl => {
-    let liContent = liEl.innerText.trim().toLowerCase().replace(/ /g, '-');
-    if (liContent.endsWith('_default')) liContent = liContent.slice(0, -8);
-    localizedText[`{{${liContent}}}`] = liContent;
-  });
+  populateLocalizedTextFromListItems(el, localizedText);
 
   const deps = await Promise.all([
     localizationPromises(localizedText, config),
