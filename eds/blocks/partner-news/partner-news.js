@@ -1,4 +1,4 @@
-import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from './../../scripts/utils.js';
 import { PartnerNews } from './PartnerNews.js';
 
 function declarePartnerNews() {
@@ -38,8 +38,10 @@ export default async function init(el) {
     '{{previous-month}}': 'Previous month',
     '{{results}}': 'Results',
     '{{search}}': 'Search',
-    '{{show-all}}': 'Show all'
+    '{{show-all}}': 'Show all',
   };
+
+  populateLocalizedTextFromListItems(el, localizedText);
 
   const deps = await Promise.all([
     localizationPromises(localizedText, config),

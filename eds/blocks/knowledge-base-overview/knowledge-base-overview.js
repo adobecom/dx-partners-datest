@@ -1,4 +1,4 @@
-import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from './../../scripts/utils.js';
 import { KnowledgeBaseOverview } from './KnowledgeBaseOverview.js';
 
 function declareKnowledgeBaseOverview() {
@@ -39,6 +39,8 @@ export default async function init(el) {
     '{{results}}': 'Results',
     '{{search}}': 'Search',
   };
+
+  populateLocalizedTextFromListItems(el, localizedText);
 
   const deps = await Promise.all([
     localizationPromises(localizedText, config),
