@@ -123,35 +123,33 @@ export class PartnerCards extends LitElement {
         this.blockData.title = titleEl.innerText.trim();
       },
       'filter': (cols) => {
-        const [filterKeyEl, filterValueEl, filterTagsKeysEl, filterTagsValueEl] = cols;
-        const filterKey = filterKeyEl.innerText.trim().toLowerCase().replaceAll(' ', '-');
-        const filterValue = filterValueEl.innerText.trim();
-        const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
-        const filterTagsValue = Array.from(filterTagsValueEl.querySelectorAll('li'), (li) => li.innerText.trim());
+        const [filterKeyEl, filterTagsKeysEl] = cols;
+        const filterKey = filterKeyEl.innerText.trim().toLowerCase().replace(/ /g, '-');
+        const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
 
         if (!filterKey || !filterTagsKeys.length) return;
 
         let filterObj = {
           key: filterKey,
-          value: filterValue,
-          tags: filterTagsKeys.map((tagKey, tagIndex) => ({
-            key: tagKey.replaceAll(' ', '-'),
-            parentKey: filterKey,
-            value: filterTagsValue[tagIndex],
-            checked: false
+          value: this.blockData.localizedText[`{{${filterKey}}}`],
+          tags: filterTagsKeys.map((tagKey) => ({
+              key: tagKey,
+              parentKey: filterKey,
+              value: this.blockData.localizedText[`{{${tagKey}}}`],
+              checked: false
           }))
         };
         this.blockData.filters.push(filterObj);
       },
       'sort': (cols) => {
-        const [sortKeysEl, sortValuesEl] = cols;
-        const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase());
-        const sortValues = Array.from(sortValuesEl.querySelectorAll('li'), (li) => li.innerText.trim());
+        const [sortKeysEl] = cols;
+        const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
 
-        const sortItems = sortKeys.map((sortKey, sortIndex) => ({
-          key: sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey,
-          value: sortValues[sortIndex]
-        }));
+        const sortItems = sortKeys.map((sortKey) => {
+          const key = sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey;
+          const value = this.blockData.localizedText[`{{${key}}}`];
+          return { key, value };
+        });
 
         const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
         const defaultValue = sortItems.find(e => e.key === defaultKey).value;
@@ -173,7 +171,7 @@ export class PartnerCards extends LitElement {
     const rows = Array.from(this.blockData.tableData);
     rows.forEach((row) => {
       const cols = Array.from(row.children);
-      const rowTitle = cols[0].innerText.trim().toLowerCase().replaceAll(' ', '-');
+      const rowTitle = cols[0].innerText.trim().toLowerCase().replace(/ /g, '-');
       const colsContent = cols.slice(1);
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
     });

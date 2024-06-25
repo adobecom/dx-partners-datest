@@ -40,6 +40,13 @@ export default async function init(el) {
     '{{search}}': 'Search',
   };
 
+  const liList = Array.from(el.querySelectorAll('li'));
+  liList.forEach(liEl => {
+    let liContent = liEl.innerText.trim().toLowerCase().replace(/ /g, '-');
+    if (liContent.endsWith('_default')) liContent = liContent.slice(0, -8);
+    localizedText[`{{${liContent}}}`] = liContent;
+  });
+
   const deps = await Promise.all([
     localizationPromises(localizedText, config),
     import(`${miloLibs}/features/spectrum-web-components/dist/theme.js`),
