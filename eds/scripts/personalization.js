@@ -22,7 +22,7 @@ function replacePlaceholders(placeholders) {
 }
 
 function removeJoinNowCtas() {
-  if (!isNonMember()) return;
+  if (isNonMember()) return;
   const nodesToRemove = getNodesByXPath('//a[text()="Join now"]');
   nodesToRemove.forEach((node) => {
     node.remove();
