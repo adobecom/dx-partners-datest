@@ -263,7 +263,7 @@ export class PartnerCards extends LitElement {
   getPartnerLevelParams(portal) {
     try {
       const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
-      const partnerLevel = getPartnerDataCookieValue(getCurrentProgramType(), 'level');
+      const partnerLevel = getPartnerDataCookieValue(portal, 'level');
       if (partnerLevel) return `(("caas:adobe-partners/${portal}/partner-level/${partnerLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
       return publicTag;
     } catch(error) {

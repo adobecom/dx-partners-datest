@@ -84,7 +84,7 @@ export function isNonMember() {
 
 export function getCookieValue(key) {
   const cookies = document.cookie.split(';').map(cookie => cookie.trim());
-  const cookie = cookies?.find(cookie => cookie.startsWith(`${key}=`));
+  const cookie = cookies.find(cookie => cookie.startsWith(`${key}=`));
   return cookie?.substring((`${key}=`).length);
 }
 
