@@ -27,16 +27,21 @@ export class PartnerNews extends PartnerCards {
     startDate.setHours(0, 0, 0, 0);
     startDate.setDate(startDate.getDate() - 180);
 
-    this.allCards =  this.allCards.filter(card => {
+    this.allCards = this.allCards.filter((card) => {
+      const isNeverExpires = card.tags.some((tag) => tag.id === 'caas:adobe-partners/collections/news/never-expires');
       const cardDate = new Date(card.cardDate);
 
-      if (cardDate >= startDate) return true;
+      if (this.blockData.isArchive) {
+        if (isNeverExpires) return false;
+        return cardDate <= startDate;
+      }
+      return cardDate > startDate || isNeverExpires;
+    });
 
-      const isNeverExpires = card.tags.some((tag) => tag.id === "caas:adobe-partners/collections/news/never-expires");
-      return isNeverExpires;
-    })
-
-    if (this.blockData.dateFilter) this.selectedDateFilter = this.blockData.dateFilter.tags[0];
+    if (this.blockData.dateFilter) {
+      const [firstDateFilter] = this.blockData.dateFilter.tags;
+      this.selectedDateFilter = firstDateFilter;
+    }
   }
 
   get pagination() {
