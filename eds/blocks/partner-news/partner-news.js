@@ -19,7 +19,6 @@ export default async function init(el) {
   const miloLibs = getLibs();
   const config = getConfig();
 
-  const isArchive = el.classList.contains('archive');
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
   let localizedText = {
@@ -58,12 +57,12 @@ export default async function init(el) {
   const dateFilter = {
     key: 'date',
     value: localizedText['{{date}}'],
-    tags: isArchive
-      ? [{ key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true }]
-      : [{ key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true },
-        { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
-        { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
-        { key: 'last-90-days', value: localizedText['{{last-90-days}}'], parentKey: 'date', checked: false }],
+    tags: [
+      { key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true },
+      { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
+      { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
+      { key: 'last-90-days', value: localizedText['{{last-90-days}}'], parentKey: 'date', checked: false },
+    ],
   };
 
   const blockData = {
@@ -73,7 +72,6 @@ export default async function init(el) {
     'cardsPerPage': 12,
     'ietf': config.locale.ietf,
     'collectionTags': '"caas:adobe-partners/collections/news"',
-    isArchive,
   }
 
   const app = document.createElement('partner-news');
