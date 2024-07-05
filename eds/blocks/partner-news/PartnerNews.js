@@ -22,28 +22,6 @@ export class PartnerNews extends PartnerCards {
     this.selectedDateFilter = {};
   }
 
-  additionalFirstUpdated() {
-    const startDate = new Date();
-    startDate.setHours(0, 0, 0, 0);
-    startDate.setDate(startDate.getDate() - 180);
-
-    this.allCards = this.allCards.filter((card) => {
-      const isNeverExpires = card.tags.some((tag) => tag.id === 'caas:adobe-partners/collections/news/never-expires');
-      const cardDate = new Date(card.cardDate);
-
-      if (this.blockData.isArchive) {
-        if (isNeverExpires) return false;
-        return cardDate <= startDate;
-      }
-      return cardDate > startDate || isNeverExpires;
-    });
-
-    if (this.blockData.dateFilter) {
-      const [firstDateFilter] = this.blockData.dateFilter.tags;
-      this.selectedDateFilter = firstDateFilter;
-    }
-  }
-
   get pagination() {
     if (this.cards.length === this.paginatedCards.length) {
       return ''
