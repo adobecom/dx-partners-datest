@@ -21,6 +21,13 @@ export default class PartnerCardsWithDateFilter extends PartnerCards {
     this.selectedDateFilter = {};
   }
 
+  additionalFirstUpdated() {
+    if (this.blockData.dateFilter) {
+      const [defaultDateFilter] = this.blockData.dateFilter.tags;
+      this.selectedDateFilter = defaultDateFilter;
+    }
+  }
+
   get dateFilter() {
     const { dateFilter: filter } = this.blockData;
 
@@ -58,12 +65,12 @@ export default class PartnerCardsWithDateFilter extends PartnerCards {
           <button class="filter-header-mobile" @click=${(e) => this.toggleFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${filter.value}">
             <div class="filter-header-content-mobile">
               <h3 class="filter-header-name-mobile">${filter.value}</h3>
-               ${this.selectedDateFilter.default 
+               ${this.selectedDateFilter.default
                  ? ''
                  : html`
                    <div class="filter-header-selected-tags-mobile">
                      <span class="filter-header-selected-tags-text-mobile">${this.selectedDateFilter.value}</span>
-                     <span className="filter-header-selected-tags-count-mobile">+ 1</span>
+                     <span class="filter-header-selected-tags-count-mobile">+ 1</span>
                    </div>
                  `
                }

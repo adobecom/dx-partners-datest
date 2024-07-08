@@ -138,8 +138,11 @@ export default class PartnerCards extends LitElement {
     if (this.blockData.filters.length) this.initUrlSearchParams();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
     if (this.blockData.cardsPerPage) this.cardsPerPage = this.blockData.cardsPerPage;
+    this.additionalFirstUpdated();
     this.handleActions();
   }
+
+  additionalFirstUpdated() {}
 
   async fetchData() {
     try {
