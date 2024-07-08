@@ -1,5 +1,5 @@
-import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from './../../scripts/utils.js';
-import { PartnerNews } from './PartnerNews.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from '../../scripts/utils.js';
+import PartnerNews from './PartnerNews.js';
 
 function declarePartnerNews() {
   if (customElements.get('partner-news')) return;
@@ -21,7 +21,7 @@ export default async function init(el) {
 
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
-  let localizedText = {
+  const localizedText = {
     '{{apply}}': 'Apply',
     '{{back}}': 'Back',
     '{{clear-all}}': 'Clear all',
@@ -66,13 +66,13 @@ export default async function init(el) {
   };
 
   const blockData = {
-    'localizedText': localizedText,
-    'tableData' : el.children,
-    'dateFilter': dateFilter,
-    'cardsPerPage': 12,
-    'ietf': config.locale.ietf,
-    'collectionTags': '"caas:adobe-partners/collections/news"',
-  }
+    localizedText,
+    tableData: el.children,
+    dateFilter,
+    cardsPerPage: 12,
+    ietf: config.locale.ietf,
+    collectionTags: '"caas:adobe-partners/collections/news"',
+  };
 
   const app = document.createElement('partner-news');
   app.className = 'content partner-news-wrapper';

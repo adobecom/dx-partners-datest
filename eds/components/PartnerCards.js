@@ -1,64 +1,11 @@
-import {getLibs, prodHosts} from '../scripts/utils.js';
-import { partnerCardsStyles, newsCardStyles } from './PartnerCardsStyles.js';
+import { getLibs, prodHosts } from '../scripts/utils.js';
+import { partnerCardsStyles } from './PartnerCardsStyles.js';
+import './NewsCard.js';
+
 const miloLibs = getLibs();
-const { html, LitElement, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
+const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
-function formatDate(cardDate) {
-  if (!cardDate) return;
-
-  const dateObject = new Date(cardDate);
-  const options = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  };
-
-  const formattedDate = dateObject.toLocaleString('en-US', options);
-  return formattedDate;
-}
-
-class NewsCard extends LitElement {
-  static properties = {
-    data: { type: Object }
-  };
-
-  static styles = newsCardStyles;
-
-  transformCardUrl(url) {
-    if (!url) {
-      console.error('URL is null or undefined');
-      return '';
-    }
-    if(window.location.host === 'partners.adobe.com') {
-      return url;
-    }
-    const newUrl = new URL(url);
-    newUrl.protocol = window.location.protocol;
-    newUrl.host = window.location.host;
-    return newUrl;
-  }
-
-  render() {
-    return html`
-      <div class="news-card">
-        <div class="card-header" style="background-image: url('${this.data.styles?.backgroundImage}')" alt="${this.data.styles?.backgroundAltText}"></div>
-        <div class="card-content">
-          <div class="card-text">
-            <p class="card-title">${this.data.contentArea?.title !== 'card-metadata' ? this.data.contentArea?.title : ''}</p>
-            <p class="card-description">${this.data.contentArea?.description}</p>
-          </div>
-          <div class="card-footer">
-            <span class="card-date">${formatDate(this.data.cardDate)}</span>
-            <a class="card-btn" href="${this.transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-}
-customElements.define('news-card', NewsCard);
-
-export class PartnerCards extends LitElement {
+export default class PartnerCards extends LitElement {
   static styles = css`
     ${partnerCardsStyles}
     #search {
@@ -76,7 +23,7 @@ export class PartnerCards extends LitElement {
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
     mobileView: { type: Boolean },
-    useStageCaasEndpoint: { type: Boolean }
+    useStageCaasEndpoint: { type: Boolean },
   };
 
   constructor() {
@@ -105,43 +52,43 @@ export class PartnerCards extends LitElement {
   setBlockData() {
     this.blockData = {
       ...this.blockData,
-      'title': '',
-      'filters': [],
-      'sort': {
-        'default': {},
-        items: []
+      title: '',
+      filters: [],
+      sort: {
+        default: {},
+        items: [],
       },
-      'language': '',
-      'country': ''
+      language: '',
+      country: '',
     };
 
-    this.collectionTags = [ this.blockData.collectionTags ];
+    this.collectionTags = [this.blockData.collectionTags];
 
     const blockDataActions = {
-      'title': (cols) => {
+      title: (cols) => {
         const [titleEl] = cols;
         this.blockData.title = titleEl.innerText.trim();
       },
-      'filter': (cols) => {
+      filter: (cols) => {
         const [filterKeyEl, filterTagsKeysEl] = cols;
         const filterKey = filterKeyEl.innerText.trim().toLowerCase().replace(/ /g, '-');
         const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
 
         if (!filterKey || !filterTagsKeys.length) return;
 
-        let filterObj = {
+        const filterObj = {
           key: filterKey,
           value: this.blockData.localizedText[`{{${filterKey}}}`],
           tags: filterTagsKeys.map((tagKey) => ({
-              key: tagKey,
-              parentKey: filterKey,
-              value: this.blockData.localizedText[`{{${tagKey}}}`],
-              checked: false
-          }))
+            key: tagKey,
+            parentKey: filterKey,
+            value: this.blockData.localizedText[`{{${tagKey}}}`],
+            checked: false,
+          })),
         };
         this.blockData.filters.push(filterObj);
       },
-      'sort': (cols) => {
+      sort: (cols) => {
         const [sortKeysEl] = cols;
         const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
 
@@ -151,22 +98,22 @@ export class PartnerCards extends LitElement {
           return { key, value };
         });
 
-        const defaultKey = sortKeys.find(key => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
-        const defaultValue = sortItems.find(e => e.key === defaultKey).value;
-        this.blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue }};
+        const defaultKey = sortKeys.find((key) => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
+        const defaultValue = sortItems.find((e) => e.key === defaultKey).value;
+        this.blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue } };
       },
       'cards-per-page': (cols) => {
         const [cardsPerPageEl] = cols;
         const cardsPerPageStr = cardsPerPageEl.innerText.trim();
-        const cardsPerPageNum = parseInt(cardsPerPageStr);
+        const cardsPerPageNum = parseInt(cardsPerPageStr, 10);
         if (cardsPerPageNum) this.blockData.cardsPerPage = cardsPerPageNum;
       },
       'collection-tags': (cols) => {
         const [collectionTagsEl] = cols;
-        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => '"' + li.innerText.trim().toLowerCase() + '"');
+        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
         this.collectionTags = [...this.collectionTags, ...collectionTags];
-      }
-    }
+      },
+    };
 
     const rows = Array.from(this.blockData.tableData);
     rows.forEach((row) => {
@@ -176,9 +123,9 @@ export class PartnerCards extends LitElement {
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
     });
 
-    const ietfArr = this.blockData.ietf.split('-');
-    this.blockData.language = ietfArr[0];
-    this.blockData.country = ietfArr[1];
+    const [language, country] = this.blockData.ietf.split('-');
+    this.blockData.language = language;
+    this.blockData.country = country;
   }
 
   updateView() {
@@ -191,8 +138,11 @@ export class PartnerCards extends LitElement {
     if (this.blockData.filters.length) this.initUrlSearchParams();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
     if (this.blockData.cardsPerPage) this.cardsPerPage = this.blockData.cardsPerPage;
+    this.additionalFirstUpdated();
     this.handleActions();
   }
+
+  additionalFirstUpdated() {}
 
   async fetchData() {
     try {
@@ -205,13 +155,12 @@ export class PartnerCards extends LitElement {
       }
       const apiData = await response.json();
       if (apiData?.cards) {
-        if(window.location.hostname === 'partners.adobe.com') {
-          apiData.cards = apiData.cards.filter(card => {
-            return !card.contentArea.url?.includes('/drafts/');
-          });
+        if (window.location.hostname === 'partners.adobe.com') {
+          apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
         }
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
-        this.allCards = this.cards = apiData.cards;
+        this.allCards = apiData.cards;
+        this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = true;
       }
@@ -248,31 +197,31 @@ export class PartnerCards extends LitElement {
 
     if (!this.collectionTags.length) return;
 
-    const collectionTagsStr = this.collectionTags.filter(e => e.length).join('+AND+');
+    const collectionTagsStr = this.collectionTags.filter((e) => e.length).join('+AND+');
     return partnerLevelParams ? `((${collectionTagsStr}))+AND+${partnerLevelParams}` : `((${collectionTagsStr}))`;
   }
 
   getPartnerLevelParams(portal) {
     try {
       const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
-      const cookies = document.cookie.split(';').map(cookie => cookie.trim());
-      const partnerDataCookie = cookies.find(cookie => cookie.startsWith('partner_data='));
+      const cookies = document.cookie.split(';').map((cookie) => cookie.trim());
+      const partnerDataCookie = cookies.find((cookie) => cookie.startsWith('partner_data='));
       if (!partnerDataCookie) return publicTag;
 
       const cookieValue = JSON.parse(decodeURIComponent(partnerDataCookie.substring(('partner_data=').length).toLowerCase()));
       if (cookieValue && cookieValue[portal]) {
-          const cookieLevel = cookieValue[portal].level;
-          if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
+        const cookieLevel = cookieValue[portal].level;
+        if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
       }
       return publicTag;
-    } catch(error) {
+    } catch (error) {
       console.error('Error parsing partner data object:', error);
       return '';
     }
   }
 
   getProgramType(path) {
-    switch(true) {
+    switch (true) {
       case /solutionpartners/.test(path): return 'spp';
       case /technologypartners/.test(path): return 'tpp';
       case /channelpartners/.test(path): return 'cpp';
@@ -280,7 +229,7 @@ export class PartnerCards extends LitElement {
     }
   }
 
-  initUrlSearchParams () {
+  initUrlSearchParams() {
     const { search } = location || window.location;
     this.urlSearchParams = new URLSearchParams(search);
 
@@ -289,19 +238,19 @@ export class PartnerCards extends LitElement {
         if (this.urlSearchParams.has(filter.key)) {
           const filtersSearchTags = this.urlSearchParams.get(filter.key).split(',');
 
-          filtersSearchTags.forEach(searchTag => {
-            const filterTag = filter.tags.find(tag => tag.key === searchTag);
+          filtersSearchTags.forEach((searchTag) => {
+            const filterTag = filter.tags.find((tag) => tag.key === searchTag);
             if (filterTag) {
               filterTag.checked = true;
               this.selectedFilters = {
                 ...this.selectedFilters,
-                [filter.key]: [...(this.selectedFilters[filter.key] || []), filterTag]
+                [filter.key]: [...(this.selectedFilters[filter.key] || []), filterTag],
               };
             }
-          })
+          });
         }
         return filter;
-      })
+      });
     }
   }
 
@@ -312,12 +261,11 @@ export class PartnerCards extends LitElement {
         (card) => card.id,
         (card) => html`<news-card class="card-wrapper" .data=${card}></news-card>`,
       )}`;
-    } else {
-      return html`<div class="no-results">
+    }
+    return html`<div class="no-results">
         <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
         <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
-      </div>`
-    }
+      </div>`;
   }
 
   get sortItems() {
@@ -355,7 +303,7 @@ export class PartnerCards extends LitElement {
       (filter) => filter.key,
       (filter) => {
         const selectedTagsData = this.countSelectedTags(filter.key);
-        const tagsCount = selectedTagsData.tagsCount;
+        const { tagsCount } = selectedTagsData;
 
         return html`
           <div class="filter">
@@ -363,7 +311,7 @@ export class PartnerCards extends LitElement {
               <span class="filter-label">${filter.value}</span>
               <span class="filter-chevron-icon" />
             </button>
-            <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${tagsCount}">
+            <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${() => this.handleResetTags(filter.key)}" aria-label="${tagsCount}">
               <span class="filter-selected-tags-total-num">${tagsCount}</span>
             </button>
             <ul class="filter-list">
@@ -371,8 +319,8 @@ export class PartnerCards extends LitElement {
                 ${this.getTagsByFilter(filter)}
               </sp-theme>
             </ul>
-          </div>`
-      }
+          </div>`;
+      },
     )}`;
   }
 
@@ -384,8 +332,8 @@ export class PartnerCards extends LitElement {
       (filter) => filter.key,
       (filter) => {
         const selectedTagsData = this.countSelectedTags(filter.key);
-        const tagsString = selectedTagsData.tagsString;
-        const tagsCount = selectedTagsData.tagsCount;
+        const { tagsString } = selectedTagsData;
+        const { tagsCount } = selectedTagsData;
 
         return html`
           <div class="filter-wrapper-mobile">
@@ -414,7 +362,7 @@ export class PartnerCards extends LitElement {
                 <div class="filter-footer-mobile">
                   <span class="filter-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
                   <div class="filter-footer-buttons-mobile">
-                    <button class="filter-footer-clear-btn-mobile" @click="${(e) => this.handleResetTags(filter.key)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                    <button class="filter-footer-clear-btn-mobile" @click="${() => this.handleResetTags(filter.key)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                     <sp-theme theme="spectrum" color="light" scale="medium">
                       <sp-button @click=${(e) => this.toggleFilter(e.target.closest('.filter-wrapper-mobile'))} aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
                     </sp-theme>
@@ -423,29 +371,29 @@ export class PartnerCards extends LitElement {
               </div>
             </div>
           </div>
-        `
-      }
+        `;
+      },
     )}`;
   }
 
   get chosenFilters() {
-    const extractedTags = Object.values(this.selectedFilters).flatMap(tagsArray => tagsArray);
+    const extractedTags = Object.values(this.selectedFilters).flatMap((tagsArray) => tagsArray);
     if (!extractedTags.length) return;
 
     const htmlContent = html`${repeat(
       extractedTags.sort((a, b) => a.value.localeCompare(b.value)),
       (tag) => tag.key,
       (tag) => html`
-        <button class="sidebar-chosen-filter-btn" @click="${(e) => this.handleRemoveTag(tag)}" aria-label="${tag.value}">
+        <button class="sidebar-chosen-filter-btn" @click="${() => this.handleRemoveTag(tag)}" aria-label="${tag.value}">
           ${tag.value}
-        </button>`
+        </button>`,
     )}`;
 
     return { htmlContent, tagsCount: extractedTags.length };
   }
 
   getTagsByFilter(filter) {
-    const tags = filter.tags;
+    const { tags } = filter;
 
     return html`${repeat(
       tags,
@@ -462,7 +410,7 @@ export class PartnerCards extends LitElement {
 
   toggleSort() {
     const element = this.shadowRoot.querySelector('.sort-list');
-    element.classList.toggle('expanded')
+    element.classList.toggle('expanded');
   }
 
   toggleFilter(clickedFilter) {
@@ -492,8 +440,8 @@ export class PartnerCards extends LitElement {
   handleResetActions() {
     this.searchTerm = '';
     this.selectedFilters = {};
-    this.blockData.filters.forEach(filter => {
-      filter.tags.forEach(tag => tag.checked = false);
+    this.blockData.filters.forEach((filter) => {
+      filter.tags.forEach((tag) => tag.checked = false);
       this.urlSearchParams.delete(filter.key);
     });
     this.urlSearchParams.delete('filters');
@@ -506,13 +454,11 @@ export class PartnerCards extends LitElement {
   additionalResetActions() {}
 
   handleSearchAction() {
-    this.cards = this.allCards.filter((card) =>
-      card.contentArea?.title.toLowerCase().includes(this.searchTerm) ||
-      card.contentArea?.description.toLowerCase().includes(this.searchTerm)
-    );
+    this.cards = this.allCards.filter((card) => card.contentArea?.title.toLowerCase().includes(this.searchTerm)
+      || card.contentArea?.description.toLowerCase().includes(this.searchTerm));
   }
 
-  handleSearch(event){
+  handleSearch(event) {
     this.searchTerm = event.target.value.toLowerCase();
 
     this.paginationCounter = 1;
@@ -521,8 +467,8 @@ export class PartnerCards extends LitElement {
 
   handleSortAction() {
     const sortFunctions = {
-      'newest': (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
-      'oldest': (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
+      newest: (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
+      oldest: (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
     };
     this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
   }
@@ -547,18 +493,17 @@ export class PartnerCards extends LitElement {
 
         let cardArbitraryArr = [...card.arbitrary];
         const firstObj = card.arbitrary[0];
-        if (firstObj.hasOwnProperty('id') && firstObj.hasOwnProperty('version')) cardArbitraryArr = cardArbitraryArr.slice(1);
-
-        return selectedFiltersKeys.every((key) =>
-          cardArbitraryArr.some((arbitraryTag) => {
-            const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
-            const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
-            if (key === arbitraryTagKeyStr) {
-              return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
-            }
-            return false;
-          })
-        )
+        if ('id' in firstObj && 'version' in firstObj) {
+          cardArbitraryArr = cardArbitraryArr.slice(1);
+        }
+        return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
+          const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
+          const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
+          if (key === arbitraryTagKeyStr) {
+            return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
+          }
+          return false;
+        }));
       });
     } else {
       this.urlSearchParams.delete('filters');
@@ -566,7 +511,7 @@ export class PartnerCards extends LitElement {
   }
 
   handleUrlSearchParams() {
-    let url = new URL(window.location.href);
+    const url = new URL(window.location.href);
 
     const searchParamsString = this.urlSearchParams.toString();
     if (searchParamsString.length) {
@@ -589,11 +534,11 @@ export class PartnerCards extends LitElement {
     if (this.selectedFilters[filterKey]) {
       this.selectedFilters = {
         ...this.selectedFilters,
-        [filterKey]: [...this.selectedFilters[filterKey], tag]
+        [filterKey]: [...this.selectedFilters[filterKey], tag],
       };
 
       let filterSearchValue = this.urlSearchParams.get(filterKey);
-      filterSearchValue += ',' + tag.key;
+      filterSearchValue += `,${tag.key}`;
       this.urlSearchParams.set(filterKey, filterSearchValue);
     } else {
       if (!Object.keys(this.selectedFilters).length) {
@@ -602,7 +547,7 @@ export class PartnerCards extends LitElement {
 
       this.selectedFilters = {
         ...this.selectedFilters,
-        [filterKey]: [tag]
+        [filterKey]: [tag],
       };
 
       this.urlSearchParams.append(filterKey, tag.key);
@@ -617,16 +562,16 @@ export class PartnerCards extends LitElement {
     tag.checked = false;
     const { key: tagKey, parentKey: filterKey } = tag;
 
-    const updatedFilterTags = [...this.selectedFilters[filterKey]].filter(filterTag => filterTag.key !== tagKey);
+    const updatedFilterTags = [...this.selectedFilters[filterKey]].filter((filterTag) => filterTag.key !== tagKey);
 
     if (updatedFilterTags.length) {
       this.selectedFilters = {
         ...this.selectedFilters,
-        [filterKey]: updatedFilterTags
+        [filterKey]: updatedFilterTags,
       };
 
       const filterSearchParams = this.urlSearchParams.get(filterKey).split(',');
-      const updatedSearchFilterTags = filterSearchParams.filter(param => param !== tagKey);
+      const updatedSearchFilterTags = filterSearchParams.filter((param) => param !== tagKey);
       this.urlSearchParams.set(filterKey, updatedSearchFilterTags.toString());
     } else {
       const { [filterKey]: _removedKeyFilters, ...updatedSelectedFilters } = this.selectedFilters;
@@ -641,12 +586,12 @@ export class PartnerCards extends LitElement {
 
   handleResetTags(filterKey) {
     const { [filterKey]: _removedKeyFilters, ...updatedSelectedFilters } = this.selectedFilters;
-    this.selectedFilters = {...updatedSelectedFilters};
+    this.selectedFilters = { ...updatedSelectedFilters };
     this.urlSearchParams.delete(filterKey);
 
-    this.blockData.filters.forEach(filter => {
+    this.blockData.filters.forEach((filter) => {
       if (filter.key === filterKey) {
-        filter.tags.forEach((tag) => tag.checked = false)
+        filter.tags.forEach((tag) => tag.checked = false);
       }
     });
 
@@ -658,15 +603,15 @@ export class PartnerCards extends LitElement {
   countSelectedTags(filterKey) {
     if (!this.selectedFilters[filterKey]) {
       return {
-        'tagsString': '',
-        'tagsCount': 0
+        tagsString: '',
+        tagsCount: 0,
       };
     }
 
-    const tags = [...this.selectedFilters[filterKey]].map(tag => tag.value);
+    const tags = [...this.selectedFilters[filterKey]].map((tag) => tag.value);
     return {
-      'tagsString': tags.join(', '),
-      'tagsCount': tags.length
+      tagsString: tags.join(', '),
+      tagsCount: tags.length,
     };
   }
 
