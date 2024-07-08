@@ -33,7 +33,7 @@ export const [setLibs, getLibs] = (() => {
 export const prodHosts = [
   'main--dx-partners--adobecom.hlx.page',
   'main--dx-partners--adobecom.hlx.live',
-  'partners.adobe.com'
+  'partners.adobe.com',
 ];
 
 /*
@@ -58,9 +58,23 @@ export { replaceText };
 
 export function populateLocalizedTextFromListItems(el, localizedText) {
   const liList = Array.from(el.querySelectorAll('li'));
-  liList.forEach(liEl => {
+  liList.forEach((liEl) => {
     let liContent = liEl.innerText.trim().toLowerCase().replace(/ /g, '-');
     if (liContent.endsWith('_default')) liContent = liContent.slice(0, -8);
     localizedText[`{{${liContent}}}`] = liContent;
   });
+}
+
+export function formatDate(cardDate) {
+  if (!cardDate) return;
+
+  const dateObject = new Date(cardDate);
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+
+  const formattedDate = dateObject.toLocaleString('en-US', options);
+  return formattedDate;
 }

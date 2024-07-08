@@ -1,13 +1,13 @@
-import { getLibs } from './../../scripts/utils.js';
+import { getLibs } from '../../scripts/utils.js';
+import { numericPaginationStyles } from '../../components/PartnerCardsStyles.js';
+import PartnerCardsWithDateFilter from '../../components/PartnerCardsWithDateFilter.js';
+
 const miloLibs = getLibs();
-const { html, css, repeat } = await import (`${miloLibs}/deps/lit-all.min.js`);
-import { numericPaginationStyles } from './../../components/PartnerCardsStyles.js';
-import { PartnerCards } from "./../../components/PartnerCards.js";
+const { html, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
-export class KnowledgeBaseOverview extends PartnerCards {
-
+export default class KnowledgeBaseOverview extends PartnerCardsWithDateFilter {
   static properties = {
-    ...PartnerCards.properties,
+    ...PartnerCardsWithDateFilter.properties,
     totalPages: { type: Number },
   };
 
@@ -18,8 +18,8 @@ export class KnowledgeBaseOverview extends PartnerCards {
   }
 
   static styles = [
-    PartnerCards.styles,
-    css`${numericPaginationStyles}`
+    PartnerCardsWithDateFilter.styles,
+    css`${numericPaginationStyles}`,
   ];
 
   get paginationList() {
@@ -37,17 +37,17 @@ export class KnowledgeBaseOverview extends PartnerCards {
         @click="${() => this.handlePageNum(pageNum)}"
         aria-label="${this.blockData.localizedText['{{page}}']} ${pageNum}">
         ${pageNum}
-      </button>`
+      </button>`,
     )}`;
   }
 
   get pagination() {
-    return html `
+    return html`
       <div class="pagination-pages-list">
         <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}" aria-label="${this.blockData.localizedText['{{previous-page}}']}">
           ${this.blockData.localizedText['{{prev}}']}</button>
         ${this.paginationList}
-        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled': ''}" @click="${this.handleNextPage}" aria-label="${this.blockData.localizedText['{{next-page}}']}">
+        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handleNextPage}" aria-label="${this.blockData.localizedText['{{next-page}}']}">
           ${this.blockData.localizedText['{{next}}']}</button>
       </div>
     `;
@@ -78,15 +78,15 @@ export class KnowledgeBaseOverview extends PartnerCards {
   }
 
   handlePrevPage() {
-    if ( this.paginationCounter > 1 ) {
-      this.paginationCounter--;
+    if (this.paginationCounter > 1) {
+      this.paginationCounter -= 1;
       this.handleActions();
     }
   }
 
   handleNextPage() {
     if (this.paginationCounter < this.totalPages) {
-      this.paginationCounter++;
+      this.paginationCounter += 1;
       this.handleActions();
     }
   }

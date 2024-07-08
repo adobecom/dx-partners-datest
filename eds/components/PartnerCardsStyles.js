@@ -1,6 +1,7 @@
 import { getLibs } from '../scripts/utils.js';
+
 const miloLibs = getLibs();
-const { css } = await import (`${miloLibs}/deps/lit-all.min.js`);
+const { css } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
 const borderColor = css`#eaeaea`;
 const blueColor = css`#1473e6`;
