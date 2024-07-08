@@ -1,8 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import init from './../../../eds/blocks/knowledge-base-overview/knowledge-base-overview.js';
-import { PartnerCards } from "./../../../eds/components/PartnerCards.js";
+import init from '../../../eds/blocks/knowledge-base-overview/knowledge-base-overview.js';
+import PartnerCards from '../../../eds/components/PartnerCards.js';
 
 const cardsString = await readFile({ path: './mocks/cards.json' });
 const cards = JSON.parse(cardsString);
@@ -11,13 +11,14 @@ describe('knowledge-base-overview block', () => {
   beforeEach(async () => {
     sinon.stub(PartnerCards.prototype, 'fetchData').resolves({ cards });
 
-    sinon.stub(PartnerCards.prototype, 'firstUpdated').callsFake(async function() {
-      this.allCards = this.cards = cards;
+    sinon.stub(PartnerCards.prototype, 'firstUpdated').callsFake(async function () {
+      this.allCards = cards;
+      this.cards = cards;
       this.paginatedCards = this.cards.slice(0, 3);
       this.hasResponseData = true;
     });
 
-    await import('./../../../eds/scripts/scripts.js');
+    await import('../../../eds/scripts/scripts.js');
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
   });
 
@@ -62,7 +63,7 @@ describe('knowledge-base-overview block', () => {
     return { knowledgeBaseWrapper };
   };
 
-  it('should have shadow root and render partner cards for mobile', async () => {
+  it('should have shadow root and render partner cards for mobile', async function () {
     const { knowledgeBaseWrapper } = await setupAndCommonTest(500);
 
     const filtersBtn = knowledgeBaseWrapper.shadowRoot.querySelector('.filters-btn-mobile');
@@ -72,7 +73,7 @@ describe('knowledge-base-overview block', () => {
     const firstFilter = filtersWrapper.querySelector('.filter-wrapper-mobile');
     expect(firstFilter).to.exist;
   });
-  it('should have shadow root and render partner cards for desktop', async () => {
+  it('should have shadow root and render partner cards for desktop', async function () {
     const { knowledgeBaseWrapper } = await setupAndCommonTest(1500);
 
     const sidebarFiltersWrapper = knowledgeBaseWrapper.shadowRoot.querySelector('.sidebar-filters-wrapper');
