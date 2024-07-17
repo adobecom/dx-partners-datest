@@ -1,5 +1,5 @@
-import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
-import { KnowledgeBaseOverview } from './KnowledgeBaseOverview.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from '../../scripts/utils.js';
+import KnowledgeBaseOverview from './KnowledgeBaseOverview.js';
 
 function declareKnowledgeBaseOverview() {
   if (customElements.get('knowledge-base-overview')) return;
@@ -21,13 +21,16 @@ export default async function init(el) {
 
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
-  let localizedText = {
+  const localizedText = {
     '{{apply}}': 'Apply',
     '{{back}}': 'Back',
     '{{clear-all}}': 'Clear all',
+    '{{current-month}}': 'Current month',
+    '{{date}}': 'Date',
     '{{filter}}': 'Filter',
     '{{filter-by}}': 'Filter by',
     '{{filters}}': 'Filters',
+    '{{last-6-months}}': 'Last 6 months',
     '{{next}}': 'Next',
     '{{next-page}}': 'Next Page',
     '{{no-results-description}}': 'Try checking your spelling or broadening your search.',
@@ -35,10 +38,14 @@ export default async function init(el) {
     '{{of}}': 'Of',
     '{{page}}': 'Page',
     '{{prev}}': 'Prev',
+    '{{previous-month}}': 'Previous month',
     '{{previous-page}}': 'Previous Page',
     '{{results}}': 'Results',
     '{{search}}': 'Search',
+    '{{show-all}}': 'Show all',
   };
+
+  populateLocalizedTextFromListItems(el, localizedText);
 
   const deps = await Promise.all([
     localizationPromises(localizedText, config),
@@ -51,13 +58,25 @@ export default async function init(el) {
 
   declareKnowledgeBaseOverview();
 
+  const dateFilter = {
+    key: 'date',
+    value: localizedText['{{date}}'],
+    tags: [
+      { key: 'show-all', value: localizedText['{{show-all}}'], parentKey: 'date', checked: true, default: true },
+      { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
+      { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
+      { key: 'last-6-months', value: localizedText['{{last-6-months}}'], parentKey: 'date', checked: false },
+    ],
+  };
+
   const blockData = {
-    'localizedText': localizedText,
-    'tableData' : el.children,
-    'cardsPerPage': 9,
-    'ietf': config.locale.ietf,
-    'collectionTags': 'caas:adobe-partners/collections/knowledge-base'
-  }
+    localizedText,
+    tableData: el.children,
+    dateFilter,
+    cardsPerPage: 12,
+    ietf: config.locale.ietf,
+    collectionTags: '"caas:adobe-partners/collections/knowledge-base"',
+  };
 
   const app = document.createElement('knowledge-base-overview');
   app.className = 'content knowledge-base-overview-wrapper';

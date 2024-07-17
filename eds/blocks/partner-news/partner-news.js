@@ -1,5 +1,5 @@
-import { getLibs, replaceText, getConfig } from './../../scripts/utils.js';
-import { PartnerNews } from './PartnerNews.js';
+import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from '../../scripts/utils.js';
+import PartnerNews from './PartnerNews.js';
 
 function declarePartnerNews() {
   if (customElements.get('partner-news')) return;
@@ -21,7 +21,7 @@ export default async function init(el) {
 
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
-  let localizedText = {
+  const localizedText = {
     '{{apply}}': 'Apply',
     '{{back}}': 'Back',
     '{{clear-all}}': 'Clear all',
@@ -38,8 +38,10 @@ export default async function init(el) {
     '{{previous-month}}': 'Previous month',
     '{{results}}': 'Results',
     '{{search}}': 'Search',
-    '{{show-all}}': 'Show all'
+    '{{show-all}}': 'Show all',
   };
+
+  populateLocalizedTextFromListItems(el, localizedText);
 
   const deps = await Promise.all([
     localizationPromises(localizedText, config),
@@ -60,17 +62,17 @@ export default async function init(el) {
       { key: 'current-month', value: localizedText['{{current-month}}'], parentKey: 'date', checked: false },
       { key: 'previous-month', value: localizedText['{{previous-month}}'], parentKey: 'date', checked: false },
       { key: 'last-90-days', value: localizedText['{{last-90-days}}'], parentKey: 'date', checked: false },
-    ]
+    ],
   };
 
   const blockData = {
-    'localizedText': localizedText,
-    'tableData' : el.children,
-    'dateFilter': dateFilter,
-    'cardsPerPage': 12,
-    'ietf': config.locale.ietf,
-    'collectionTags': 'caas:adobe-partners/collections/news'
-  }
+    localizedText,
+    tableData: el.children,
+    dateFilter,
+    cardsPerPage: 12,
+    ietf: config.locale.ietf,
+    collectionTags: '"caas:adobe-partners/collections/news"',
+  };
 
   const app = document.createElement('partner-news');
   app.className = 'content partner-news-wrapper';
