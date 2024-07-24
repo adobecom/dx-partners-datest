@@ -18,6 +18,7 @@ export default async function init(el) {
 
   const miloLibs = getLibs();
   const config = getConfig();
+  const asaPromise = fetch('https://www.adobe.com/chimera-api/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true&complexQuery=%28%28%22caas%3Aadobe-partners%2Fcollections%2Fnews%22%2BAND%2B%22caas%3Aadobe-partners%2Fspp%22%29%29%2BAND%2B%28%28%22caas%3Aadobe-partners%2Fspp%2Fpartner-level%2Fpublic%22%29%29&language=en&country=US');
 
   const sectionIndex = el.parentNode.getAttribute('data-idx');
 
@@ -72,6 +73,7 @@ export default async function init(el) {
     cardsPerPage: 12,
     ietf: config.locale.ietf,
     collectionTags: '"caas:adobe-partners/collections/news"',
+    asa: asaPromise
   };
 
   const app = document.createElement('partner-news');

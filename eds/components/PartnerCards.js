@@ -146,13 +146,14 @@ export default class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const domain = `${(this.useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
-      const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
-      const apiWithParams = this.setApiParams(api);
-      const response = await fetch(apiWithParams);
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+      // const domain = `${(this.useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
+      // const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
+      // const apiWithParams = this.setApiParams(api);
+      // const response = await fetch(apiWithParams);
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! Status: ${response.status}`);
+      // }
+      const response = await this.blockData.asa;
       const apiData = await response.json();
       if (apiData?.cards) {
         if (window.location.hostname === 'partners.adobe.com') {
