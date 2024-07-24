@@ -6,6 +6,8 @@ const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
 export default class PartnerCards extends LitElement {
+  static caasUrl;
+
   static styles = css`
     ${partnerCardsStyles}
     #search {
@@ -24,6 +26,7 @@ export default class PartnerCards extends LitElement {
     urlSearchParams: { type: Object },
     mobileView: { type: Boolean },
     useStageCaasEndpoint: { type: Boolean },
+    fetchedData: {type: Boolean}
   };
 
   constructor() {
@@ -38,7 +41,9 @@ export default class PartnerCards extends LitElement {
     this.selectedFilters = {};
     this.urlSearchParams = {};
     this.collectionTags = [];
-    this.hasResponseData = false;
+    this.hasResponseData = true;
+    this.hasResults = true;
+    this.fetchedData = false;
     this.mobileView = window.innerWidth <= 1200;
     this.updateView = this.updateView.bind(this);
   }
@@ -146,14 +151,20 @@ export default class PartnerCards extends LitElement {
 
   async fetchData() {
     try {
-      const domain = `${(this.useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
-      const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
-      const apiWithParams = this.setApiParams(api);
-      const response = await fetch(apiWithParams);
+      let apiData;
+
+      setTimeout(() => {
+        this.hasResponseData = !!apiData?.cards;
+        this.hasResults = !!apiData?.cards?.length;
+        this.fetchedData = true;
+      }, 5);
+
+      const response = await fetch(PartnerCards.getCaasUrl());
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const apiData = await response.json();
+      // const response = await this.blockData.asa;
+      apiData = await response.json();
       if (apiData?.cards) {
         if (window.location.hostname === 'partners.adobe.com') {
           apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
@@ -163,17 +174,31 @@ export default class PartnerCards extends LitElement {
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = true;
-      }
+        this.hasResults = !!apiData.cards.length
+      } 
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   }
 
-  setApiParams(api) {
-    const complexQueryParams = this.getComplexQueryParams();
+  static getCaasUrl(block) {
+    if (this.caasUrl) {
+      return this.caasUrl;
+    }
+    const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
+    const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
+    const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
+    const apiWithParams = PartnerCards.setApiParams(api, block);
+    this.caasUrl = apiWithParams;
+    return this.caasUrl;
+  }
+
+  static setApiParams(api, block) {
+    const { el, collectionTag } = block;
+    const complexQueryParams = PartnerCards.getComplexQueryParams(el, collectionTag);
     if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
 
-    const { language, country } = this.blockData;
+    const { language, country } = block.ietf;
     if (language && country) {
       api.searchParams.set('language', language);
       api.searchParams.set('country', country);
@@ -182,28 +207,45 @@ export default class PartnerCards extends LitElement {
     return api.toString();
   }
 
-  getComplexQueryParams() {
-    const portal = this.getProgramType(window.location.pathname);
+  static extractTableCollectionTags(el) {
+    let tableCollectionTags = [];
+    Array.from(el.children).forEach((row) => {
+      const cols = Array.from(row.children);
+      const rowTitle = cols[0].innerText.trim().toLowerCase().replace(/ /g, '-');
+      const colsContent = cols.slice(1);
+      if(rowTitle === 'collection-tags') {
+        const [collectionTagsEl] = colsContent;
+        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
+        tableCollectionTags = [...tableCollectionTags, ...collectionTags];
+      }
+    });
+
+    return tableCollectionTags;
+
+  }
+
+  static getComplexQueryParams(el, collectionTag) {
+    const portal = PartnerCards.getProgramType(window.location.pathname);
     let partnerLevelParams;
+    let collectionTags = [collectionTag];
 
     if (portal) {
       const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
-      if (!this.collectionTags.length || !this.collectionTags.includes(portalCollectionTag)) {
-        this.collectionTags = [...this.collectionTags, portalCollectionTag];
-      }
+      const tableTags = PartnerCards.extractTableCollectionTags(el);
+      collectionTags = [...collectionTags, portalCollectionTag, ...tableTags];
 
-      partnerLevelParams = this.getPartnerLevelParams(portal);
+      partnerLevelParams = PartnerCards.getPartnerLevelParams(portal);
     }
 
-    if (!this.collectionTags.length) return;
+    if (!collectionTags.length) return;
 
-    const collectionTagsStr = this.collectionTags.filter((e) => e.length).join('+AND+');
-    return partnerLevelParams ? `((${collectionTagsStr}))+AND+${partnerLevelParams}` : `((${collectionTagsStr}))`;
+    const collectionTagsStr = collectionTags.filter((e) => e.length).join('+AND+');
+    return partnerLevelParams ? `(${collectionTagsStr})+AND+${partnerLevelParams}` : `(${collectionTagsStr})`;
   }
 
-  getPartnerLevelParams(portal) {
+  static getPartnerLevelParams(portal) {
     try {
-      const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
+      const publicTag = `("caas:adobe-partners/${portal}/partner-level/public")`;
       const cookies = document.cookie.split(';').map((cookie) => cookie.trim());
       const partnerDataCookie = cookies.find((cookie) => cookie.startsWith('partner_data='));
       if (!partnerDataCookie) return publicTag;
@@ -211,7 +253,7 @@ export default class PartnerCards extends LitElement {
       const cookieValue = JSON.parse(decodeURIComponent(partnerDataCookie.substring(('partner_data=').length).toLowerCase()));
       if (cookieValue && cookieValue[portal]) {
         const cookieLevel = cookieValue[portal].level;
-        if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
+        if (cookieLevel) return `("caas:adobe-partners/${portal}/partner-level/${cookieLevel}"+OR+"caas:adobe-partners/${portal}/partner-level/public")`;
       }
       return publicTag;
     } catch (error) {
@@ -220,7 +262,7 @@ export default class PartnerCards extends LitElement {
     }
   }
 
-  getProgramType(path) {
+  static getProgramType(path) {
     switch (true) {
       case /solutionpartners/.test(path): return 'spp';
       case /technologypartners/.test(path): return 'tpp';
@@ -262,10 +304,13 @@ export default class PartnerCards extends LitElement {
         (card) => html`<news-card class="card-wrapper" .data=${card}></news-card>`,
       )}`;
     }
-    return html`<div class="no-results">
-        <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
-        <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
-      </div>`;
+
+    if (!this.hasResults) {
+      return html`<div class="no-results">
+          <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
+          <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
+        </div>`;
+    }
   }
 
   get sortItems() {
@@ -621,113 +666,118 @@ export default class PartnerCards extends LitElement {
   }
 
   render() {
+    // Sakrij posebno mobile view i ovo ez DRAGANA NAREDILA !!!
     return html`
-      <div class="partner-cards">
-        <div class="partner-cards-sidebar-wrapper">
-          <div class="partner-cards-sidebar">
-            <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
-              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @submit="${(event) => event.preventDefault()}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
-            </sp-theme>
-            ${!this.mobileView
-              ? html`
-                <div class="sidebar-header">
-                  <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
-                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
-                </div>
-                <div class="sidebar-chosen-filters-wrapper">
-                  ${this.chosenFilters && this.chosenFilters.htmlContent}
-                </div>
-                <div class="sidebar-filters-wrapper">
-                  ${this.filters}
-                </div>
-              `
-              : ''
-            }
-          </div>
-        </div>
-        <div class="partner-cards-content">
-          <div class="partner-cards-header">
-            <div class="partner-cards-title-wrapper">
-              <h3 class="partner-cards-title">${this.blockData.title}</h3>
-              <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> ${this.blockData.localizedText['{{results}}']}</span>
-            </div>
-            <div class="partner-cards-sort-wrapper">
-              ${this.mobileView
-                ? html `
-                  <button class="filters-btn-mobile" @click="${this.openFiltersMobile}" aria-label="${this.blockData.localizedText['{{filters}}']}">
-                    <span class="filters-btn-mobile-icon"></span>
-                    <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
-                    ${this.chosenFilters?.tagsCount
-                      ? html `
-                        <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
-                      `
-                      : ''
-                    }
-                  </button>
+      <div>
+        ${this.fetchedData ?
+        html`<div>
+        <div class="partner-cards">
+          <div class="partner-cards-sidebar-wrapper">
+            <div class="partner-cards-sidebar">
+              <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
+                <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @submit="${(event) => event.preventDefault()}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
+              </sp-theme>
+              ${!this.mobileView
+                ? html`
+                  <div class="sidebar-header">
+                    <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
+                    <button class="sidebar-clear-btn" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                  </div>
+                  <div class="sidebar-chosen-filters-wrapper">
+                    ${this.chosenFilters && this.chosenFilters.htmlContent}
+                  </div>
+                  <div class="sidebar-filters-wrapper">
+                    ${this.filters}
+                  </div>
                 `
                 : ''
               }
-              ${this.blockData.sort.items.length 
-                ? html `<div class="sort-wrapper">
-                  <button class="sort-btn" @click="${this.toggleSort}">
-                    <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
-                    <span class="filter-chevron-icon" />
-                  </button>
-                  <div class="sort-list">
-                    ${this.sortItems}
+            </div>
+          </div>
+          <div class="partner-cards-content">
+            <div class="partner-cards-header">
+              <div class="partner-cards-title-wrapper">
+                <h3 class="partner-cards-title">${this.blockData.title}</h3>
+                <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> ${this.blockData.localizedText['{{results}}']}</span>
+              </div>
+              <div class="partner-cards-sort-wrapper">
+                ${this.mobileView
+                  ? html `
+                    <button class="filters-btn-mobile" @click="${this.openFiltersMobile}" aria-label="${this.blockData.localizedText['{{filters}}']}">
+                      <span class="filters-btn-mobile-icon"></span>
+                      <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
+                      ${this.chosenFilters?.tagsCount
+                        ? html `
+                          <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
+                        `
+                        : ''
+                      }
+                    </button>
+                  `
+                  : ''
+                }
+                ${this.blockData.sort.items.length 
+                  ? html `<div class="sort-wrapper">
+                    <button class="sort-btn" @click="${this.toggleSort}">
+                      <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
+                      <span class="filter-chevron-icon" />
+                    </button>
+                    <div class="sort-list">
+                      ${this.sortItems}
+                    </div>
+                  </div>`
+                  : ''
+                }
+              </div>
+            </div>
+            <div class="partner-cards-collection">
+              ${this.hasResponseData
+                ? this.partnerCards
+                : html`
+                  <div class="progress-circle-wrapper">
+                    <sp-theme theme="spectrum" color="light" scale="medium">
+                      <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
+                    </sp-theme>
                   </div>
-                </div>`
-                : ''
+                `
               }
             </div>
-          </div>
-          <div class="partner-cards-collection">
-            ${this.hasResponseData
-              ? this.partnerCards
-              : html`
-                <div class="progress-circle-wrapper">
-                  <sp-theme theme="spectrum" color="light" scale="medium">
-                    <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
-                  </sp-theme>
+            ${this.cards.length
+              ? html`
+                <div class="pagination-wrapper">
+                  ${this.pagination}
+                  <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
                 </div>
               `
-            }
+              : ''
+              }
           </div>
-          ${this.cards.length
-            ? html`
-              <div class="pagination-wrapper">
-                ${this.pagination}
-                <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
-              </div>
-            `
-            : ''
-            }
         </div>
-      </div>
 
-      ${this.mobileView
-        ? html `
-          <div class="all-filters-wrapper-mobile">
-            <div class="all-filters-header-mobile">
-              <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{back}}']}"></button>
-              <span class="all-filters-header-title-mobile">${this.blockData.localizedText['{{filter-by}}']}</span>
-            </div>
-            <div class="all-filters-list-mobile">
-              ${this.filtersMobile}
-            </div>
-            <div class="all-filters-footer-mobile">
-              <span class="all-filters-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
-              <div class="all-filters-footer-buttons-mobile">
-                <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
-                <sp-theme theme="spectrum" color="light" scale="medium">
-                  <sp-button @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
-                </sp-theme>
+        ${this.mobileView
+          ? html `
+            <div class="all-filters-wrapper-mobile">
+              <div class="all-filters-header-mobile">
+                <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{back}}']}"></button>
+                <span class="all-filters-header-title-mobile">${this.blockData.localizedText['{{filter-by}}']}</span>
+              </div>
+              <div class="all-filters-list-mobile">
+                ${this.filtersMobile}
+              </div>
+              <div class="all-filters-footer-mobile">
+                <span class="all-filters-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
+                <div class="all-filters-footer-buttons-mobile">
+                  <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
+                  <sp-theme theme="spectrum" color="light" scale="medium">
+                    <sp-button @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{apply}}']}">${this.blockData.localizedText['{{apply}}']}</sp-button>
+                  </sp-theme>
+                </div>
               </div>
             </div>
-          </div>
-        `
-        : ''
-      }
-    `;
+          `
+          : ''
+        }
+      </div>`: ''}
+    </div>`;
   }
 }

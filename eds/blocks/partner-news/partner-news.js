@@ -1,4 +1,5 @@
-import { getLibs, replaceText, getConfig, populateLocalizedTextFromListItems } from '../../scripts/utils.js';
+import { getLibs } from '../../scripts/utils.js';
+import { replaceText, getConfig, populateLocalizedTextFromListItems } from '../utils/utils.js';
 import PartnerNews from './PartnerNews.js';
 
 function declarePartnerNews() {
