@@ -922,7 +922,7 @@ export const newsCardStyles = css`
   .news-card .card-header {
     min-height: 192px;
     max-height: 192px;
-    background-color: #323232;
+    background-color: #f5f5F5;
     background-repeat: no-repeat;
     background-position: 50% 50%;
     background-size: cover;

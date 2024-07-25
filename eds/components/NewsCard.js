@@ -4,6 +4,9 @@ import { formatDate, getLibs } from '../scripts/utils.js';
 const miloLibs = getLibs();
 const { html, LitElement } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
+// @todo - make this configurable somewhere.
+const DEFAULT_BACKGROUND_IMAGE_URL = 'https://solutionpartners.stage2.adobe.com/content/dam/solution/en/images/card-collection/sample_default.png';
+
 class NewsCard extends LitElement {
   static properties = { data: { type: Object } };
 
@@ -21,6 +24,22 @@ class NewsCard extends LitElement {
     newUrl.protocol = window.location.protocol;
     newUrl.host = window.location.host;
     return newUrl;
+  }
+
+  checkBackgroundImage(element) {
+    const style = window.getComputedStyle(element);
+    const url = style.backgroundImage.slice(5, -2);
+    const img = new Image();
+
+    img.onerror = () => {
+      element.style.backgroundImage = `url(${DEFAULT_BACKGROUND_IMAGE_URL})`;
+    };
+
+    img.src = url;
+  }
+
+  firstUpdated() {
+    this.checkBackgroundImage(this.shadowRoot.querySelector('.card-header'));
   }
 
   render() {
