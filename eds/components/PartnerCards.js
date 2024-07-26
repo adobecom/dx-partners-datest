@@ -1,17 +1,28 @@
-import { getLibs, prodHosts } from '../scripts/utils.js';
-import { partnerCardsStyles } from './PartnerCardsStyles.js';
+import {
+  getLibs,
+  prodHosts,
+  getPartnerDataCookieValue,
+  getCurrentProgramType,
+} from '../scripts/utils.js';
+import {
+  partnerCardsStyles,
+  partnerCardsLoadMoreStyles,
+  partnerCardsPaginationStyles,
+} from './PartnerCardsStyles.js';
 import './NewsCard.js';
 
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
 export default class PartnerCards extends LitElement {
-  static styles = css`
-    ${partnerCardsStyles}
-    #search {
+  static styles = [
+    partnerCardsStyles,
+    partnerCardsLoadMoreStyles,
+    partnerCardsPaginationStyles,
+    css`#search {
       width: 100%;
-    }
-  `;
+    }`,
+  ];
 
   static properties = {
     blockData: { type: Object },
@@ -19,6 +30,7 @@ export default class PartnerCards extends LitElement {
     paginatedCards: { type: Array },
     searchTerm: { type: String },
     paginationCounter: { type: Number },
+    totalPages: { type: Number },
     selectedSortOrder: { type: Object },
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
@@ -33,6 +45,7 @@ export default class PartnerCards extends LitElement {
     this.paginatedCards = [];
     this.searchTerm = '';
     this.paginationCounter = 1;
+    this.totalPages = 0;
     this.cardsPerPage = 12;
     this.selectedSortOrder = {};
     this.selectedFilters = {};
@@ -92,15 +105,19 @@ export default class PartnerCards extends LitElement {
         const [sortKeysEl] = cols;
         const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
 
+        if (!sortKeys.length) return;
+
         const sortItems = sortKeys.map((sortKey) => {
           const key = sortKey.endsWith('_default') ? sortKey.slice(0, -8) : sortKey;
           const value = this.blockData.localizedText[`{{${key}}}`];
           return { key, value };
         });
 
-        const defaultKey = sortKeys.find((key) => key.endsWith('_default')).slice(0, -8) || sortKeys[0];
-        const defaultValue = sortItems.find((e) => e.key === defaultKey).value;
-        this.blockData.sort = { items: sortItems, default: { key: defaultKey, value: defaultValue } };
+        const defaultKey = sortKeys.find((key) => key.endsWith('_default'));
+        const finalDefaultKey = defaultKey ? defaultKey.slice(0, -8) : sortKeys[0];
+        const defaultValue = sortItems.find((e) => e.key === finalDefaultKey).value;
+        // eslint-disable-next-line max-len
+        this.blockData.sort = { items: sortItems, default: { key: finalDefaultKey, value: defaultValue } };
       },
       'cards-per-page': (cols) => {
         const [cardsPerPageEl] = cols;
@@ -111,7 +128,14 @@ export default class PartnerCards extends LitElement {
       'collection-tags': (cols) => {
         const [collectionTagsEl] = cols;
         const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
-        this.collectionTags = [...this.collectionTags, ...collectionTags];
+        if (collectionTags.length) {
+          this.collectionTags = [...this.collectionTags, ...collectionTags];
+        }
+      },
+      pagination: (cols) => {
+        const [paginationEl] = cols;
+        const paginationType = paginationEl.innerText.trim();
+        if (paginationType) this.blockData.pagination = paginationType.toLowerCase().replace(/ /g, '-');
       },
     };
 
@@ -142,6 +166,7 @@ export default class PartnerCards extends LitElement {
     this.handleActions();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   additionalFirstUpdated() {}
 
   async fetchData() {
@@ -158,6 +183,7 @@ export default class PartnerCards extends LitElement {
         if (window.location.hostname === 'partners.adobe.com') {
           apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
         }
+        // eslint-disable-next-line no-return-assign
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
         this.allCards = apiData.cards;
         this.cards = apiData.cards;
@@ -183,53 +209,32 @@ export default class PartnerCards extends LitElement {
   }
 
   getComplexQueryParams() {
-    const portal = this.getProgramType(window.location.pathname);
-    let partnerLevelParams;
+    const portal = getCurrentProgramType();
+    if (!portal) return;
 
-    if (portal) {
-      const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
-      if (!this.collectionTags.length || !this.collectionTags.includes(portalCollectionTag)) {
-        this.collectionTags = [...this.collectionTags, portalCollectionTag];
-      }
-
-      partnerLevelParams = this.getPartnerLevelParams(portal);
+    const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
+    if (!this.collectionTags.includes(portalCollectionTag)) {
+      this.collectionTags = [...this.collectionTags, portalCollectionTag];
     }
 
-    if (!this.collectionTags.length) return;
-
+    const partnerLevelParams = this.getPartnerLevelParams(portal);
     const collectionTagsStr = this.collectionTags.filter((e) => e.length).join('+AND+');
-    return partnerLevelParams ? `((${collectionTagsStr}))+AND+${partnerLevelParams}` : `((${collectionTagsStr}))`;
+
+    let resulStr = `(${collectionTagsStr})`;
+    if (partnerLevelParams) resulStr += `+AND+${partnerLevelParams}`;
+    // eslint-disable-next-line consistent-return
+    return resulStr;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getPartnerLevelParams(portal) {
-    try {
-      const publicTag = `(("caas:adobe-partners/${portal}/partner-level/public"))`;
-      const cookies = document.cookie.split(';').map((cookie) => cookie.trim());
-      const partnerDataCookie = cookies.find((cookie) => cookie.startsWith('partner_data='));
-      if (!partnerDataCookie) return publicTag;
-
-      const cookieValue = JSON.parse(decodeURIComponent(partnerDataCookie.substring(('partner_data=').length).toLowerCase()));
-      if (cookieValue && cookieValue[portal]) {
-        const cookieLevel = cookieValue[portal].level;
-        if (cookieLevel) return `(("caas:adobe-partners/${portal}/partner-level/${cookieLevel}")+OR+("caas:adobe-partners/${portal}/partner-level/public"))`;
-      }
-      return publicTag;
-    } catch (error) {
-      console.error('Error parsing partner data object:', error);
-      return '';
-    }
-  }
-
-  getProgramType(path) {
-    switch (true) {
-      case /solutionpartners/.test(path): return 'spp';
-      case /technologypartners/.test(path): return 'tpp';
-      case /channelpartners/.test(path): return 'cpp';
-      default: return '';
-    }
+    const partnerLevel = getPartnerDataCookieValue(portal, 'level');
+    const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
+    return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
   }
 
   initUrlSearchParams() {
+    // eslint-disable-next-line no-restricted-globals
     const { search } = location || window.location;
     this.urlSearchParams = new URLSearchParams(search);
 
@@ -271,6 +276,7 @@ export default class PartnerCards extends LitElement {
   get sortItems() {
     if (!this.blockData.sort.items.length) return;
 
+    // eslint-disable-next-line consistent-return
     return html`${repeat(
       this.blockData.sort.items,
       (item) => item.key,
@@ -283,21 +289,65 @@ export default class PartnerCards extends LitElement {
     )}`;
   }
 
-  get pagination() {}
+  // eslint-disable-next-line class-methods-use-this,no-empty-function,getter-return
+  get pagination() {
+    if (this.blockData.pagination === 'load-more') return this.loadMorePagination;
+    return this.defaultPagination;
+  }
+
+  get loadMorePagination() {
+    if (this.cards.length === this.paginatedCards.length) return '';
+    return html`<button class="load-more-btn" @click="${this.handleLoadMore}" aria-label="${this.blockData.localizedText['{{load-more}}']}">${this.blockData.localizedText['{{load-more}}']}</button>`;
+  }
+
+  get defaultPagination() {
+    return html`
+      <div class="pagination-pages-list">
+        <button class="pagination-prev-btn ${this.paginationCounter === 1 || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handlePrevPage}" aria-label="${this.blockData.localizedText['{{previous-page}}']}">
+          ${this.blockData.localizedText['{{prev}}']}</button>
+        ${this.paginationList}
+        <button class="pagination-next-btn ${this.paginationCounter === this.totalPages || !this.paginatedCards?.length ? 'disabled' : ''}" @click="${this.handleNextPage}" aria-label="${this.blockData.localizedText['{{next-page}}']}">
+          ${this.blockData.localizedText['{{next}}']}</button>
+      </div>
+    `;
+  }
+
+  get paginationList() {
+    if (!this.cards.length) return;
+
+    const min = 1;
+    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
+
+    const pagesNumArray = Array.from({ length: this.totalPages }, (_, i) => i + min);
+    // eslint-disable-next-line consistent-return
+    return html`${repeat(
+      pagesNumArray,
+      (pageNum) => pageNum,
+      (pageNum) => html`<button
+        class="page-btn ${this.paginationCounter === pageNum ? 'selected' : ''}"
+        @click="${() => this.handlePageNum(pageNum)}"
+        aria-label="${this.blockData.localizedText['{{page}}']} ${pageNum}">
+        ${pageNum}
+      </button>`,
+    )}`;
+  }
 
   get cardsCounter() {
-    if (!this.paginatedCards.length) {
-      return 0;
-    }
+    const { length } = this.paginatedCards;
+    if (!length) return 0;
 
-    const lastIndex = this.paginatedCards.length - 1;
-    const { orderNum: lastElOrderNum } = this.paginatedCards[lastIndex];
-    return lastElOrderNum;
+    const { orderNum: lastElOrderNum } = this.paginatedCards[length - 1];
+
+    if (this.blockData.pagination === 'load-more') return lastElOrderNum;
+
+    const { orderNum: firstElOrderNum } = this.paginatedCards[0];
+    return `${firstElOrderNum} - ${lastElOrderNum}`;
   }
 
   get filters() {
     if (!this.blockData.filters.length) return;
 
+    // eslint-disable-next-line consistent-return
     return html`${repeat(
       this.blockData.filters,
       (filter) => filter.key,
@@ -309,7 +359,7 @@ export default class PartnerCards extends LitElement {
           <div class="filter">
             <button class="filter-header" @click=${(e) => this.toggleFilter(e.currentTarget.parentNode)} aria-label="${filter.value}">
               <span class="filter-label">${filter.value}</span>
-              <span class="filter-chevron-icon" />
+              <span class="filter-chevron-icon"></span>
             </button>
             <button class="filter-selected-tags-count-btn ${tagsCount ? '' : 'hidden'}" @click="${() => this.handleResetTags(filter.key)}" aria-label="${tagsCount}">
               <span class="filter-selected-tags-total-num">${tagsCount}</span>
@@ -327,6 +377,7 @@ export default class PartnerCards extends LitElement {
   get filtersMobile() {
     if (!this.blockData.filters.length) return;
 
+    // eslint-disable-next-line consistent-return
     return html`${repeat(
       this.blockData.filters,
       (filter) => filter.key,
@@ -335,6 +386,7 @@ export default class PartnerCards extends LitElement {
         const { tagsString } = selectedTagsData;
         const { tagsCount } = selectedTagsData;
 
+        /* eslint-disable indent */
         return html`
           <div class="filter-wrapper-mobile">
             <div class="filter-mobile">
@@ -342,7 +394,7 @@ export default class PartnerCards extends LitElement {
                 <div class="filter-header-content-mobile">
                   <h3 class="filter-header-name-mobile">${filter.value}</h3>
                   ${tagsCount
-                    ? html `
+                    ? html`
                       <div class="filter-header-selected-tags-mobile">
                         <span class="filter-header-selected-tags-text-mobile">${tagsString}</span>
                         <span class="filter-header-selected-tags-count-mobile">+ ${tagsCount}</span>
@@ -351,7 +403,7 @@ export default class PartnerCards extends LitElement {
                     : ''
                   }
                 </div>
-                <span class="filter-header-chevron-icon" />
+                <span class="filter-header-chevron-icon"></span>
               </button>
               <ul class="filter-tags-mobile">
                 <sp-theme theme="spectrum" color="light" scale="medium">
@@ -372,6 +424,7 @@ export default class PartnerCards extends LitElement {
             </div>
           </div>
         `;
+        /* eslint-enable indent */
       },
     )}`;
   }
@@ -389,6 +442,7 @@ export default class PartnerCards extends LitElement {
         </button>`,
     )}`;
 
+    // eslint-disable-next-line consistent-return
     return { htmlContent, tagsCount: extractedTags.length };
   }
 
@@ -413,6 +467,7 @@ export default class PartnerCards extends LitElement {
     element.classList.toggle('expanded');
   }
 
+  // eslint-disable-next-line class-methods-use-this
   toggleFilter(clickedFilter) {
     clickedFilter.classList.toggle('expanded');
   }
@@ -432,28 +487,33 @@ export default class PartnerCards extends LitElement {
     if (this.blockData.sort.items.length) this.handleSortAction();
     if (this.blockData.filters.length) this.handleFilterAction();
     this.additionalActions();
+    // eslint-disable-next-line no-return-assign
     this.cards.forEach((card, index) => card.orderNum = index + 1);
+    this.updatePaginatedCards();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   additionalActions() {}
 
   handleResetActions() {
     this.searchTerm = '';
     this.selectedFilters = {};
     this.blockData.filters.forEach((filter) => {
+      // eslint-disable-next-line no-return-assign
       filter.tags.forEach((tag) => tag.checked = false);
       this.urlSearchParams.delete(filter.key);
     });
-    this.urlSearchParams.delete('filters');
     this.additionalResetActions();
     this.paginationCounter = 1;
     this.handleActions();
-    this.handleUrlSearchParams();
+    if (this.blockData.filters.length) this.handleUrlSearchParams();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   additionalResetActions() {}
 
   handleSearchAction() {
+    // eslint-disable-next-line max-len
     this.cards = this.allCards.filter((card) => card.contentArea?.title.toLowerCase().includes(this.searchTerm)
       || card.contentArea?.description.toLowerCase().includes(this.searchTerm));
   }
@@ -496,10 +556,12 @@ export default class PartnerCards extends LitElement {
         if ('id' in firstObj && 'version' in firstObj) {
           cardArbitraryArr = cardArbitraryArr.slice(1);
         }
+        // eslint-disable-next-line consistent-return
         return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
           const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
           const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
           if (key === arbitraryTagKeyStr) {
+            // eslint-disable-next-line max-len
             return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
           }
           return false;
@@ -562,6 +624,7 @@ export default class PartnerCards extends LitElement {
     tag.checked = false;
     const { key: tagKey, parentKey: filterKey } = tag;
 
+    // eslint-disable-next-line max-len
     const updatedFilterTags = [...this.selectedFilters[filterKey]].filter((filterTag) => filterTag.key !== tagKey);
 
     if (updatedFilterTags.length) {
@@ -591,6 +654,7 @@ export default class PartnerCards extends LitElement {
 
     this.blockData.filters.forEach((filter) => {
       if (filter.key === filterKey) {
+        // eslint-disable-next-line no-return-assign
         filter.tags.forEach((tag) => tag.checked = false);
       }
     });
@@ -615,11 +679,44 @@ export default class PartnerCards extends LitElement {
     };
   }
 
+  updatePaginatedCards() {
+    const endIndex = this.paginationCounter * this.cardsPerPage;
+    const startIndex = this.blockData.pagination === 'load-more' ? 0 : (this.paginationCounter - 1) * this.cardsPerPage;
+    this.paginatedCards = this.cards.slice(startIndex, endIndex);
+  }
+
+  handleLoadMore() {
+    this.paginationCounter += 1;
+    this.handleActions();
+  }
+
+  handlePageNum(pageNum) {
+    if (this.paginationCounter !== pageNum) {
+      this.paginationCounter = pageNum;
+      this.handleActions();
+    }
+  }
+
+  handlePrevPage() {
+    if (this.paginationCounter > 1) {
+      this.paginationCounter -= 1;
+      this.handleActions();
+    }
+  }
+
+  handleNextPage() {
+    if (this.paginationCounter < this.totalPages) {
+      this.paginationCounter += 1;
+      this.handleActions();
+    }
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('resize', this.updateView);
   }
 
+  /* eslint-disable indent */
   render() {
     return html`
       <div class="partner-cards">
@@ -653,25 +750,23 @@ export default class PartnerCards extends LitElement {
             </div>
             <div class="partner-cards-sort-wrapper">
               ${this.mobileView
-                ? html `
+                ? html`
                   <button class="filters-btn-mobile" @click="${this.openFiltersMobile}" aria-label="${this.blockData.localizedText['{{filters}}']}">
                     <span class="filters-btn-mobile-icon"></span>
                     <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
                     ${this.chosenFilters?.tagsCount
-                      ? html `
-                        <span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>
-                      `
+                      ? html`<span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>`
                       : ''
                     }
                   </button>
                 `
                 : ''
               }
-              ${this.blockData.sort.items.length 
-                ? html `<div class="sort-wrapper">
+              ${this.blockData.sort.items.length
+                ? html`<div class="sort-wrapper">
                   <button class="sort-btn" @click="${this.toggleSort}">
                     <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
-                    <span class="filter-chevron-icon" />
+                    <span class="filter-chevron-icon"></span>
                   </button>
                   <div class="sort-list">
                     ${this.sortItems}
@@ -695,7 +790,7 @@ export default class PartnerCards extends LitElement {
           </div>
           ${this.cards.length
             ? html`
-              <div class="pagination-wrapper">
+              <div class="pagination-wrapper ${this.blockData?.pagination === 'load-more' ? 'pagination-wrapper-load-more' : 'pagination-wrapper-default'}">
                 ${this.pagination}
                 <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
               </div>
@@ -706,7 +801,7 @@ export default class PartnerCards extends LitElement {
       </div>
 
       ${this.mobileView
-        ? html `
+        ? html`
           <div class="all-filters-wrapper-mobile">
             <div class="all-filters-header-mobile">
               <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{back}}']}"></button>
@@ -730,4 +825,5 @@ export default class PartnerCards extends LitElement {
       }
     `;
   }
+  /* eslint-enable indent */
 }

@@ -1,4 +1,4 @@
-import { newsCardStyles } from './PartnerCardsStyles.js';
+import { newsCardStyles } from './NewsCardStyles.js';
 import { formatDate, getLibs } from '../scripts/utils.js';
 
 const miloLibs = getLibs();
@@ -9,6 +9,7 @@ class NewsCard extends LitElement {
 
   static styles = newsCardStyles;
 
+  // eslint-disable-next-line class-methods-use-this
   transformCardUrl(url) {
     if (!url) {
       console.error('URL is null or undefined');
