@@ -1,4 +1,4 @@
-import { newsCardStyles } from './PartnerCardsStyles.js';
+import { newsCardStyles } from './NewsCardStyles.js';
 import { formatDate, getLibs, prodHosts } from '../scripts/utils.js';
 
 const miloLibs = getLibs();
