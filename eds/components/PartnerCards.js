@@ -17,9 +17,11 @@ const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all
 export default class PartnerCards extends LitElement {
   static caasUrl;
 
-  static styles = css`
-    ${partnerCardsStyles}
-    #search {
+  static styles = [
+    partnerCardsStyles,
+    partnerCardsLoadMoreStyles,
+    partnerCardsPaginationStyles,
+    css`#search {
       width: 100%;
     }`,
   ];
@@ -35,8 +37,7 @@ export default class PartnerCards extends LitElement {
     selectedFilters: { type: Object },
     urlSearchParams: { type: Object },
     mobileView: { type: Boolean },
-    useStageCaasEndpoint: { type: Boolean },
-    fetchedData: {type: Boolean}
+    fetchedData: { type: Boolean },
   };
 
   constructor() {
@@ -128,13 +129,6 @@ export default class PartnerCards extends LitElement {
         const cardsPerPageNum = parseInt(cardsPerPageStr, 10);
         if (cardsPerPageNum) this.blockData.cardsPerPage = cardsPerPageNum;
       },
-      'collection-tags': (cols) => {
-        const [collectionTagsEl] = cols;
-        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
-        if (collectionTags.length) {
-          this.collectionTags = [...this.collectionTags, ...collectionTags];
-        }
-      },
       pagination: (cols) => {
         const [paginationEl] = cols;
         const paginationType = paginationEl.innerText.trim();
@@ -186,7 +180,6 @@ export default class PartnerCards extends LitElement {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      // const response = await this.blockData.asa;
       apiData = await response.json();
       if (apiData?.cards) {
         if (window.location.hostname === 'partners.adobe.com') {
@@ -198,8 +191,8 @@ export default class PartnerCards extends LitElement {
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = true;
-        this.hasResults = !!apiData.cards.length
-      } 
+        this.hasResults = !!apiData.cards.length;
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -237,7 +230,7 @@ export default class PartnerCards extends LitElement {
       const cols = Array.from(row.children);
       const rowTitle = cols[0].innerText.trim().toLowerCase().replace(/ /g, '-');
       const colsContent = cols.slice(1);
-      if(rowTitle === 'collection-tags') {
+      if (rowTitle === 'collection-tags') {
         const [collectionTagsEl] = colsContent;
         const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
         tableCollectionTags = [...tableCollectionTags, ...collectionTags];
@@ -245,54 +238,31 @@ export default class PartnerCards extends LitElement {
     });
 
     return tableCollectionTags;
-
   }
 
   static getComplexQueryParams(el, collectionTag) {
-    const portal = PartnerCards.getProgramType(window.location.pathname);
-    let partnerLevelParams;
-    let collectionTags = [collectionTag];
+    const portal = getCurrentProgramType();
+    if (!portal) return;
 
-    if (portal) {
-      const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
-      const tableTags = PartnerCards.extractTableCollectionTags(el);
-      collectionTags = [...collectionTags, portalCollectionTag, ...tableTags];
+    const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
+    const tableTags = PartnerCards.extractTableCollectionTags(el);
+    const collectionTags = [collectionTag, portalCollectionTag, ...tableTags];
 
-      partnerLevelParams = PartnerCards.getPartnerLevelParams(portal);
-    }
+    const partnerLevelParams = PartnerCards.getPartnerLevelParams(portal);
 
     if (!collectionTags.length) return;
 
     const collectionTagsStr = collectionTags.filter((e) => e.length).join('+AND+');
-    return partnerLevelParams ? `(${collectionTagsStr})+AND+${partnerLevelParams}` : `(${collectionTagsStr})`;
+    let resulStr = `(${collectionTagsStr})`;
+    if (partnerLevelParams) resulStr += `+AND+${partnerLevelParams}`;
+    // eslint-disable-next-line consistent-return
+    return resulStr;
   }
 
   static getPartnerLevelParams(portal) {
-    try {
-      const publicTag = `("caas:adobe-partners/${portal}/partner-level/public")`;
-      const cookies = document.cookie.split(';').map((cookie) => cookie.trim());
-      const partnerDataCookie = cookies.find((cookie) => cookie.startsWith('partner_data='));
-      if (!partnerDataCookie) return publicTag;
-
-      const cookieValue = JSON.parse(decodeURIComponent(partnerDataCookie.substring(('partner_data=').length).toLowerCase()));
-      if (cookieValue && cookieValue[portal]) {
-        const cookieLevel = cookieValue[portal].level;
-        if (cookieLevel) return `("caas:adobe-partners/${portal}/partner-level/${cookieLevel}"+OR+"caas:adobe-partners/${portal}/partner-level/public")`;
-      }
-      return publicTag;
-    } catch (error) {
-      console.error('Error parsing partner data object:', error);
-      return '';
-    }
-  }
-
-  static getProgramType(path) {
-    switch (true) {
-      case /solutionpartners/.test(path): return 'spp';
-      case /technologypartners/.test(path): return 'tpp';
-      case /channelpartners/.test(path): return 'cpp';
-      default: return '';
-    }
+    const partnerLevel = getPartnerDataCookieValue(portal, 'level');
+    const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
+    return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
   }
 
   initUrlSearchParams() {
@@ -330,6 +300,7 @@ export default class PartnerCards extends LitElement {
       )}`;
     }
 
+    // eslint-disable-next-line getter-return consistent-return
     if (!this.hasResults) {
       return html`<div class="no-results">
           <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
@@ -783,8 +754,9 @@ export default class PartnerCards extends LitElement {
 
   /* eslint-disable indent */
   render() {
-    // Sakrij posebno mobile view i ovo ez DRAGANA NAREDILA !!!
     return html`
+    ${this.fetchedData
+      ? html`
       <div class="partner-cards">
         <div class="partner-cards-sidebar-wrapper">
           <div class="partner-cards-sidebar">
@@ -837,18 +809,22 @@ export default class PartnerCards extends LitElement {
                   <div class="sort-list">
                     ${this.sortItems}
                   </div>
-                `
+                </div>`
+                : ''
               }
             </div>
-            ${this.cards.length
-              ? html`
-                <div class="pagination-wrapper">
-                  ${this.pagination}
-                  <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
+          </div>
+          <div class="partner-cards-collection">
+            ${this.hasResponseData
+              ? this.partnerCards
+              : html`
+                <div class="progress-circle-wrapper">
+                  <sp-theme theme="spectrum" color="light" scale="medium">
+                    <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
+                  </sp-theme>
                 </div>
               `
-              : ''
-              }
+            }
           </div>
           ${this.cards.length
             ? html`
@@ -860,8 +836,9 @@ export default class PartnerCards extends LitElement {
             : ''
             }
         </div>
+      </div>` : ''}
 
-      ${this.mobileView
+      ${this.mobileView && this.fetchedData
         ? html`
           <div class="all-filters-wrapper-mobile">
             <div class="all-filters-header-mobile">
@@ -880,11 +857,11 @@ export default class PartnerCards extends LitElement {
                 </sp-theme>
               </div>
             </div>
-          `
-          : ''
-        }
-      </div>`: ''}
-    </div>`;
+          </div>
+        `
+        : ''
+      }
+    `;
   }
   /* eslint-enable indent */
 }

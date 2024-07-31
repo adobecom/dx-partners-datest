@@ -16,6 +16,7 @@ describe('partner-news block', () => {
       this.cards = cards;
       this.paginatedCards = this.cards.slice(0, 3);
       this.hasResponseData = true;
+      this.fetchedData = true;
     });
 
     await import('../../../eds/scripts/scripts.js');

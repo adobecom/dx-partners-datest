@@ -90,7 +90,7 @@ export function getLocale(locales, pathname = window.location.pathname) {
   locale.prefix = isUS ? '' : `/${localeString}`;
   locale.region = isUS ? 'us' : localeString.split('_')[0];
   return locale;
-};
+}
 
 function preload(url) {
   const preloadLink = document.createElement('link');
@@ -118,12 +118,12 @@ export async function preloadResources(locales, miloLibs) {
   const locale = getLocale(locales);
   const cardBlocks = {
     'partner-news': '"caas:adobe-partners/collections/news"',
-    'knowledge-base-overview': '"caas:adobe-partners/collections/knowledge-base"'
-  }
+    'knowledge-base-overview': '"caas:adobe-partners/collections/knowledge-base"',
+  };
 
-  for (const [key, value] of Object.entries(cardBlocks)) {
+  Object.entries(cardBlocks).forEach(async ([key, value]) => {
     const el = document.querySelector(`.${key}`);
-    if(!el) continue;
+    if (!el) return;
 
     preloadPlaceholders(locale);
     preloadLit(miloLibs);
@@ -132,12 +132,14 @@ export async function preloadResources(locales, miloLibs) {
       el,
       name: key,
       collectionTag: value,
-      ietf: locale.ietf
-
-    }
-    const { default: PartnerCards } = await import('../components/PartnerCards.js'); 
+      ietf: locale.ietf,
+    };
+    const { default: PartnerCards } = await import('../components/PartnerCards.js');
     const caasUrl = PartnerCards.getCaasUrl(block);
     preload(caasUrl);
+  });
+}
+
 export function getProgramType(path) {
   switch (true) {
     case /solutionpartners/.test(path): return 'spp';
