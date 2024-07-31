@@ -34,6 +34,7 @@ export default async function init(el) {
     '{{last-6-months}}': 'Last 6 months',
     '{{next}}': 'Next',
     '{{next-page}}': 'Next Page',
+    '{{load-more}}': 'Load more',
     '{{no-results-description}}': 'Try checking your spelling or broadening your search.',
     '{{no-results-title}}': 'No Results Found',
     '{{of}}': 'Of',
@@ -77,6 +78,7 @@ export default async function init(el) {
     cardsPerPage: 12,
     ietf: config.locale.ietf,
     collectionTags: '"caas:adobe-partners/collections/knowledge-base"',
+    pagination: 'default',
   };
 
   const app = document.createElement('knowledge-base-overview');

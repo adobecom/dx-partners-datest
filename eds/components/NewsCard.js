@@ -1,14 +1,17 @@
-import { newsCardStyles } from './PartnerCardsStyles.js';
-import { formatDate, getLibs } from '../scripts/utils.js';
+import { newsCardStyles } from './NewsCardStyles.js';
+import { formatDate, getLibs, prodHosts } from '../scripts/utils.js';
 
 const miloLibs = getLibs();
 const { html, LitElement } = await import(`${miloLibs}/deps/lit-all.min.js`);
+
+const DEFAULT_BACKGROUND_IMAGE_PATH = '/content/dam/solution/en/images/card-collection/sample_default.png';
 
 class NewsCard extends LitElement {
   static properties = { data: { type: Object } };
 
   static styles = newsCardStyles;
 
+  // eslint-disable-next-line class-methods-use-this
   transformCardUrl(url) {
     if (!url) {
       console.error('URL is null or undefined');
@@ -21,6 +24,25 @@ class NewsCard extends LitElement {
     newUrl.protocol = window.location.protocol;
     newUrl.host = window.location.host;
     return newUrl;
+  }
+
+  checkBackgroundImage(element) {
+    const url = this.data.styles?.backgroundImage;
+    const img = new Image();
+
+    const isProd = prodHosts.includes(window.location.host);
+    const defaultBackgroundImageOrigin = `https://partners.${isProd ? '' : 'stage.'}adobe.com`;
+    const defaultBackgroundImageUrl = `${defaultBackgroundImageOrigin}${DEFAULT_BACKGROUND_IMAGE_PATH}`;
+
+    img.onerror = () => {
+      element.style.backgroundImage = `url(${defaultBackgroundImageUrl})`;
+    };
+
+    img.src = url;
+  }
+
+  firstUpdated() {
+    this.checkBackgroundImage(this.shadowRoot.querySelector('.card-header'));
   }
 
   render() {
