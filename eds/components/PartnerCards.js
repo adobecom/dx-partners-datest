@@ -215,7 +215,7 @@ export default class PartnerCards extends LitElement {
     const complexQueryParams = PartnerCards.getComplexQueryParams(el, collectionTag);
     if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
 
-    const { language, country } = block.ietf;
+    const [language, country] = block.ietf.split('-');
     if (language && country) {
       api.searchParams.set('language', language);
       api.searchParams.set('country', country);
