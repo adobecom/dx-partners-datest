@@ -85,7 +85,12 @@ export default class PartnerCards extends LitElement {
       filter: (cols) => {
         const [filterKeyEl, filterTagsKeysEl] = cols;
         const filterKey = filterKeyEl.innerText.trim().toLowerCase().replace(/ /g, '-');
-        const filterTagsKeys = Array.from(filterTagsKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
+
+        const filterTagsKeys = [];
+        filterTagsKeysEl.querySelectorAll('li').forEach((li) => {
+          const key = li.innerText.trim().toLowerCase().replace(/ /g, '-');
+          if (key !== '') filterTagsKeys.push(key);
+        });
 
         if (!filterKey || !filterTagsKeys.length) return;
 
@@ -103,7 +108,12 @@ export default class PartnerCards extends LitElement {
       },
       sort: (cols) => {
         const [sortKeysEl] = cols;
-        const sortKeys = Array.from(sortKeysEl.querySelectorAll('li'), (li) => li.innerText.trim().toLowerCase().replace(/ /g, '-'));
+
+        const sortKeys = [];
+        sortKeysEl.querySelectorAll('li').forEach((li) => {
+          const key = li.innerText.trim().toLowerCase().replace(/ /g, '-');
+          if (key !== '') sortKeys.push(key);
+        });
 
         if (!sortKeys.length) return;
 
