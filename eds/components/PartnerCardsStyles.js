@@ -557,7 +557,7 @@ export const partnerCardsStyles = css`
   @media screen and (max-width: 1200px) {
     .all-filters-wrapper-mobile.open {
       position: fixed;
-      z-index: 10;
+      z-index: 10000000;
       display: flex;
       flex-direction: column;
       width: 100%;

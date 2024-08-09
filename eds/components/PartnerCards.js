@@ -167,6 +167,8 @@ export default class PartnerCards extends LitElement {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       apiData = await response.json();
+      const cardsEvent = new Event('partner-cards-loaded');
+      document.dispatchEvent(cardsEvent);
       if (apiData?.cards) {
         if (window.location.hostname === 'partners.adobe.com') {
           apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
@@ -510,6 +512,7 @@ export default class PartnerCards extends LitElement {
         }
         // eslint-disable-next-line consistent-return
         return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
+          if (!arbitraryTag.value || !arbitraryTag.key) return false;
           const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
           const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
           if (key === arbitraryTagKeyStr) {
