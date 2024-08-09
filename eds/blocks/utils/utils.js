@@ -11,7 +11,9 @@ export { replaceText };
 export function populateLocalizedTextFromListItems(el, localizedText) {
   const liList = Array.from(el.querySelectorAll('li'));
   liList.forEach((liEl) => {
-    let liContent = liEl.innerText.trim().toLowerCase().replace(/ /g, '-');
+    const liInnerText = liEl.innerText;
+    if (!liInnerText) return;
+    let liContent = liInnerText.trim().toLowerCase().replace(/ /g, '-');
     if (liContent.endsWith('_default')) liContent = liContent.slice(0, -8);
     localizedText[`{{${liContent}}}`] = liContent;
   });

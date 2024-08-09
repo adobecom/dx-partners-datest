@@ -134,8 +134,7 @@ export async function preloadResources(locales, miloLibs) {
       collectionTag: value,
       ietf: locale.ietf,
     };
-    const { default: PartnerCards } = await import('../components/PartnerCards.js');
-    const caasUrl = PartnerCards.getCaasUrl(block);
+    const caasUrl = getCaasUrl(block);
     preload(caasUrl);
   });
 }
@@ -170,4 +169,66 @@ export function getPartnerDataCookieValue(programType, key) {
     // eslint-disable-next-line consistent-return
     return '';
   }
+}
+
+export function getCaasUrl(block) {
+  const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
+  const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
+  const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
+  return setApiParams(api, block);
+}
+
+function setApiParams(api, block) {
+  const { el, collectionTag } = block;
+  const complexQueryParams = getComplexQueryParams(el, collectionTag);
+  if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
+
+  const [language, country] = block.ietf.split('-');
+  if (language && country) {
+    api.searchParams.set('language', language);
+    api.searchParams.set('country', country);
+  }
+
+  return api.toString();
+}
+
+function extractTableCollectionTags(el) {
+  let tableCollectionTags = [];
+  Array.from(el.children).forEach((row) => {
+    const cols = Array.from(row.children);
+    const rowTitle = cols[0].innerText.trim().toLowerCase().replace(/ /g, '-');
+    const colsContent = cols.slice(1);
+    if (rowTitle === 'collection-tags') {
+      const [collectionTagsEl] = colsContent;
+      const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
+      tableCollectionTags = [...tableCollectionTags, ...collectionTags];
+    }
+  });
+
+  return tableCollectionTags;
+}
+
+function getComplexQueryParams(el, collectionTag) {
+  const portal = getCurrentProgramType();
+  if (!portal) return;
+
+  const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
+  const tableTags = extractTableCollectionTags(el);
+  const collectionTags = [collectionTag, portalCollectionTag, ...tableTags];
+
+  const partnerLevelParams = getPartnerLevelParams(portal);
+
+  if (!collectionTags.length) return;
+
+  const collectionTagsStr = collectionTags.filter((e) => e.length).join('+AND+');
+  let resulStr = `(${collectionTagsStr})`;
+  if (partnerLevelParams) resulStr += `+AND+${partnerLevelParams}`;
+  // eslint-disable-next-line consistent-return
+  return resulStr;
+}
+
+function getPartnerLevelParams(portal) {
+  const partnerLevel = getPartnerDataCookieValue(portal, 'level');
+  const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
+  return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
 }

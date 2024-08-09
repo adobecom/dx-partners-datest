@@ -41,7 +41,7 @@ describe('knowledge-base-overview block', () => {
     expect(knowledgeBaseWrapper.shadowRoot).to.exist;
     const partnerCardsCollection = knowledgeBaseWrapper.shadowRoot.querySelector('.partner-cards-collection');
     expect(partnerCardsCollection).to.exist;
-    expect(partnerCardsCollection.innerHTML).to.include('news-card');
+    expect(partnerCardsCollection.innerHTML).to.include('single-partner-card');
     const firstCard = partnerCardsCollection.querySelector('.card-wrapper');
     expect(firstCard.shadowRoot).to.exist;
     const searchBarWrapper = knowledgeBaseWrapper.shadowRoot.querySelector('.partner-cards-sidebar .search-wrapper');

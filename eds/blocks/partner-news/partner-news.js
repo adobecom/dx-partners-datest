@@ -1,4 +1,4 @@
-import { getLibs } from '../../scripts/utils.js';
+import { getCaasUrl, getLibs } from '../../scripts/utils.js';
 import { replaceText, getConfig, populateLocalizedTextFromListItems } from '../utils/utils.js';
 import PartnerNews from './PartnerNews.js';
 
@@ -71,14 +71,20 @@ export default async function init(el) {
     ],
   };
 
+  const block = {
+    el,
+    name: 'partner-news',
+    collectionTag: '"caas:adobe-partners/collections/news"',
+    ietf: config.locale.ietf
+  }
+
   const blockData = {
     localizedText,
     tableData: el.children,
     dateFilter,
     cardsPerPage: 12,
-    ietf: config.locale.ietf,
-    collectionTags: '"caas:adobe-partners/collections/news"',
     pagination: 'load-more',
+    caasUrl: getCaasUrl(block)
   };
 
   const app = document.createElement('partner-news');

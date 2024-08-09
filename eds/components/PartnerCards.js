@@ -1,15 +1,12 @@
 import {
   getLibs,
-  prodHosts,
-  getPartnerDataCookieValue,
-  getCurrentProgramType,
 } from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
   partnerCardsPaginationStyles,
 } from './PartnerCardsStyles.js';
-import './NewsCard.js';
+import './SinglePartnerCard.js';
 
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
@@ -52,9 +49,7 @@ export default class PartnerCards extends LitElement {
     this.selectedSortOrder = {};
     this.selectedFilters = {};
     this.urlSearchParams = {};
-    this.collectionTags = [];
     this.hasResponseData = true;
-    this.hasResults = true;
     this.fetchedData = false;
     this.mobileView = window.innerWidth <= 1200;
     this.updateView = this.updateView.bind(this);
@@ -75,11 +70,7 @@ export default class PartnerCards extends LitElement {
         default: {},
         items: [],
       },
-      language: '',
-      country: '',
     };
-
-    this.collectionTags = [this.blockData.collectionTags];
 
     const blockDataActions = {
       title: (cols) => {
@@ -143,10 +134,6 @@ export default class PartnerCards extends LitElement {
       const colsContent = cols.slice(1);
       if (blockDataActions[rowTitle]) blockDataActions[rowTitle](colsContent);
     });
-
-    const [language, country] = this.blockData.ietf.split('-');
-    this.blockData.language = language;
-    this.blockData.country = country;
   }
 
   updateView() {
@@ -172,11 +159,10 @@ export default class PartnerCards extends LitElement {
 
       setTimeout(() => {
         this.hasResponseData = !!apiData?.cards;
-        this.hasResults = !!apiData?.cards?.length;
         this.fetchedData = true;
       }, 5);
 
-      const response = await fetch(PartnerCards.getCaasUrl());
+      const response = await fetch(this.blockData.caasUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -191,78 +177,10 @@ export default class PartnerCards extends LitElement {
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = true;
-        this.hasResults = !!apiData.cards.length;
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-  }
-
-  static getCaasUrl(block) {
-    if (this.caasUrl) {
-      return this.caasUrl;
-    }
-    const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
-    const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
-    const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
-    const apiWithParams = PartnerCards.setApiParams(api, block);
-    this.caasUrl = apiWithParams;
-    return this.caasUrl;
-  }
-
-  static setApiParams(api, block) {
-    const { el, collectionTag } = block;
-    const complexQueryParams = PartnerCards.getComplexQueryParams(el, collectionTag);
-    if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
-
-    const [language, country] = block.ietf.split('-');
-    if (language && country) {
-      api.searchParams.set('language', language);
-      api.searchParams.set('country', country);
-    }
-
-    return api.toString();
-  }
-
-  static extractTableCollectionTags(el) {
-    let tableCollectionTags = [];
-    Array.from(el.children).forEach((row) => {
-      const cols = Array.from(row.children);
-      const rowTitle = cols[0].innerText.trim().toLowerCase().replace(/ /g, '-');
-      const colsContent = cols.slice(1);
-      if (rowTitle === 'collection-tags') {
-        const [collectionTagsEl] = colsContent;
-        const collectionTags = Array.from(collectionTagsEl.querySelectorAll('li'), (li) => `"${li.innerText.trim().toLowerCase()}"`);
-        tableCollectionTags = [...tableCollectionTags, ...collectionTags];
-      }
-    });
-
-    return tableCollectionTags;
-  }
-
-  static getComplexQueryParams(el, collectionTag) {
-    const portal = getCurrentProgramType();
-    if (!portal) return;
-
-    const portalCollectionTag = `"caas:adobe-partners/${portal}"`;
-    const tableTags = PartnerCards.extractTableCollectionTags(el);
-    const collectionTags = [collectionTag, portalCollectionTag, ...tableTags];
-
-    const partnerLevelParams = PartnerCards.getPartnerLevelParams(portal);
-
-    if (!collectionTags.length) return;
-
-    const collectionTagsStr = collectionTags.filter((e) => e.length).join('+AND+');
-    let resulStr = `(${collectionTagsStr})`;
-    if (partnerLevelParams) resulStr += `+AND+${partnerLevelParams}`;
-    // eslint-disable-next-line consistent-return
-    return resulStr;
-  }
-
-  static getPartnerLevelParams(portal) {
-    const partnerLevel = getPartnerDataCookieValue(portal, 'level');
-    const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
-    return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
   }
 
   initUrlSearchParams() {
@@ -296,17 +214,15 @@ export default class PartnerCards extends LitElement {
       return html`${repeat(
         this.paginatedCards,
         (card) => card.id,
-        (card) => html`<news-card class="card-wrapper" .data=${card}></news-card>`,
+        (card) => html`<single-partner-card class="card-wrapper" .data=${card}></single-partner-card>`,
       )}`;
     }
 
     // eslint-disable-next-line getter-return consistent-return
-    if (!this.hasResults) {
-      return html`<div class="no-results">
-          <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
-          <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
-        </div>`;
-    }
+    return html`<div class="no-results">
+        <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
+        <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
+      </div>`;
   }
 
   get sortItems() {

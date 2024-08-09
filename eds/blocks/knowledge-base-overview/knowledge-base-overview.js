@@ -1,4 +1,4 @@
-import { getLibs } from '../../scripts/utils.js';
+import { getCaasUrl, getLibs } from '../../scripts/utils.js';
 import { replaceText, getConfig, populateLocalizedTextFromListItems } from '../utils/utils.js';
 import KnowledgeBaseOverview from './KnowledgeBaseOverview.js';
 
@@ -71,14 +71,20 @@ export default async function init(el) {
     ],
   };
 
+  const block = {
+    el,
+    name: 'knowledge-base-overview',
+    collectionTag: '"caas:adobe-partners/collections/knowledge-base"',
+    ietf: config.locale.ietf
+  }
+
   const blockData = {
     localizedText,
     tableData: el.children,
     dateFilter,
     cardsPerPage: 12,
-    ietf: config.locale.ietf,
-    collectionTags: '"caas:adobe-partners/collections/knowledge-base"',
     pagination: 'default',
+    caasUrl: getCaasUrl(block)
   };
 
   const app = document.createElement('knowledge-base-overview');
