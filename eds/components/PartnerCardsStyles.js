@@ -436,7 +436,7 @@ export const partnerCardsStyles = css`
     display: block;
     right: 0;
     top: 30px;
-    z-index: 10;
+    z-index: 1;
     background-color: #fff;
     border-radius: 5px;
     border: 1px solid #eaeaea;
