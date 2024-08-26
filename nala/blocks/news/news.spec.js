@@ -85,7 +85,7 @@ export default {
       tcid: '6',
       name: '@login-news-page-platinum-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
-      tags: '@dx-news @regression @anonymous',
+      tags: '@dx-news @regression @anonymous @circleCi',
       data: {
         platinumCard: 'Automation regression news card spp platinum no1',
         partnerLevel: 'Platinum',

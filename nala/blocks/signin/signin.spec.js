@@ -6,7 +6,7 @@ export default {
       name: '@login-redirect-to-protected-home',
       testId: '@MWPW-140197',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-platinum:',
         expectedProtectedURL: '/solutionpartners/drafts/automation/regression/protected-home',
@@ -18,7 +18,7 @@ export default {
       name: '@login-no-redirection-public-news',
       testId: '@MWPW-140198 @MWPW-140201',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/partner-news',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-gold:',
         expectedToSeeInURL: '/solutionpartners/drafts/automation/regression/partner-news',
@@ -30,7 +30,7 @@ export default {
       testId: '@MWPW-140202',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
       baseURL: 'https://www.stage.adobe.com/partners.html',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-community:',
         expectedProtectedURL: '/solutionpartners/drafts/automation/regression/protected-home',
@@ -42,7 +42,7 @@ export default {
       testId: '@MWPW-140203',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
       baseURL: 'https://www.stage.adobe.com/partners.html',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-platinum:',
         expectedProtectedURL: '/solutionpartners/drafts/automation/regression/protected-home',
@@ -54,7 +54,7 @@ export default {
       testId: '@MWPW-140207',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
       newsPath: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/partner-news',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'tpp-platinum:',
         expectedToSeeInURL: '/solutionpartners/error/contact-not-found',
@@ -66,7 +66,7 @@ export default {
       testId: '@MWPW-140202',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/protected-home',
       baseURL: 'https://www.stage.adobe.com/partners.html',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'tpp-platinum:',
         expectedToSeeInURL: '/solutionpartners/error/contact-not-found',
@@ -78,7 +78,7 @@ export default {
       testId: '@MWPW-140212',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
       baseURL: 'https://www.stage.adobe.com/partners.html',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'tpp-platinum:',
         expectedToSeeInURL: '/solutionpartners/error/contact-not-found',
@@ -89,7 +89,7 @@ export default {
       name: '@login-accessing-restricted-home-page-with-non-logged-in-user',
       testId: '@MWPW-140213',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/protected-home',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       expectedToSeeInURL: 'https://auth-stg1.services.adobe.com/',
     },
     {
@@ -97,7 +97,7 @@ export default {
       name: '@login-with-submitted-in-review-spp-user',
       testId: '@MWPW-140214',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-submitted-in-review:',
         expectedLandingPageURL: 'https://partners.stage.adobe.com/solutionpartners/error/submitted-in-review',
@@ -108,7 +108,7 @@ export default {
       name: '@login-with-deactivated-spp-user',
       testId: '@MWPW-140224',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-deactivated:',
         expectedLandingPageURL: 'https://partners.stage.adobe.com/solutionpartners/error/contact-inactive',
@@ -119,7 +119,7 @@ export default {
       name: '@login-with-expired-spp-user',
       testId: 'MWPW-140215',
       path: 'https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/public-page',
-      tags: '@dx-signin @regression @login @nopr',
+      tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'spp-expired:',
         expectedLandingPageURL: 'https://partners.stage.adobe.com/solutionpartners/error/account-expired',
