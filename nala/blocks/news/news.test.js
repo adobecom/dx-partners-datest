@@ -52,10 +52,10 @@ test.describe('Validate news block', () => {
   }
 
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[0];
+    const { data, path } = features[0];
     await test.step('Go to News page', async () => {
       console.log('url: ', baseURL + features[0].path);
-      await page.goto(`${baseURL}${features[0].path}`);
+      await page.goto(`${baseURL}${path}`);
       const result = await newsPage.resultNumber.textContent();
       await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
@@ -92,9 +92,9 @@ test.describe('Validate news block', () => {
   });
 
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[1];
+    const { data, path } = features[1];
     await test.step('Go to News page', async () => {
-      await page.goto(`${baseURL}${features[1].path}`);
+      await page.goto(`${baseURL}${path}`);
       await newsPage.firstCardDate.waitFor({ state: 'visible', timeout: 20000 });
       const result = await newsPage.resultNumber.textContent();
       await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
@@ -126,9 +126,42 @@ test.describe('Validate news block', () => {
   });
 
   test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[2];
+    const { data, path } = features[2];
     await test.step('Go to News page', async () => {
-      await page.goto(`${baseURL}${features[2].path}`);
+      await page.goto(`${baseURL}${path}`);
+      await newsPage.firstCardDate.waitFor({ state: 'visible', timeout: 15000 });
+      const result = await newsPage.resultNumber.textContent();
+      await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
+      await newsPage.searchField.fill(data.searchCards);
+      const filteredCards = await newsPage.resultNumber.textContent();
+      await expect(parseInt(filteredCards.split(' ')[0], 10)).toBe(data.numberOfCardsWithTitle);
+    });
+
+    await test.step('Verify pagination buttons', async () => {
+      let paginationText = await newsPage.paginationText.textContent();
+      await expect(paginationText.toLowerCase()).toBe(data.firstPageResult);
+      const paginationPrevButton = await newsPage.paginationPrevButton;
+      await expect(paginationPrevButton).toHaveClass(/disabled/);
+      const paginationNextButton = await newsPage.paginationNextButton;
+      await expect(paginationNextButton).not.toHaveClass(/disabled/);
+      await expect(await newsPage.pageCount.count()).toBe(data.totalPageCount);
+      await newsPage.clickPageNumButton(data.pageButtonNumber);
+      paginationText = await newsPage.paginationText.textContent();
+      await expect(paginationText.toLowerCase()).toBe(data.secondPageResult);
+      await expect(paginationPrevButton).not.toHaveClass(/disabled/);
+      await expect(paginationNextButton).not.toHaveClass(/disabled/);
+      await paginationNextButton.click();
+      paginationText = await newsPage.paginationText.textContent();
+      await expect(paginationText.toLowerCase()).toBe(data.thirdPageResult);
+      await expect(paginationPrevButton).not.toHaveClass(/disabled/);
+      await expect(paginationNextButton).toHaveClass(/disabled/);
+    });
+  });
+
+    test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+      const { data, path } = features[3];
+      await test.step('Go to News page', async () => {
+      await page.goto(`${baseURL}${path}`);
       await newsPage.firstCardDate.waitFor({ state: 'visible', timeout: 20000 });
       const result = await newsPage.resultNumber.textContent();
       await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
@@ -181,10 +214,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[3];
+  test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+    const { data, path } = features[4];
     await test.step('Go to News page', async () => {
-      await page.goto(`${baseURL}${features[3].path}`);
+      await page.goto(`${baseURL}${path}`);
       await page.waitForLoadState('domcontentloaded');
       await newsPage.searchField.fill(data.cardTitle);
       await newsPage.firstCardTitle.waitFor({ state: 'visible', timeout: 10000 });
@@ -200,10 +233,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[4];
+  test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
+    const { data, path } = features[5];
     await test.step('Go to News page', async () => {
-      await page.goto(`${baseURL}${features[4].path}`);
+      await page.goto(`${baseURL}${path}`);
       const result = await newsPage.resultNumber.textContent();
       await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
@@ -230,17 +263,17 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[5].name},${features[5].tags}`, async ({ page, context, baseURL }) => {
-    const { data } = features[5];
+  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
+    const { data, path } = features[5];
     await test.step('Click Sign In', async () => {
-      await page.goto(`${baseURL}${features[5].path}`);
+      await page.goto(`${baseURL}${path}`);
       await page.waitForLoadState('domcontentloaded');
       const result = await newsPage.resultNumber.textContent();
       await expect(parseInt(result.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
       await newsPage.searchField.fill(data.platinumCard);
       const resultPlatinum = await newsPage.resultNumber.textContent();
       await expect(parseInt(resultPlatinum.split(' ')[0], 10)).toBe(data.noCards);
-      await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + features[5].path, context);
+      await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
 
       await page.reload();
       await page.waitForLoadState('domcontentloaded');
@@ -262,60 +295,60 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
-    const { data } = features[6];
-    await findCardsForPartnerLevel(
-      page,
-      baseURL + features[6].path,
-      data,
-      context,
-    );
-  });
-
   test(`${features[7].name},${features[7].tags}`, async ({ page, context, baseURL }) => {
-    const { data } = features[7];
+    const { data, path } = features[7];
     await findCardsForPartnerLevel(
       page,
-      baseURL + features[7].path,
+      baseURL + path,
       data,
       context,
     );
   });
 
   test(`${features[8].name},${features[8].tags}`, async ({ page, context, baseURL }) => {
-    const { data } = features[8];
+    const { data, path } = features[8];
     await findCardsForPartnerLevel(
       page,
-      baseURL + features[8].path,
+      baseURL + path,
       data,
       context,
     );
   });
 
   test(`${features[9].name},${features[9].tags}`, async ({ page, context, baseURL }) => {
-    const { data } = features[9];
+    const { data, path } = features[9];
+    await findCardsForPartnerLevel(
+      page,
+      baseURL + path,
+      data,
+      context,
+    );
+  });
+
+  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL }) => {
+    const { data, path } = features[10];
     await test.step('Click Sign In', async () => {
       await findCardsForPartnerLevel(
         page,
-        baseURL + features[9].path,
+        baseURL + path,
         data,
         context,
       );
     });
   });
 
-  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL, browserName }) => {
-    const { data } = features[10];
+  test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL }) => {
+    const { data, path } = features[11];
     await test.step('Go to stage.adobe.com', async () => {
-      await page.goto(`${baseURL}${features[10].path}`);
-      await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + features[10].path, context);
+      await page.goto(`${baseURL}${path}`);
+      await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
       await page.reload();
       await page.waitForLoadState('domcontentloaded');
     });
 
-    await test.step(`Open ${features[10].path} in a new tab`, async () => {
+    await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
-      await newTab.goto(`${features[10].path}`);
+      await newTab.goto(`${path}`);
       const newTabPage = new NewsPage(newTab);
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);

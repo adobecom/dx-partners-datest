@@ -17,7 +17,7 @@ export default {
     },
     {
       tcid: '2',
-      name: '@desc-regression-news-page-pagination-sort',
+      name: '@desc-regression-news-page-load-more-sort',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       data: {
         cardTitle: 'Automation regression news card SPP',
@@ -31,6 +31,22 @@ export default {
     },
     {
       tcid: '3',
+      name: '@desc-regression-news-page-pagination',
+      path: '/solutionpartners/drafts/automation/regression/partner-news-paginated',
+      tags: '@dx-news @regression @anonymous',
+      data: {
+        searchCards: 'Automation regression news card SPP',
+        firstPageResult: '1 - 3 of 8 results',
+        secondPageResult: '4 - 6 of 8 results',
+        thirdPageResult: '7 - 8 of 8 results',
+        numberOfCardsWithTitle: 8,
+        numberOfPublicCards: 9,
+        pageButtonNumber: 2,
+        totalPageCount: 3,
+      },
+    },
+    {
+      tcid: '4',
       name: '@desc-regression-news-page-filters',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
@@ -55,7 +71,7 @@ export default {
       },
     },
     {
-      tcid: '4',
+      tcid: '5',
       name: '@desc-regression-news-page-read-article',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       data: {
@@ -66,7 +82,7 @@ export default {
       tags: '@dx-news @regression @anonymous',
     },
     {
-      tcid: '5',
+      tcid: '6',
       name: '@desc-news-page-edge-cases',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       data: {
@@ -82,7 +98,7 @@ export default {
       tags: '@dx-news @regression @anonymous',
     },
     {
-      tcid: '6',
+      tcid: '7',
       name: '@login-news-page-platinum-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous @circleCi',
@@ -99,7 +115,7 @@ export default {
       },
     },
     {
-      tcid: '7',
+      tcid: '8',
       name: '@login-news-page-gold-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
@@ -115,7 +131,7 @@ export default {
       },
     },
     {
-      tcid: '8',
+      tcid: '9',
       name: '@login-news-page-silver-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
@@ -131,7 +147,7 @@ export default {
       },
     },
     {
-      tcid: '9',
+      tcid: '10',
       name: '@login-news-page-bronze-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
@@ -147,7 +163,7 @@ export default {
       },
     },
     {
-      tcid: '10',
+      tcid: '11',
       name: '@login-news-page-community-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
@@ -163,7 +179,7 @@ export default {
       },
     },
     {
-      tcid: '11',
+      tcid: '12',
       name: '@login-news-page-non-member-of-spp-user',
       path: '/solutionpartners/drafts/automation/regression/partner-news',
       tags: '@dx-news @regression @anonymous',
