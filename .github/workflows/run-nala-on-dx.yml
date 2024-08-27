@@ -15,7 +15,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Run Nala
-        uses: cod17828/nala@dev # Change if doing dev work
+        uses: adobecom/dx-partners@stage # Change if doing dev work
         env:
           labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
           branch: ${{ github.event.pull_request.head.ref }}
@@ -27,3 +27,4 @@ jobs:
           prBaseBranch: ${{ github.event.pull_request.base.ref }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          HLX_API_KEY: ${{ secrets.HLX_API_KEY }}
