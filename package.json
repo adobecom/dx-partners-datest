@@ -7,6 +7,7 @@
   "scripts": {
     "test": "wtr \"./test/**/*.test.js\" --node-resolve --port=2000 --coverage",
     "test:watch": "npm test -- --watch",
+    "nala": "node nala/utils/nala.run.js",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
     "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'"
@@ -25,6 +26,7 @@
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",
     "@esm-bundle/chai": "4.3.4-fix.0",
+    "@playwright/test": "^1.42.1",
     "@web/dev-server-import-maps": "^0.0.6",
     "@web/test-runner": "0.13.27",
     "@web/test-runner-commands": "0.6.1",
@@ -41,6 +43,8 @@
     "stylelint-config-standard": "25.0.0"
   },
   "dependencies": {
-    "@adobecom/milo": "github:adobecom/milo#main"
+    "@adobecom/milo": "github:adobecom/milo#main",
+    "axios": "^1.7.4",
+    "playwright": "^1.45.3"
   }
 }
