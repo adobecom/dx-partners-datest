@@ -522,12 +522,13 @@ export default class PartnerCards extends LitElement {
         }
         // eslint-disable-next-line consistent-return
         return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
-          if (!arbitraryTag.value || !arbitraryTag.key) return false;
-          const arbitraryTagKeyStr = arbitraryTag.key.trim().toLowerCase().replaceAll(' ', '-');
-          const arbitraryTagValueStr = arbitraryTag.value.trim().toLowerCase().replaceAll(' ', '-');
-          if (key === arbitraryTagKeyStr) {
+          const arbitraryTagKey = Object.keys(arbitraryTag)[0]?.replaceAll(' ', '-');
+          if (arbitraryTagKey !== key) return false;
+
+          const arbitraryTagValue = arbitraryTag[key].replaceAll(' ', '-');
+          if (arbitraryTagValue) {
             // eslint-disable-next-line max-len
-            return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValueStr);
+            return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
           }
           return false;
         }));
