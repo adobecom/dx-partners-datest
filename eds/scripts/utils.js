@@ -358,5 +358,28 @@ export function redirectLoggedinPartner() {
   window.location.assign(target);
 }
 
-// todo check do we need enableGeoPopup  since in scripts/scripts.js it is commented out , while on dme we have geoRouting: enableGeoPopup(),
-// todo should we include also setupPage() - to setup gnav and footer
+export function getMetadata(name) {
+  return document.querySelector(`meta[name="${name}"]`);
+}
+
+export function updateNavigation(locales) {
+  const gnavMeta = getMetadata('gnav-source');
+  if (!gnavMeta) return;
+  // todo check do we need locales for spp (same for footer) and update if yes (check dme code)
+  let { content } = gnavMeta;
+  if (isMember()) {
+    // todo update when we have default logged in gnav created (same for footer)
+    content = getMetadataContent('gnav-loggedin-source') ?? `/solutionpartners/spp-shared/gnav`;
+  }
+  gnavMeta.content = content;
+}
+
+export function updateFooter(locales) {
+  const footerMeta = getMetadata('footer-source');
+  if (!footerMeta) return;
+  let { content } = footerMeta;
+  if (isMember()) {
+    content = getMetadataContent('footer-loggedin-source') ?? `/solutionpartners/spp-shared/footer`;
+  }
+  footerMeta.content = content;
+}

@@ -10,7 +10,14 @@
  * governing permissions and limitations under the License.
  */
 
-import {prodHosts, setLibs, preloadResources, redirectLoggedinPartner} from './utils.js';
+import {
+  prodHosts,
+  setLibs,
+  preloadResources,
+  redirectLoggedinPartner,
+  updateNavigation,
+  updateFooter
+} from './utils.js';
 import {applyPagePersonalization} from "./personalization.js";
 import {rewriteLinks} from "./rewriteLinks.js";
 // import PartnerNews  from '../blocks/partner-news/PartnerNews.js';
@@ -68,7 +75,13 @@ const miloLibs = setLibs(LIBS);
   });
 }());
 
+function setUpPage() {
+  updateNavigation(CONFIG.locales);
+  updateFooter(CONFIG.locales);
+}
 (async function loadPage() {
+  applyPagePersonalization();
+  setUpPage();
   redirectLoggedinPartner();
 
   await preloadResources(CONFIG.locales, miloLibs);
