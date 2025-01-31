@@ -8,16 +8,21 @@ const DEFAULT_BACKGROUND_IMAGE_PATH = '/content/dam/solution/en/images/card-coll
 const KB_TAG = 'caas:adobe-partners/collections/knowledge-base';
 
 class SinglePartnerCard extends LitElement {
-  static properties = { data: { type: Object } };
+  static properties = {
+    data: { type: Object },
+    ietf: { type: String },
+  };
 
   static styles = singlePartnerCardStyles;
 
   // eslint-disable-next-line class-methods-use-this
   transformCardUrl(url) {
     if (!url) {
+      // eslint-disable-next-line no-console
       console.error('URL is null or undefined');
       return '';
     }
+    // todo do wee need this if block (doesn't exist in dme)
     if (window.location.host === 'partners.adobe.com') {
       return url;
     }
@@ -54,14 +59,14 @@ class SinglePartnerCard extends LitElement {
   render() {
     return html`
       <div class="single-partner-card">
-        <div class="card-header" style="background-image: url('${this.imageUrl}')" alt="${this.data.styles?.backgroundAltText}"></div>
+        <div class="card-header" style="background-image: url(${this.imageUrl})" alt="${this.data.styles?.backgroundAltText}"></div>
         <div class="card-content">
           <div class="card-text">
             <p class="card-title">${this.data.contentArea?.title !== 'card-metadata' ? this.data.contentArea?.title : ''}</p>
             <p class="card-description">${this.data.contentArea?.description}</p>
           </div>
           <div class="card-footer">
-            <span class="card-date">${formatDate(this.data.cardDate)}</span>
+            <span class="card-date">${formatDate(this.data.cardDate, this.ietf)}</span>
             <a class="card-btn" href="${this.transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
           </div>
         </div>

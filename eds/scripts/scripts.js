@@ -10,7 +10,9 @@
  * governing permissions and limitations under the License.
  */
 
-import { prodHosts, setLibs, preloadResources } from './utils.js';
+import {prodHosts, setLibs, preloadResources, redirectLoggedinPartner} from './utils.js';
+import {applyPagePersonalization} from "./personalization.js";
+import {rewriteLinks} from "./rewriteLinks.js";
 // import PartnerNews  from '../blocks/partner-news/PartnerNews.js';
 
 // Add project-wide style path here.
@@ -67,10 +69,16 @@ const miloLibs = setLibs(LIBS);
 }());
 
 (async function loadPage() {
+  redirectLoggedinPartner();
+
   await preloadResources(CONFIG.locales, miloLibs);
 
   const { loadArea, setConfig } = await import(`${miloLibs}/utils/utils.js`);
 
   setConfig({ ...CONFIG, miloLibs });
   await loadArea();
+  applyPagePersonalization();
+
+  rewriteLinks(document);
+
 }());

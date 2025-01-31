@@ -1,0 +1,5 @@
+<svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" fill="#9256d9" class="spectrum-Icon_368b34 spectrum-Icon--sizeM_368b34" focusable="false" aria-hidden="true" role="img">
+  <path d="M20 11V2H7a1 1 0 0 0-1 1v30a1 1 0 0 0 1 1h22a1 1 0 0 0 1-1V12h-9a1 1 0 0 1-1-1z"></path>
+  <path d="M22 2h.086a1 1 0 0 1 .707.293l6.914 6.914a1 1 0 0 1 .293.707V10h-8z"></path>
+  <text x="50%" y="64%" text-anchor="middle" dy=".3em" font-size="9" font-weight="bold" letter-spacing="-0.5" fill="white" font-family="adobe-clean-ux, adobe-clean, Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif"> REC </text>
+</svg>
