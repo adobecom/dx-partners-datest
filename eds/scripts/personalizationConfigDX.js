@@ -1,4 +1,4 @@
-import { processPrimaryContact, processSalesAccess } from './personalizationUtils';
+import { processPrimaryContact, processSalesAccess } from './personalizationUtils.js';
 import {
     getPartnerDataCookieObject,
     hasSalesCenterAccess,
