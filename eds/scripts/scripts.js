@@ -16,7 +16,7 @@ import {
   preloadResources,
   redirectLoggedinPartner,
   updateNavigation,
-  updateFooter
+  updateFooter, updateIMSConfig, getRenewBanner, PARTNER_LOGIN_QUERY
 } from './utils.js';
 import {applyPagePersonalization} from "./personalization.js";
 import {rewriteLinks} from "./rewriteLinks.js";
@@ -44,7 +44,17 @@ const CONFIG = {
   },
 };
 
+(function removePartnerLoginQuery() {
+  const url = new URL(window.location.href);
+  const { searchParams } = url;
+  if (searchParams.has(PARTNER_LOGIN_QUERY)) {
+    searchParams.delete(PARTNER_LOGIN_QUERY);
+    window.history.replaceState({}, '', url.toString());
+  }
+}());
+
 (function removeAccessToken() {
+  window.location.hash = decodeURIComponent(window.location.hash);
   if (window.location.hash.startsWith('#access_token')) {
     window.location.hash = '';
   }
@@ -83,15 +93,14 @@ function setUpPage() {
   applyPagePersonalization();
   setUpPage();
   redirectLoggedinPartner();
-
+  updateIMSConfig();
   await preloadResources(CONFIG.locales, miloLibs);
-
-  const { loadArea, setConfig } = await import(`${miloLibs}/utils/utils.js`);
+  const { loadArea, setConfig, getConfig } = await import(`${miloLibs}/utils/utils.js`);
 
   setConfig({ ...CONFIG, miloLibs });
+  await getRenewBanner(getConfig);
   await loadArea();
   applyPagePersonalization();
-
   rewriteLinks(document);
 
 }());

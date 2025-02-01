@@ -11,6 +11,7 @@
  */
 const PARTNER_ERROR_REDIRECTS_COUNT_COOKIE = 'partner_redirects_count';
 const MAX_PARTNER_ERROR_REDIRECTS_COUNT = 3;
+export const PARTNER_LOGIN_QUERY = 'partnerLogin';
 
 /**
  * The decision engine for where to get Milo's libs from.
@@ -357,6 +358,73 @@ export function redirectLoggedinPartner() {
   document.body.style.display = 'none';
   window.location.assign(target);
 }
+export function updateIMSConfig() {
+  const isSignedIn = partnerIsSignedIn();
+  const imsReady = setInterval(() => {
+    if (!window.adobeIMS) return;
+    if (isSignedIn && !window.adobeIMS.isSignedInUser()) return;
+    clearInterval(imsReady);
+    let target;
+    const partnerLogin = !window.adobeIMS.isSignedInUser();
+    if (partnerLogin) {
+      target = getMetadataContent('adobe-target-after-login');
+    } else {
+      target = getMetadataContent('adobe-target-after-logout') ?? getProgramHomePage(window.location.pathname);
+    }
+
+    const targetUrl = new URL(window.location.href);
+    // eslint-disable-next-line chai-friendly/no-unused-expressions
+    partnerLogin && targetUrl.searchParams.set(PARTNER_LOGIN_QUERY, true);
+    if (target && target !== 'NONE') {
+      targetUrl.pathname = target;
+
+      if (!partnerLogin) {
+        targetUrl.search = '';
+      }
+    }
+
+    window.adobeIMS.adobeIdData.redirect_uri = targetUrl.toString();
+  }, 500);
+}
+export async function getRenewBanner(getConfig) {
+  const renew = isRenew();
+  if (!renew) return;
+  const { accountStatus, daysNum } = renew;
+  const bannerFragments = {
+    expired: 'banner-account-expires',
+    suspended: 'banner-account-suspended',
+  };
+  const metadataKey = bannerFragments[accountStatus];
+
+  const config = getConfig();
+  const { prefix } = config.locale;
+  const defaultPath = `${prefix}/eds/partners-shared/fragments/${metadataKey}`;
+  const path = getMetadataContent(metadataKey) ?? defaultPath;
+  const url = new URL(path, window.location.origin);
+
+  try {
+    const response = await fetch(`${url}.plain.html`);
+    if (!response.ok) throw new Error(`Network response was not ok ${response.statusText}`);
+
+    const data = await response.text();
+    const componentData = data.replace('$daysNum', daysNum);
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(componentData, 'text/html');
+    const block = doc.querySelector('.notification');
+
+    const div = document.createElement('div');
+    div.appendChild(block);
+
+    const main = document.querySelector('main');
+    if (main) main.insertBefore(div, main.firstChild);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('There has been a problem with your fetch operation:', error);
+    // eslint-disable-next-line consistent-return
+    return null;
+  }
+}
+
 
 export function getMetadata(name) {
   return document.querySelector(`meta[name="${name}"]`);
