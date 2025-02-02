@@ -153,6 +153,19 @@ export function getProgramType(path) {
   }
 }
 
+export function getProgramHomePage(path) {
+  switch (true) {
+    case /solutionpartners/.test(path):
+      return '/solutionpartners/';
+    case /technologypartners/.test(path):
+      return '/technologypartners/';
+    case /channelpartners/.test(path):
+      return '/channelpartners/';
+    default:
+      return '';
+  }
+}
+
 export function getCurrentProgramType() {
   return getProgramType(window.location.pathname);
 }
