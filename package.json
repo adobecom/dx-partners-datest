@@ -12,7 +12,8 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint .",
     "lint:css": "stylelint 'blocks/**/*.css' 'styles/*.css'",
-    "jest": "jest --testPathPattern=test --coverage --coverageDirectory=coverage/jest"
+    "jest": "jest --testPathPattern=test --coverage --coverageDirectory=coverage/jest",
+    "lint:fix": "eslint --fix --ext .js,.jsx ."
   },
   "repository": {
     "type": "git",
@@ -49,7 +50,8 @@
     "stylelint-config-standard": "25.0.0"
   },
   "jest": {
-    "testRegex": "\\.jest\\.(js|jsx)$"
+    "testRegex": "\\.jest\\.(js|jsx)$",
+    "testEnvironment": "jsdom"
   },
   "dependencies": {
     "@adobecom/milo": "github:adobecom/milo#main",

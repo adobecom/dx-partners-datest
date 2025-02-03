@@ -107,43 +107,6 @@ function preloadLit(miloLibs) {
   document.head.appendChild(preloadLink);
 }
 
-export async function preloadResources(locales, miloLibs) {
-  const locale = getLocale(locales);
-  const cardBlocks = {
-    'partner-news': '"caas:adobe-partners/collections/news"',
-    'knowledge-base-overview': '"caas:adobe-partners/collections/knowledge-base"',
-  };
-// since we are going to add search-full  later, adding this code update now to prevent being forgotten since in search
-  // block we are not aware of this logic
-  const blockWithPlaceholders = ['search-full'];
-  let isPreloadCalled = false;
-  blockWithPlaceholders.forEach(async (item) => {
-    const el = document.querySelector(`.${item}`);
-    if (!el) return;
-    if (!isPreloadCalled) {
-      preloadPlaceholders(locale);
-      isPreloadCalled = true;
-    }
-  });
-
-  Object.entries(cardBlocks).forEach(async ([key, value]) => {
-    const el = document.querySelector(`.${key}`);
-    if (!el) return;
-
-    preloadPlaceholders(locale);
-    preloadLit(miloLibs);
-
-    const block = {
-      el,
-      name: key,
-      collectionTag: value,
-      ietf: locale.ietf,
-    };
-    const caasUrl = getCaasUrl(block);
-    preload(caasUrl);
-  });
-}
-
 export function getProgramType(path) {
   switch (true) {
     case /solutionpartners/.test(path): return 'spp';
@@ -189,27 +152,6 @@ export function getPartnerDataCookieValue(programType, key) {
   }
 }
 
-export function getCaasUrl(block) {
-  const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
-  const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
-  const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
-  return setApiParams(api, block);
-}
-
-function setApiParams(api, block) {
-  const { el, collectionTag, ietf } = block;
-  const complexQueryParams = getComplexQueryParams(el, collectionTag);
-  if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
-
-  const [language, country] = ietf.split('-');
-  if (language && country) {
-    api.searchParams.set('language', language);
-    api.searchParams.set('country', country);
-  }
-
-  return api.toString();
-}
-
 function extractTableCollectionTags(el) {
   console.log('element', el);
   let tableCollectionTags = [];
@@ -225,6 +167,29 @@ function extractTableCollectionTags(el) {
   });
 
   return tableCollectionTags;
+}
+
+function getPartnerLevelParams(portal) {
+  const partnerLevel = getPartnerDataCookieValue(portal, 'level');
+  const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
+  return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
+}
+
+function checkForQaContent(el) {
+  if (!el.children) return false;
+
+  // Iterating backward because we expect 'qa-content' to be in the last rows.
+  // eslint-disable-next-line no-plusplus
+  for (let i = el.children.length - 1; i >= 0; i--) {
+    const row = el.children[i];
+
+    const rowTitle = row.children[0]?.innerText?.trim().toLowerCase().replace(/ /g, '-');
+    if (rowTitle?.includes('qa-content')) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function getComplexQueryParams(el, collectionTag) {
@@ -252,40 +217,17 @@ function getComplexQueryParams(el, collectionTag) {
   return resulStr;
 }
 
-function checkForQaContent(el) {
-  if (!el.children) return false;
-
-  // Iterating backward because we expect 'qa-content' to be in the last rows.
-  // eslint-disable-next-line no-plusplus
-  for (let i = el.children.length - 1; i >= 0; i--) {
-    const row = el.children[i];
-
-    const rowTitle = row.children[0]?.innerText?.trim().toLowerCase().replace(/ /g, '-');
-    if (rowTitle?.includes('qa-content')) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function getPartnerLevelParams(portal) {
-  const partnerLevel = getPartnerDataCookieValue(portal, 'level');
-  const partnerTagBase = `"caas:adobe-partners/${portal}/partner-level/`;
-  return partnerLevel ? `(${partnerTagBase}${partnerLevel}"+OR+${partnerTagBase}public")` : `(${partnerTagBase}public")`;
-}
-
-export function hasSalesCenterAccess() {
-  const { salesCenterAccess } = getPartnerDataCookieObject(getCurrentProgramType());
-  return !!salesCenterAccess;
-}
-
 export function getPartnerDataCookieObject(programType) {
   const partnerDataCookie = getCookieValue('partner_data');
   if (!partnerDataCookie) return {};
   const partnerDataObj = JSON.parse(decodeURIComponent(partnerDataCookie));
   const portalData = partnerDataObj?.[programType.toUpperCase()] ?? {};
   return portalData;
+}
+
+export function hasSalesCenterAccess() {
+  const { salesCenterAccess } = getPartnerDataCookieObject(getCurrentProgramType());
+  return !!salesCenterAccess;
 }
 
 export function isMember() {
@@ -310,41 +252,6 @@ export function getNodesByXPath(query, context = document) {
     current = xpathResult.iterateNext();
   }
   return nodes;
-}
-
-export function isRenew() {
-  const programType = getCurrentProgramType();
-
-  const primaryContact = getPartnerDataCookieValue(programType, 'primarycontact');
-  if (!primaryContact) return;
-
-  const partnerLevel = getPartnerDataCookieValue(programType, 'level');
-  if (partnerLevel !== 'gold' && partnerLevel !== 'registered' && partnerLevel !== 'certified') return;
-
-  const accountExpiration = getPartnerDataCookieValue(programType, 'accountanniversary');
-  if (!accountExpiration) return;
-
-  const expirationDate = new Date(accountExpiration);
-  const now = new Date();
-
-  let accountStatus;
-  let daysNum;
-
-  const differenceInMilliseconds = expirationDate - now;
-  const differenceInDays = Math.abs(differenceInMilliseconds) / (1000 * 60 * 60 * 24);
-  const differenceInDaysRounded = Math.floor(differenceInDays);
-
-  if (differenceInMilliseconds > 0 && differenceInDays < 31) {
-    accountStatus = 'expired';
-    daysNum = differenceInDaysRounded;
-  } else if (differenceInMilliseconds < 0 && differenceInDays <= 90) {
-    accountStatus = 'suspended';
-    daysNum = 90 - differenceInDaysRounded;
-  } else {
-    return;
-  }
-  // eslint-disable-next-line consistent-return
-  return { accountStatus, daysNum };
 }
 
 export function deleteCookieValue(key) {
@@ -398,48 +305,68 @@ export function updateIMSConfig() {
     window.adobeIMS.adobeIdData.redirect_uri = targetUrl.toString();
   }, 500);
 }
-export async function getRenewBanner(getConfig) {
-  const renew = isRenew();
-  if (!renew) return;
-  const { accountStatus, daysNum } = renew;
-  const bannerFragments = {
-    expired: 'banner-account-expires',
-    suspended: 'banner-account-suspended',
-  };
-  const metadataKey = bannerFragments[accountStatus];
-
-  const config = getConfig();
-  const { prefix } = config.locale;
-  const defaultPath = `${prefix}/eds/partners-shared/fragments/${metadataKey}`;
-  const path = getMetadataContent(metadataKey) ?? defaultPath;
-  const url = new URL(path, window.location.origin);
-
-  try {
-    const response = await fetch(`${url}.plain.html`);
-    if (!response.ok) throw new Error(`Network response was not ok ${response.statusText}`);
-
-    const data = await response.text();
-    const componentData = data.replace('$daysNum', daysNum);
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(componentData, 'text/html');
-    const block = doc.querySelector('.notification');
-
-    const div = document.createElement('div');
-    div.appendChild(block);
-
-    const main = document.querySelector('main');
-    if (main) main.insertBefore(div, main.firstChild);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('There has been a problem with your fetch operation:', error);
-    // eslint-disable-next-line consistent-return
-    return null;
-  }
-}
-
 
 export function getMetadata(name) {
   return document.querySelector(`meta[name="${name}"]`);
+}
+
+function setApiParams(api, block) {
+  const { el, collectionTag, ietf } = block;
+  const complexQueryParams = getComplexQueryParams(el, collectionTag);
+  if (complexQueryParams) api.searchParams.set('complexQuery', complexQueryParams);
+
+  const [language, country] = ietf.split('-');
+  if (language && country) {
+    api.searchParams.set('language', language);
+    api.searchParams.set('country', country);
+  }
+
+  return api.toString();
+}
+
+export function getCaasUrl(block) {
+  const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
+  const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
+  const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
+  return setApiParams(api, block);
+}
+
+export async function preloadResources(locales, miloLibs) {
+  const locale = getLocale(locales);
+  const cardBlocks = {
+    'partner-news': '"caas:adobe-partners/collections/news"',
+    'knowledge-base-overview': '"caas:adobe-partners/collections/knowledge-base"',
+  };
+  // since we are going to add search-full later
+  // adding this code update now to prevent being forgotten since in search
+  // block we are not aware of this logic
+  const blockWithPlaceholders = ['search-full'];
+  let isPreloadCalled = false;
+  blockWithPlaceholders.forEach(async (item) => {
+    const el = document.querySelector(`.${item}`);
+    if (!el) return;
+    if (!isPreloadCalled) {
+      preloadPlaceholders(locale);
+      isPreloadCalled = true;
+    }
+  });
+
+  Object.entries(cardBlocks).forEach(async ([key, value]) => {
+    const el = document.querySelector(`.${key}`);
+    if (!el) return;
+
+    preloadPlaceholders(locale);
+    preloadLit(miloLibs);
+
+    const block = {
+      el,
+      name: key,
+      collectionTag: value,
+      ietf: locale.ietf,
+    };
+    const caasUrl = getCaasUrl(block);
+    preload(caasUrl);
+  });
 }
 
 export function updateNavigation() {

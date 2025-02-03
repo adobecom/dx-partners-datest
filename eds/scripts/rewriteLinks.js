@@ -4,9 +4,7 @@ import { getConfig } from '../blocks/utils/utils.js';
  * Domain configs where the key is the production domain,
  * and the value is config object for it.
  */
-const domainConfigs = {
-  'partners.adobe.com': { stage: { domain: 'partners.stage.adobe.com' } },
-};
+const domainConfigs = { 'partners.adobe.com': { stage: { domain: 'partners.stage.adobe.com' } } };
 
 /**
  * Rewrite a link href domain based on production to stage domain mappings.

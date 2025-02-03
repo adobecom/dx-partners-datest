@@ -1,10 +1,8 @@
 import {
   isMember,
   getNodesByXPath,
-  isRenew,
 }
   from './utils.js';
-import { getConfig } from '../blocks/utils/utils.js';
 import {
   PAGE_PERSONALIZATION_PLACEHOLDERS,
   GNAV_PERSONALIZATION_PLACEHOLDERS,
@@ -86,21 +84,6 @@ export function applyPagePersonalization() {
   personalizePage(main);
 }
 
-
-function processRenew(profile) {
-  const { env } = getConfig();
-  const renew = isRenew();
-  const renewElements = Array.from(profile.querySelectorAll('.partner-renew'));
-  renewElements.forEach((el) => {
-    el.classList.add(PERSONALIZATION_HIDE);
-    if (!renew) return;
-    const { accountStatus } = renew;
-    if (el.classList.contains(`partner-${accountStatus}`)) {
-      el.classList.remove(PERSONALIZATION_HIDE);
-    }
-  });
-}
-
 function processGnavElements(elements) {
   const regex = /(?<=\().*?(?=\))/g;
   return elements.map((el) => {
@@ -159,7 +142,6 @@ function personalizeProfile(gnav) {
   const profile = gnav.querySelector('.profile');
   personalizePlaceholders(GNAV_PERSONALIZATION_PLACEHOLDERS, profile);
   personalizeDropdownElements(profile);
-  processRenew(profile);
 }
 
 export function applyGnavPersonalization(gnav) {

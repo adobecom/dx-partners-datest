@@ -40,13 +40,14 @@ describe('Test rewrite links', () => {
     expect(links[0].href).toBe('https://partners.stage.adobe.com/');
   });
 
-  test('should update partners prod domain when not logged in when on stage,',
+  test(
+    'should update partners prod domain when not logged in when on stage,',
     () => {
-    partnerIsSignedIn.mockReturnValue(null);
+      partnerIsSignedIn.mockReturnValue(null);
 
-    rewriteLinks(document);
-    const links = document.querySelectorAll('a');
-    expect(links[0].href).toBe('https://partners.stage.adobe.com/');
-  });
-
+      rewriteLinks(document);
+      const links = document.querySelectorAll('a');
+      expect(links[0].href).toBe('https://partners.stage.adobe.com/');
+    },
+  );
 });

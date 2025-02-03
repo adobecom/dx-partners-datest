@@ -1,6 +1,4 @@
-import {
-  getLibs,
-} from '../scripts/utils.js';
+import { getLibs } from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
@@ -402,7 +400,7 @@ export default class PartnerCards extends LitElement {
               ${this.blockData.filtersInfos[filter.key] ? html`<div class="filter-info">
                   <div class="info-icon" style="background-image: url('/eds/img/icons/info.svg')"></div>
                  <span class="filter-info-text"> ${this.blockData.filtersInfos[filter.key]}</span> </div>`
-          : ''}
+    : ''}
               <sp-theme theme="spectrum" color="light" scale="medium">
                 ${this.getTagsByFilter(filter)}
               </sp-theme>
@@ -583,9 +581,9 @@ export default class PartnerCards extends LitElement {
       newest: (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
       oldest: (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
     };
-//todo check is this sort valid or we should keep
+    // todo check is this sort valid or we should keep
     const sortKey = this.selectedSortOrder.key === 'most-recent' ? 'newest' : this.selectedSortOrder.key;
-    //todo -> old one :     this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
+    // todo -> old one :     this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
     this.cards.sort(sortFunctions[sortKey]);
   }
 

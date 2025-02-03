@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 /**
  * @jest-environment jsdom
  */
@@ -19,9 +21,7 @@ import {
   getMetadata,
   getMetadataContent,
   redirectLoggedinPartner,
-  isRenew,
   hasSalesCenterAccess,
-  getRenewBanner,
   updateIMSConfig,
   getLocale,
   preloadResources,
@@ -200,117 +200,6 @@ describe('Test utils.js', () => {
     document.head.appendChild(metaTag);
     redirectLoggedinPartner();
     expect(window.location.pathname).toEqual(metaTag.content);
-  });
-  it('Check if partners account is expired', () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 30);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    const { accountStatus, daysNum } = isRenew();
-    expect(accountStatus).toEqual('expired');
-    expect(daysNum).toBeLessThanOrEqual(30);
-  });
-  it('Check if partners account is suspended', () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() - 30);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    const { accountStatus, daysNum } = isRenew();
-    expect(accountStatus).toEqual('suspended');
-    expect(daysNum).toBeLessThanOrEqual(60);
-  });
-  it('Don\'t show renew banner if partner has valid account', async () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 40);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    expect(await getRenewBanner()).toBeFalsy();
-  });
-  it('Show renew banner', async () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 30);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    const getConfig = () => ({ locale: '' });
-    global.fetch = jest.fn(() => Promise.resolve({
-      ok: true,
-      text: () => Promise.resolve('<div class="notification">Test</div>'),
-    }));
-    const main = document.createElement('main');
-    document.body.appendChild(main);
-    await getRenewBanner(getConfig);
-    const banner = document.querySelector('.notification');
-    expect(banner).toBeTruthy();
-  });
-  it('Don\'t show renew banner', async () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 80);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    const getConfig = () => ({ locale: '' });
-    global.fetch = jest.fn(() => Promise.resolve({
-      ok: true,
-      text: () => Promise.resolve('<div class="notification">Test</div>'),
-    }));
-
-    const main = document.createElement('main');
-    document.body.appendChild(main);
-    await getRenewBanner(getConfig);
-    const banner = document.querySelector('.notification');
-    expect(banner).toBeFalsy();
-  });
-  it('Renew banner fetch error', async () => {
-    const expiredDate = new Date();
-    expiredDate.setDate(expiredDate.getDate() + 30);
-    const cookieObject = {
-      SPP: {
-        primaryContact: true,
-        status: 'MEMBER',
-        level: 'gold',
-        accountAnniversary: expiredDate,
-      },
-    };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    const getConfig = () => ({ locale: '' });
-    global.fetch = jest.fn(() => Promise.resolve({ ok: false }));
-    const main = document.createElement('main');
-    document.body.appendChild(main);
-    expect(await getRenewBanner(getConfig)).toEqual(null);
   });
   it('Update ims config if user is signed in', () => {
     jest.useFakeTimers();

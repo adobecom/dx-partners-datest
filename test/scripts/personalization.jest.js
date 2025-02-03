@@ -208,48 +208,6 @@ describe('Test personalization.js', () => {
         expect(primaryContact).toBeTruthy();
       });
     });
-    it('Show renew expired', () => {
-      jest.isolateModules(() => {
-        const expiredDate = new Date();
-        expiredDate.setDate(expiredDate.getDate() + 30);
-        const cookieObject = {
-          CPP: {
-            status: 'MEMBER',
-            firstName: 'Test Name',
-            level: 'Gold',
-            company: 'Test Company',
-            primaryContact: true,
-            accountAnniversary: expiredDate,
-          },
-        };
-        document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-        const { applyGnavPersonalization } = importModules();
-        const personalizedGnav = applyGnavPersonalization(gnav);
-        const renewExpired = personalizedGnav.querySelector('.partner-expired');
-        expect(renewExpired.classList.contains(PERSONALIZATION_HIDE_CLASS)).toBeFalsy();
-      });
-    });
-    it('Show renew suspended', () => {
-      jest.isolateModules(() => {
-        const expiredDate = new Date();
-        expiredDate.setDate(expiredDate.getDate() - 30);
-        const cookieObject = {
-          CPP: {
-            status: 'MEMBER',
-            firstName: 'Test Name',
-            level: 'Gold',
-            company: 'Test Company',
-            primaryContact: true,
-            accountAnniversary: expiredDate,
-          },
-        };
-        document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-        const { applyGnavPersonalization } = importModules();
-        const personalizedGnav = applyGnavPersonalization(gnav);
-        const renewExpired = personalizedGnav.querySelector('.partner-suspended');
-        expect(renewExpired.classList.contains(PERSONALIZATION_HIDE_CLASS)).toBeFalsy();
-      });
-    });
     it('Show sales center link', () => {
       jest.isolateModules(() => {
         const cookieObject = {

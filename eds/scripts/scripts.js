@@ -16,10 +16,10 @@ import {
   preloadResources,
   redirectLoggedinPartner,
   updateNavigation,
-  updateFooter, updateIMSConfig, getRenewBanner, PARTNER_LOGIN_QUERY
+  updateFooter, updateIMSConfig, PARTNER_LOGIN_QUERY,
 } from './utils.js';
-import {applyPagePersonalization} from "./personalization.js";
-import {rewriteLinks} from "./rewriteLinks.js";
+import { applyPagePersonalization } from './personalization.js';
+import { rewriteLinks } from './rewriteLinks.js';
 // import PartnerNews  from '../blocks/partner-news/PartnerNews.js';
 
 // Add project-wide style path here.
@@ -34,7 +34,7 @@ const imsClientId = prodHosts.includes(window.location.host) ? 'MILO_PARTNERS_PR
 const CONFIG = {
   codeRoot: '/eds',
   contentRoot: '/eds/partners-shared',
-  imsClientId: imsClientId,
+  imsClientId,
   // geoRouting: 'off',
   // fallbackRouting: 'off',
   locales: {
@@ -95,12 +95,10 @@ function setUpPage() {
   redirectLoggedinPartner();
   updateIMSConfig();
   await preloadResources(CONFIG.locales, miloLibs);
-  const { loadArea, setConfig, getConfig } = await import(`${miloLibs}/utils/utils.js`);
+  const { loadArea, setConfig } = await import(`${miloLibs}/utils/utils.js`);
 
   setConfig({ ...CONFIG, miloLibs });
-  await getRenewBanner(getConfig);
   await loadArea();
   applyPagePersonalization();
   rewriteLinks(document);
-
 }());
