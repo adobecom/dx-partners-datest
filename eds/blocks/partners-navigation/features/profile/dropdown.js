@@ -1,7 +1,7 @@
 import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
 
 // MWPW-157751
-import { getLibs, isMember } from '../../../../scripts/utils.js';
+import { getLibs } from '../../../../scripts/utils.js';
 
 const miloLibs = getLibs();
 const { replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
@@ -18,15 +18,6 @@ const getLanguage = (ietfLocale) => {
 
   return ietfLocale.split('-')[0];
 };
-
-const decorateEditProfileLink = () => {
-  const { env } = getConfig();
-  if (env.name === 'prod') {
-    return 'https://channelpartners.adobe.com/s/manageprofile/?appid=mp';
-  }
-  return 'https://channelpartners.stage2.adobe.com/s/manageprofile/?appid=mp';
-};
-// End
 
 const decorateProfileLink = (service, path = '') => {
   const defaultServiceUrls = {
@@ -46,19 +37,6 @@ const decorateProfileLink = (service, path = '') => {
   }
   return `${serviceUrl}${path}`;
 };
-
-// MWPW-166173
-function getProfileLinkFunction(isUserActiveMember) {
-  return (...args) => {
-    if (isUserActiveMember) {
-      return decorateEditProfileLink();
-    }
-    return decorateProfileLink(...args);
-  };
-}
-const isUserActiveMember = isMember();
-const decorateProfileLinkBasedOnAccountStatus = getProfileLinkFunction(isUserActiveMember);
-// end of MWPW-166173
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
@@ -141,7 +119,7 @@ class ProfileDropdown {
       src="${this.avatar}"
       tabindex="0"
       alt="${this.placeholders.profileAvatar}"
-      data-url="${decorateProfileLinkBasedOnAccountStatus('account', `?lang=${lang}`)}"></img>`;
+      data-url="${decorateProfileLink('account', `?lang=${lang}`)}"></img>`;
     // MWPW-157753 - only Edit user profile link should be clickable
     return toFragment`
       <div id="feds-profile-menu" class="feds-profile-menu">
@@ -150,12 +128,12 @@ class ProfileDropdown {
           <div class="feds-profile-details">
             <p class="feds-profile-name">${this.profileData.displayName}</p>
             <p class="feds-profile-email">${this.decorateEmail(this.profileData.email)}</p>
-            <a  href="${decorateProfileLinkBasedOnAccountStatus('account', `?lang=${lang}`)}"
+            <a  href="${decorateProfileLink('account', `?lang=${lang}`)}"
                 target="_blank" 
                 daa-ll="${this.placeholders.viewAccount}"
-                aria-label="${isUserActiveMember ? this.placeholders.editProfile : this.placeholders.viewAccount}" 
+                aria-label="${this.placeholders.viewAccount}" 
                 class="feds-profile-account">
-                    ${isUserActiveMember ? this.placeholders.editProfile : this.placeholders.viewAccount}
+                    ${this.placeholders.viewAccount}
             </a>
           </div>
         </div>
