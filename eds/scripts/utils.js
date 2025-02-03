@@ -211,6 +211,7 @@ function setApiParams(api, block) {
 }
 
 function extractTableCollectionTags(el) {
+  console.log('element', el);
   let tableCollectionTags = [];
   Array.from(el.children).forEach((row) => {
     const cols = Array.from(row.children);
@@ -345,8 +346,6 @@ export function isRenew() {
   // eslint-disable-next-line consistent-return
   return { accountStatus, daysNum };
 }
-// todo check do we need redirectLoggedinPartner and updateIMSConfig added to dme in https://github.com/adobecom/dme-partners/commit/2d6613ae8e45ad1f1bd6fd073b2a421222433d78
-// it looks like it is intentionally skipped for this repo since it is very old date of implementation
 
 export function deleteCookieValue(key) {
   document.cookie = `${key}=; Path=/; Max-Age=0;`;
@@ -443,24 +442,24 @@ export function getMetadata(name) {
   return document.querySelector(`meta[name="${name}"]`);
 }
 
-export function updateNavigation(locales) {
+export function updateNavigation() {
   const gnavMeta = getMetadata('gnav-source');
   if (!gnavMeta) return;
   // todo check do we need locales for spp (same for footer) and update if yes (check dme code)
   let { content } = gnavMeta;
   if (isMember()) {
     // todo update when we have default logged in gnav created (same for footer)
-    content = getMetadataContent('gnav-loggedin-source') ?? `/solutionpartners/spp-shared/gnav`;
+    content = getMetadataContent('gnav-loggedin-source') ?? '/solutionpartners/spp-shared/gnav';
   }
   gnavMeta.content = content;
 }
 
-export function updateFooter(locales) {
+export function updateFooter() {
   const footerMeta = getMetadata('footer-source');
   if (!footerMeta) return;
   let { content } = footerMeta;
   if (isMember()) {
-    content = getMetadataContent('footer-loggedin-source') ?? `/solutionpartners/spp-shared/footer`;
+    content = getMetadataContent('footer-loggedin-source') ?? '/solutionpartners/spp-shared/footer';
   }
   footerMeta.content = content;
 }

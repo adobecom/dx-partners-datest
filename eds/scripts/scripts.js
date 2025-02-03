@@ -86,8 +86,8 @@ const miloLibs = setLibs(LIBS);
 }());
 
 function setUpPage() {
-  updateNavigation(CONFIG.locales);
-  updateFooter(CONFIG.locales);
+  updateNavigation();
+  updateFooter();
 }
 (async function loadPage() {
   applyPagePersonalization();
