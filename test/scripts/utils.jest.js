@@ -21,7 +21,6 @@ import {
   getMetadata,
   getMetadataContent,
   redirectLoggedinPartner,
-  hasSalesCenterAccess,
   updateIMSConfig,
   getLocale,
   preloadResources,
@@ -294,15 +293,5 @@ describe('Test utils.js', () => {
     const elements = getNodesByXPath(query, document.body);
     expect(elements.length).toEqual(1);
     expect(elements[0].id).toEqual('test-id');
-  });
-  it('Should have access if sales center is present in partner data cookie', async () => {
-    const cookieObject = { SPP: { salesCenterAccess: true } };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    expect(hasSalesCenterAccess()).toBe(true);
-  });
-  it('Should not have access if sales center is not present in partner data cookie', async () => {
-    const cookieObject = { SPP: { salesCenterAccess: false } };
-    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-    expect(hasSalesCenterAccess()).toBe(false);
   });
 });

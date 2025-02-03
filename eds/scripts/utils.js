@@ -225,11 +225,6 @@ export function getPartnerDataCookieObject(programType) {
   return portalData;
 }
 
-export function hasSalesCenterAccess() {
-  const { salesCenterAccess } = getPartnerDataCookieObject(getCurrentProgramType());
-  return !!salesCenterAccess;
-}
-
 export function isMember() {
   const { status } = getPartnerDataCookieObject(getCurrentProgramType());
   return status === 'MEMBER';

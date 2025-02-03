@@ -208,25 +208,6 @@ describe('Test personalization.js', () => {
         expect(primaryContact).toBeTruthy();
       });
     });
-    it('Show sales center link', () => {
-      jest.isolateModules(() => {
-        const cookieObject = {
-          CPP: {
-            status: 'MEMBER',
-            firstName: 'Test Name',
-            level: 'Gold',
-            company: 'Test Company',
-            primaryContact: true,
-            salesCenterAccess: true,
-          },
-        };
-        document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
-        const salesCenterLink = gnav.querySelector('#sales-link');
-        const { applyGnavPersonalization } = importModules();
-        applyGnavPersonalization(gnav);
-        expect(salesCenterLink.classList.contains(PERSONALIZATION_HIDE_CLASS)).toBeFalsy();
-      });
-    });
     it('Should hide partner-level-platinum gnav items for non-platinum user', () => {
       jest.isolateModules(() => {
         const cookieObject = {

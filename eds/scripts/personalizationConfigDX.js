@@ -1,7 +1,6 @@
-import { processPrimaryContact, processSalesAccess } from './personalizationUtils.js';
+import { processPrimaryContact } from './personalizationUtils.js';
 import {
   getPartnerDataCookieObject,
-  hasSalesCenterAccess,
   isMember,
   partnerIsSignedIn,
   signedInNonMember,
@@ -24,16 +23,11 @@ export const PERSONALIZATION_CONDITIONS = {
   'partner-not-member': signedInNonMember(),
   'partner-not-signed-in': !partnerIsSignedIn(),
   'partner-all-levels': isMember(),
-  'partner-sales-access': hasSalesCenterAccess(),
   'partner-level': (level) => PARTNER_LEVEL === level,
 };
 
-export const MAIN_NAV_PERSONALIZATION_CONDITIONS = {
-  ...PERSONALIZATION_CONDITIONS,
-  'partner-sales-access': hasSalesCenterAccess(),
-};
+export const MAIN_NAV_PERSONALIZATION_CONDITIONS = { ...PERSONALIZATION_CONDITIONS };
 
 export const PROFILE_PERSONALIZATION_ACTIONS = {
   'partner-primary': processPrimaryContact,
-  'partner-sales-access': processSalesAccess,
 };
