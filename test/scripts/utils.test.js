@@ -26,11 +26,11 @@ describe('Libs', () => {
   });
   it('Does not support milolibs query param on prod', () => {
     const location = {
-      origin: 'http://localhost:3000',
+      origin: 'https://partners.adobe.com',
       search: '?milolibs=foo',
     };
     const libs = setLibs('/libs', location);
-    expect(libs).to.equal('/libs');
+    expect(libs).to.equal('https://milo.adobe.com/libs');
   });
 
   it('Supports milolibs query param', () => {
