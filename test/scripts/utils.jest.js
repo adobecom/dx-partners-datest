@@ -21,11 +21,14 @@ import {
   getMetadata,
   getMetadataContent,
   redirectLoggedinPartner,
+  hasSalesCenterAccess,
   updateIMSConfig,
   getLocale,
   preloadResources,
   getCaasUrl,
   getNodesByXPath,
+  isRenew,
+  getRenewBanner,
   setLibs,
 } from '../../eds/scripts/utils.js';
 
@@ -200,6 +203,117 @@ describe('Test utils.js', () => {
     redirectLoggedinPartner();
     expect(window.location.pathname).toEqual(metaTag.content);
   });
+  it('Check if partners account is expired', () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 30);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    const { accountStatus, daysNum } = isRenew();
+    expect(accountStatus).toEqual('expired');
+    expect(daysNum).toBeLessThanOrEqual(30);
+  });
+  it('Check if partners account is suspended', () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() - 30);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    const { accountStatus, daysNum } = isRenew();
+    expect(accountStatus).toEqual('suspended');
+    expect(daysNum).toBeLessThanOrEqual(60);
+  });
+  it('Don\'t show renew banner if partner has valid account', async () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 40);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    expect(await getRenewBanner()).toBeFalsy();
+  });
+  it('Show renew banner', async () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 30);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    const getConfig = () => ({ locale: '' });
+    global.fetch = jest.fn(() => Promise.resolve({
+      ok: true,
+      text: () => Promise.resolve('<div class="notification">Test</div>'),
+    }));
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    await getRenewBanner(getConfig);
+    const banner = document.querySelector('.notification');
+    expect(banner).toBeTruthy();
+  });
+  it('Don\'t show renew banner', async () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 80);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    const getConfig = () => ({ locale: '' });
+    global.fetch = jest.fn(() => Promise.resolve({
+      ok: true,
+      text: () => Promise.resolve('<div class="notification">Test</div>'),
+    }));
+
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    await getRenewBanner(getConfig);
+    const banner = document.querySelector('.notification');
+    expect(banner).toBeFalsy();
+  });
+  it('Renew banner fetch error', async () => {
+    const expiredDate = new Date();
+    expiredDate.setDate(expiredDate.getDate() + 30);
+    const cookieObject = {
+      SPP: {
+        primaryContact: true,
+        status: 'MEMBER',
+        level: 'gold',
+        accountAnniversary: expiredDate,
+      },
+    };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    const getConfig = () => ({ locale: '' });
+    global.fetch = jest.fn(() => Promise.resolve({ ok: false }));
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    expect(await getRenewBanner(getConfig)).toEqual(null);
+  });
   it('Update ims config if user is signed in', () => {
     jest.useFakeTimers();
     window.adobeIMS = {
@@ -293,5 +407,15 @@ describe('Test utils.js', () => {
     const elements = getNodesByXPath(query, document.body);
     expect(elements.length).toEqual(1);
     expect(elements[0].id).toEqual('test-id');
+  });
+  it('Should have access if sales center is present in partner data cookie', async () => {
+    const cookieObject = { SPP: { salesCenterAccess: true } };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    expect(hasSalesCenterAccess()).toBe(true);
+  });
+  it('Should not have access if sales center is not present in partner data cookie', async () => {
+    const cookieObject = { SPP: { salesCenterAccess: false } };
+    document.cookie = `partner_data=${JSON.stringify(cookieObject)}`;
+    expect(hasSalesCenterAccess()).toBe(false);
   });
 });

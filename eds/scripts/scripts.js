@@ -16,7 +16,7 @@ import {
   preloadResources,
   redirectLoggedinPartner,
   updateNavigation,
-  updateFooter, updateIMSConfig, PARTNER_LOGIN_QUERY,
+  updateFooter, updateIMSConfig, getRenewBanner, PARTNER_LOGIN_QUERY,
 } from './utils.js';
 import { applyPagePersonalization } from './personalization.js';
 import { rewriteLinks } from './rewriteLinks.js';
@@ -95,9 +95,10 @@ function setUpPage() {
   redirectLoggedinPartner();
   updateIMSConfig();
   await preloadResources(CONFIG.locales, miloLibs);
-  const { loadArea, setConfig } = await import(`${miloLibs}/utils/utils.js`);
+  const { loadArea, setConfig, getConfig } = await import(`${miloLibs}/utils/utils.js`);
 
   setConfig({ ...CONFIG, miloLibs });
+  await getRenewBanner(getConfig);
   await loadArea();
   applyPagePersonalization();
   rewriteLinks(document);
