@@ -1,6 +1,4 @@
-import {
-  getLibs,
-} from '../scripts/utils.js';
+import { getLibs } from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
@@ -35,6 +33,8 @@ export default class PartnerCards extends LitElement {
     urlSearchParams: { type: Object },
     mobileView: { type: Boolean },
     fetchedData: { type: Boolean },
+    searchInputPlaceholder: { type: String },
+    searchInputLabel: { type: String },
   };
 
   constructor() {
@@ -52,6 +52,8 @@ export default class PartnerCards extends LitElement {
     this.hasResponseData = true;
     this.fetchedData = false;
     this.mobileView = window.innerWidth <= 1200;
+    this.searchInputPlaceholder = '{{search}}';
+    this.searchInputLabel = '';
     this.updateView = this.updateView.bind(this);
   }
 
@@ -66,9 +68,14 @@ export default class PartnerCards extends LitElement {
       ...this.blockData,
       title: '',
       filters: [],
+      filtersInfos: [],
       sort: {
         default: {},
         items: [],
+      },
+      filterInfoBox: {
+        title: '',
+        description: '',
       },
     };
 
@@ -135,6 +142,19 @@ export default class PartnerCards extends LitElement {
         const paginationType = paginationEl.innerText.trim();
         if (paginationType) this.blockData.pagination = paginationType.toLowerCase().replace(/ /g, '-');
       },
+      'background-color': (cols) => {
+        const [backgroundColorEl] = cols;
+        const backgroundColor = backgroundColorEl.innerText.trim();
+        if (backgroundColor) this.blockData.backgroundColor = backgroundColor;
+      },
+      'filter-info': (cols) => {
+        const filterName = cols[0].innerText.trim();
+        this.blockData.filtersInfos[filterName] = cols[1].innerText.trim();
+      },
+      'filter-info-box': (cols) => {
+        this.blockData.filterInfoBox.title = cols[0].innerText.trim();
+        this.blockData.filterInfoBox.description = this.getTextWithStrong(cols[1]);
+      },
     };
 
     const rows = Array.from(this.blockData.tableData);
@@ -147,17 +167,40 @@ export default class PartnerCards extends LitElement {
   }
 
   updateView() {
+    const oldValue = this.mobileView;
     this.mobileView = window.innerWidth <= 1200;
+    this.onViewUpdate(oldValue !== this.mobileView);
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  onViewUpdate() {}
 
   async firstUpdated() {
     await super.firstUpdated();
     await this.fetchData();
-    if (this.blockData.filters.length) this.initUrlSearchParams();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
     if (this.blockData.cardsPerPage) this.cardsPerPage = this.blockData.cardsPerPage;
     this.additionalFirstUpdated();
+    this.initUrlSearchParams();
     this.handleActions();
+  }
+
+  // gets text content from node,
+  // and keeps <strong> elements if any, while putting it at the beginning of new row
+  getTextWithStrong(node) {
+    if (!node) return '';
+    return Array.from(node.childNodes).map((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        return child.textContent.trim();
+      }
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        if (child.tagName === 'STRONG') {
+          return `<br/><strong>${this.getTextWithStrong(child)}</strong>`;
+        }
+        return this.getTextWithStrong(child);
+      }
+      return '';
+    }).join('');
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -172,7 +215,10 @@ export default class PartnerCards extends LitElement {
         this.fetchedData = true;
       }, 5);
 
-      const response = await fetch(this.blockData.caasUrl);
+      const response = await fetch(
+        this.blockData.caasUrl,
+        this.getFetchOptions(),
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
@@ -185,22 +231,36 @@ export default class PartnerCards extends LitElement {
         }
         // eslint-disable-next-line no-return-assign
         apiData.cards.forEach((card, index) => card.orderNum = index + 1);
+        this.onDataFetched(apiData);
         this.allCards = apiData.cards;
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
-        this.hasResponseData = true;
+        this.hasResponseData = !!apiData.cards;
       }
     } catch (error) {
+      this.hasResponseData = true;
+      // eslint-disable-next-line no-console
       console.error('Error fetching data:', error);
     }
   }
+
+  // eslint-disable-next-line class-methods-use-this, no-unused-vars
+  onDataFetched(apiData) {}
+
+  // eslint-disable-next-line class-methods-use-this
+  getFetchOptions() { return {}; }
 
   initUrlSearchParams() {
     // eslint-disable-next-line no-restricted-globals
     const { search } = location || window.location;
     this.urlSearchParams = new URLSearchParams(search);
 
-    if (this.urlSearchParams.has('filters', 'yes')) {
+    const term = this.urlSearchParams.get('term');
+    if (term) {
+      this.searchTerm = term;
+    }
+
+    if (this.blockData.filters.length && this.urlSearchParams.has('filters', 'yes')) {
       this.blockData.filters = this.blockData.filters.map((filter) => {
         if (this.urlSearchParams.has(filter.key)) {
           const filtersSearchTags = this.urlSearchParams.get(filter.key).split(',');
@@ -226,11 +286,10 @@ export default class PartnerCards extends LitElement {
       return html`${repeat(
         this.paginatedCards,
         (card) => card.id,
-        (card) => html`<single-partner-card class="card-wrapper" .data=${card}></single-partner-card>`,
+        (card) => html`<single-partner-card class="card-wrapper" .data=${card} .ietf=${this.blockData.ietf}></single-partner-card>`,
       )}`;
     }
 
-    // eslint-disable-next-line getter-return consistent-return
     return html`<div class="no-results">
         <strong class="no-results-title">${this.blockData.localizedText['{{no-results-title}}']}</strong>
         <p class="no-results-description">${this.blockData.localizedText['{{no-results-description}}']}</p>
@@ -259,9 +318,15 @@ export default class PartnerCards extends LitElement {
     return this.defaultPagination;
   }
 
+  shouldDisplayLoadMore() {
+    return this.cards.length !== this.paginatedCards.length;
+  }
+
   get loadMorePagination() {
-    if (this.cards.length === this.paginatedCards.length) return '';
-    return html`<button class="load-more-btn" @click="${this.handleLoadMore}" aria-label="${this.blockData.localizedText['{{load-more}}']}">${this.blockData.localizedText['{{load-more}}']}</button>`;
+    if (this.shouldDisplayLoadMore()) {
+      return html`<button class="load-more-btn" @click="${this.handleLoadMore}" aria-label="${this.blockData.localizedText['{{load-more}}']}">${this.blockData.localizedText['{{load-more}}']}</button>`;
+    }
+    return '';
   }
 
   get defaultPagination() {
@@ -278,11 +343,7 @@ export default class PartnerCards extends LitElement {
 
   get paginationList() {
     if (!this.cards.length) return;
-
-    const min = 1;
-    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
-
-    const pagesNumArray = Array.from({ length: this.totalPages }, (_, i) => i + min);
+    const pagesNumArray = this.getPageNumArray();
     // eslint-disable-next-line consistent-return
     return html`${repeat(
       pagesNumArray,
@@ -294,6 +355,13 @@ export default class PartnerCards extends LitElement {
         ${pageNum}
       </button>`,
     )}`;
+  }
+
+  getPageNumArray() {
+    const min = 1;
+    this.totalPages = Math.ceil(this.cards.length / this.cardsPerPage);
+    // eslint-disable-next-line consistent-return
+    return Array.from({ length: this.totalPages }, (_, i) => i + min);
   }
 
   get cardsCounter() {
@@ -329,6 +397,10 @@ export default class PartnerCards extends LitElement {
               <span class="filter-selected-tags-total-num">${tagsCount}</span>
             </button>
             <ul class="filter-list">
+              ${this.blockData.filtersInfos[filter.key] ? html`<div class="filter-info">
+                  <div class="info-icon" style="background-image: url('/eds/img/icons/info.svg')"></div>
+                 <span class="filter-info-text"> ${this.blockData.filtersInfos[filter.key]}</span> </div>`
+    : ''}
               <sp-theme theme="spectrum" color="light" scale="medium">
                 ${this.getTagsByFilter(filter)}
               </sp-theme>
@@ -336,6 +408,10 @@ export default class PartnerCards extends LitElement {
           </div>`;
       },
     )}`;
+  }
+
+  getTotalResults() {
+    return this.cards?.length;
   }
 
   get filtersMobile() {
@@ -358,17 +434,21 @@ export default class PartnerCards extends LitElement {
                 <div class="filter-header-content-mobile">
                   <h3 class="filter-header-name-mobile">${filter.value}</h3>
                   ${tagsCount
-                    ? html`
+          ? html`
                       <div class="filter-header-selected-tags-mobile">
                         <span class="filter-header-selected-tags-text-mobile">${tagsString}</span>
                         <span class="filter-header-selected-tags-count-mobile">+ ${tagsCount}</span>
                       </div>
                     `
-                    : ''
-                  }
+          : ''
+        }
                 </div>
                 <span class="filter-header-chevron-icon"></span>
               </button>
+              ${this.blockData.filtersInfos[filter.key] ? html`<div class="filter-info">
+                  <div class="info-icon" style="background-image: url('/eds/img/icons/info.svg')"></div>
+                 <span class="filter-info-text"> ${this.blockData.filtersInfos[filter.key]}</span> </div>`
+          : ''}
               <ul class="filter-tags-mobile">
                 <sp-theme theme="spectrum" color="light" scale="medium">
                   ${this.getTagsByFilter(filter)}
@@ -376,7 +456,7 @@ export default class PartnerCards extends LitElement {
               </ul>
               <div class="filter-footer-mobile-wrapper">
                 <div class="filter-footer-mobile">
-                  <span class="filter-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
+                  <span class="filter-footer-results-mobile">${this.getTotalResults()} ${this.blockData.localizedText['{{results}}']}</span>
                   <div class="filter-footer-buttons-mobile">
                     <button class="filter-footer-clear-btn-mobile" @click="${() => this.handleResetTags(filter.key)}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                     <sp-theme theme="spectrum" color="light" scale="medium">
@@ -461,6 +541,7 @@ export default class PartnerCards extends LitElement {
 
   handleResetActions() {
     this.searchTerm = '';
+    this.urlSearchParams.delete('term');
     this.selectedFilters = {};
     this.blockData.filters.forEach((filter) => {
       // eslint-disable-next-line no-return-assign
@@ -470,6 +551,7 @@ export default class PartnerCards extends LitElement {
     this.additionalResetActions();
     this.paginationCounter = 1;
     this.handleActions();
+    this.handleFilterAction();
     if (this.blockData.filters.length) this.handleUrlSearchParams();
   }
 
@@ -484,7 +566,12 @@ export default class PartnerCards extends LitElement {
 
   handleSearch(event) {
     this.searchTerm = event.target.value.toLowerCase();
-
+    if (this.searchTerm) {
+      this.urlSearchParams.set('term', this.searchTerm);
+    } else {
+      this.urlSearchParams.delete('term');
+    }
+    this.handleUrlSearchParams();
     this.paginationCounter = 1;
     this.handleActions();
   }
@@ -494,7 +581,10 @@ export default class PartnerCards extends LitElement {
       newest: (a, b) => new Date(b.cardDate) - new Date(a.cardDate),
       oldest: (a, b) => new Date(a.cardDate) - new Date(b.cardDate),
     };
-    this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
+    // todo check is this sort valid or we should keep
+    const sortKey = this.selectedSortOrder.key === 'most-recent' ? 'newest' : this.selectedSortOrder.key;
+    // todo -> old one :     this.cards.sort(sortFunctions[this.selectedSortOrder.key]);
+    this.cards.sort(sortFunctions[sortKey]);
   }
 
   handleSort(selectedItem) {
@@ -510,7 +600,6 @@ export default class PartnerCards extends LitElement {
 
   handleFilterAction() {
     const selectedFiltersKeys = Object.keys(this.selectedFilters);
-
     if (selectedFiltersKeys.length) {
       this.cards = this.cards.filter((card) => {
         if (!card.arbitrary.length) return;
@@ -525,7 +614,7 @@ export default class PartnerCards extends LitElement {
           const arbitraryTagKey = Object.keys(arbitraryTag)[0]?.replaceAll(' ', '-');
           if (arbitraryTagKey !== key) return false;
 
-          const arbitraryTagValue = arbitraryTag[key].replaceAll(' ', '-');
+          const arbitraryTagValue = this.getArbitraryTagValue(arbitraryTag, key);
           if (arbitraryTagValue) {
             // eslint-disable-next-line max-len
             return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
@@ -536,6 +625,11 @@ export default class PartnerCards extends LitElement {
     } else {
       this.urlSearchParams.delete('filters');
     }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getArbitraryTagValue(arbitraryTag, key) {
+    return arbitraryTag[key].replaceAll(' ', '-');
   }
 
   handleUrlSearchParams() {
@@ -554,6 +648,10 @@ export default class PartnerCards extends LitElement {
   handleTag(event, tag, filterKey) {
     if (!event.target.checked) {
       this.handleRemoveTag(tag);
+      if (!Object.keys(this.selectedFilters).length) {
+        this.handleFilterAction();
+        this.handleUrlSearchParams();
+      }
       return;
     }
 
@@ -609,6 +707,7 @@ export default class PartnerCards extends LitElement {
     }
 
     this.paginationCounter = 1;
+    this.handleFilterAction();
     this.handleActions();
     this.handleUrlSearchParams();
   }
@@ -626,6 +725,7 @@ export default class PartnerCards extends LitElement {
     });
 
     this.paginationCounter = 1;
+    this.handleFilterAction();
     this.handleActions();
     this.handleUrlSearchParams();
   }
@@ -682,94 +782,95 @@ export default class PartnerCards extends LitElement {
     window.removeEventListener('resize', this.updateView);
   }
 
+  renderInfoBoxDescription() {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = this.blockData.filterInfoBox.description;
+    return html`${tempDiv}`;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getSlider() {}
+
   /* eslint-disable indent */
   render() {
     return html`
-    ${this.fetchedData
+      ${this.fetchedData
       ? html`
-      <div class="partner-cards">
-        <div class="partner-cards-sidebar-wrapper">
-          <div class="partner-cards-sidebar">
-            <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
-              <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}" @submit="${(event) => event.preventDefault()}" placeholder="${this.blockData.localizedText['{{search}}']}"></sp-search>
-            </sp-theme>
-            ${!this.mobileView
-              ? html`
-                <div class="sidebar-header">
-                  <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
-                  <button class="sidebar-clear-btn" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
-                </div>
-                <div class="sidebar-chosen-filters-wrapper">
-                  ${this.chosenFilters && this.chosenFilters.htmlContent}
-                </div>
-                <div class="sidebar-filters-wrapper">
-                  ${this.filters}
-                </div>
-              `
-              : ''
-            }
-          </div>
-        </div>
-        <div class="partner-cards-content">
-          <div class="partner-cards-header">
-            <div class="partner-cards-title-wrapper">
-              <h3 class="partner-cards-title">${this.blockData.title}</h3>
-              <span class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> ${this.blockData.localizedText['{{results}}']}</span>
-            </div>
-            <div class="partner-cards-sort-wrapper">
-              ${this.mobileView
-                ? html`
-                  <button class="filters-btn-mobile" @click="${this.openFiltersMobile}" aria-label="${this.blockData.localizedText['{{filters}}']}">
-                    <span class="filters-btn-mobile-icon"></span>
-                    <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
-                    ${this.chosenFilters?.tagsCount
-                      ? html`<span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>`
-                      : ''
-                    }
-                  </button>
-                `
-                : ''
-              }
-              ${this.blockData.sort.items.length
-                ? html`<div class="sort-wrapper">
-                  <button class="sort-btn" @click="${this.toggleSort}">
-                    <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
-                    <span class="filter-chevron-icon"></span>
-                  </button>
-                  <div class="sort-list">
-                    ${this.sortItems}
-                  </div>
-                </div>`
-                : ''
-              }
-            </div>
-          </div>
-          <div class="partner-cards-collection">
-            ${this.hasResponseData
-              ? this.partnerCards
-              : html`
-                <div class="progress-circle-wrapper">
-                  <sp-theme theme="spectrum" color="light" scale="medium">
-                    <sp-progress-circle label="Cards loading" indeterminate="" size="l" role="progressbar"></sp-progress-circle>
-                  </sp-theme>
-                </div>
-              `
-            }
-          </div>
-          ${this.cards.length
-            ? html`
-              <div class="pagination-wrapper ${this.blockData?.pagination === 'load-more' ? 'pagination-wrapper-load-more' : 'pagination-wrapper-default'}">
-                ${this.pagination}
-                <span class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
-              </div>
-            `
-            : ''
-            }
-        </div>
-      </div>` : ''}
+          <div class="partner-cards">
+            <div class="partner-cards-sidebar-wrapper">
+              <div class="partner-cards-sidebar">
+                <sp-theme class="search-wrapper" theme="spectrum" color="light" scale="medium">
+                  ${this.searchInputLabel && !this.mobileView ? html`<sp-field-label for="search" size="m">${this.blockData.localizedText[this.searchInputLabel]}</sp-field-label>` : ''}
+                  <sp-search id="search" size="m" value="${this.searchTerm}" @input="${this.handleSearch}"
+                             @submit="${(event) => event.preventDefault()}"
+                             placeholder="${this.blockData.localizedText[this.searchInputPlaceholder]}"></sp-search>
+                </sp-theme>
 
-      ${this.mobileView && this.fetchedData
+                ${!this.mobileView
         ? html`
+                    ${this.getSlider()}
+                    <div class="sidebar-header">
+                      <h3 class="sidebar-title">${this.blockData.localizedText['{{filter}}']}</h3>
+                      <button class="sidebar-clear-btn" @click="${this.handleResetActions}"
+                              aria-label="${this.blockData.localizedText['{{clear-all}}']}">
+                        ${this.blockData.localizedText['{{clear-all}}']}
+                      </button>
+                    </div>
+                    <div class="sidebar-chosen-filters-wrapper">
+                      ${this.chosenFilters && this.chosenFilters.htmlContent}
+                    </div>
+                    <div class="sidebar-filters-wrapper">
+                      ${this.filters}
+                    </div>
+                    ${this.blockData.filterInfoBox.title ? html` 
+                      <div class="sidebar-info-box">
+                      <div class="title">${this.blockData.filterInfoBox.title}</div>
+                      ${this.renderInfoBoxDescription()}
+                    </div>` : ''
+        }
+                  `
+        : ''
+      }
+              </div>
+            </div>
+            <div class="partner-cards-content">
+            ${this.getPartnerCardsHeader()}
+              <div class="partner-cards-collection">
+                ${this.hasResponseData
+        ? this.partnerCards
+        : html`
+                    <div class="progress-circle-wrapper">
+                      <sp-theme theme="spectrum" color="light" scale="medium">
+                        <sp-progress-circle label="Cards loading" indeterminate="" size="l"
+                                            role="progressbar"></sp-progress-circle>
+                      </sp-theme>
+                    </div>
+                  `
+      }
+              </div>
+              ${this.shouldDisplayPagination()
+        ? html`
+                  <div
+                    class="pagination-wrapper ${this.blockData?.pagination === 'load-more' ? 'pagination-wrapper-load-more' : 'pagination-wrapper-default'}">
+                    ${this.pagination}
+                    <span
+                      class="pagination-total-results">${this.cardsCounter} ${this.blockData.localizedText['{{of}}']} ${this.cards.length} ${this.blockData.localizedText['{{results}}']}</span>
+                  </div>
+                `
+        : ''
+      }
+            </div>
+          </div>` : ''}
+      ${this.getFilterFullScreenView(this.mobileView && this.fetchData)}
+    `;
+  }
+
+  shouldDisplayPagination() {
+    return this.cards.length;
+  }
+
+  getFilterFullScreenView(condition) {
+    return condition ? html`
           <div class="all-filters-wrapper-mobile">
             <div class="all-filters-header-mobile">
               <button class="all-filters-header-back-btn-mobile" @click="${this.closeFiltersMobile}" aria-label="${this.blockData.localizedText['{{back}}']}"></button>
@@ -779,7 +880,7 @@ export default class PartnerCards extends LitElement {
               ${this.filtersMobile}
             </div>
             <div class="all-filters-footer-mobile">
-              <span class="all-filters-footer-results-mobile">${this.cards?.length} ${this.blockData.localizedText['{{results}}']}</span>
+              <span class="all-filters-footer-results-mobile">${this.getTotalResults()} ${this.blockData.localizedText['{{results}}']}</span>
               <div class="all-filters-footer-buttons-mobile">
                 <button class="all-filters-footer-clear-btn-mobile" @click="${this.handleResetActions}" aria-label="${this.blockData.localizedText['{{clear-all}}']}">${this.blockData.localizedText['{{clear-all}}']}</button>
                 <sp-theme theme="spectrum" color="light" scale="medium">
@@ -789,9 +890,49 @@ export default class PartnerCards extends LitElement {
             </div>
           </div>
         `
+      : '';
+  }
+
+  getPartnerCardsHeader() {
+    return html`
+      <div class="partner-cards-header">
+        <div class="partner-cards-title-wrapper">
+          <h3 class="partner-cards-title">${this.blockData.title}</h3>
+          <span
+            class="partner-cards-cards-results"><strong>${this.cards?.length}</strong> ${this.blockData.localizedText['{{results}}']}</span>
+        </div>
+        <div class="partner-cards-sort-wrapper">
+          ${this.mobileView
+      ? html`
+              <button class="filters-btn-mobile" @click="${this.openFiltersMobile}"
+                      aria-label="${this.blockData.localizedText['{{filters}}']}">
+                <span class="filters-btn-mobile-icon"></span>
+                <span class="filters-btn-mobile-title">${this.blockData.localizedText['{{filters}}']}</span>
+                ${this.chosenFilters?.tagsCount
+        ? html`<span class="filters-btn-mobile-total">${this.chosenFilters.tagsCount}</span>`
         : ''
       }
+              </button>
+            `
+      : ''
+    }
+          ${this.blockData.sort.items.length
+      ? html`
+              <div class="sort-wrapper">
+                <button class="sort-btn" @click="${this.toggleSort}">
+                  <span class="sort-btn-text">${this.selectedSortOrder.value}</span>
+                  <span class="filter-chevron-icon"></span>
+                </button>
+                <div class="sort-list">
+                  ${this.sortItems}
+                </div>
+              </div>`
+      : ''
+    }
+        </div>
+      </div>
     `;
   }
+
   /* eslint-enable indent */
 }
