@@ -8,7 +8,6 @@ import {
   getActiveLink,
   getAnalyticsValue,
   getExperienceName,
-  getFedsPlaceholderConfig,
   hasActiveLink,
   icons,
   isDesktop,
@@ -44,6 +43,7 @@ const {
   loadIms,
   decorateLinks,
   loadScript,
+  getFedsPlaceholderConfig,
 } = await import(`${miloLibs}/utils/utils.js`);
 const { replaceKey, replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 // End

@@ -5,9 +5,16 @@ import { getLibs } from '../../../scripts/utils.js';
 
 const miloLibs = getLibs();
 const {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig,
+  getMetadata,
+  loadStyle,
+  loadLana,
+  decorateLinks,
+  localizeLink,
+  getFederatedContentRoot,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } = await import(`${miloLibs}/utils/utils.js`);
-const { getFederatedContentRoot, getFederatedUrl } = await import(`${miloLibs}/utils/federated.js`);
 const { processTrackingLabels } = await import(`${miloLibs}/martech/attributes.js`);
 const { replaceText } = await import(`${miloLibs}/features/placeholders.js`);
 // End
@@ -110,24 +117,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
         source.setAttribute(type, `${getFederatedContentRoot()}${federalPrefix}${path}`);
       }
     });
-};
-
-let fedsPlaceholderConfig;
-export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
-  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
-
-  const { locale, placeholders } = getConfig();
-  const libOrigin = getFederatedContentRoot();
-
-  fedsPlaceholderConfig = {
-    locale: {
-      ...locale,
-      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
-    },
-    placeholders,
-  };
-
-  return fedsPlaceholderConfig;
 };
 
 export function getAnalyticsValue(str, index) {
