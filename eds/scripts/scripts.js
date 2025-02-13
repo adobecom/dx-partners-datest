@@ -10,15 +10,23 @@
  * governing permissions and limitations under the License.
  */
 
-import {prodHosts, setLibs} from './utils.js';
+import {
+  prodHosts,
+  setLibs,
+  preloadResources,
+  redirectLoggedinPartner,
+  updateNavigation,
+  updateFooter, updateIMSConfig, getRenewBanner, PARTNER_LOGIN_QUERY,
+} from './utils.js';
+import { applyPagePersonalization } from './personalization.js';
+import { rewriteLinks } from './rewriteLinks.js';
+// import PartnerNews  from '../blocks/partner-news/PartnerNews.js';
 
 // Add project-wide style path here.
-const STYLES = '';
+const STYLES = '/eds/styles/styles.css';
 
 // Use 'https://milo.adobe.com/libs' if you cannot map '/libs' to milo's origin.
 const LIBS = '/libs';
-
-
 
 const imsClientId = prodHosts.includes(window.location.host) ? 'MILO_PARTNERS_PROD' : 'MILO_PARTNERS_STAGE';
 
@@ -26,7 +34,7 @@ const imsClientId = prodHosts.includes(window.location.host) ? 'MILO_PARTNERS_PR
 const CONFIG = {
   codeRoot: '/eds',
   contentRoot: '/eds/partners-shared',
-  imsClientId: imsClientId,
+  imsClientId,
   // geoRouting: 'off',
   // fallbackRouting: 'off',
   locales: {
@@ -36,7 +44,17 @@ const CONFIG = {
   },
 };
 
+(function removePartnerLoginQuery() {
+  const url = new URL(window.location.href);
+  const { searchParams } = url;
+  if (searchParams.has(PARTNER_LOGIN_QUERY)) {
+    searchParams.delete(PARTNER_LOGIN_QUERY);
+    window.history.replaceState({}, '', url.toString());
+  }
+}());
+
 (function removeAccessToken() {
+  window.location.hash = decodeURIComponent(window.location.hash);
   if (window.location.hash.startsWith('#access_token')) {
     window.location.hash = '';
   }
@@ -67,9 +85,21 @@ const miloLibs = setLibs(LIBS);
   });
 }());
 
+function setUpPage() {
+  updateNavigation();
+  updateFooter();
+}
 (async function loadPage() {
-  const { loadArea, setConfig } = await import(`${miloLibs}/utils/utils.js`);
+  applyPagePersonalization();
+  setUpPage();
+  redirectLoggedinPartner();
+  updateIMSConfig();
+  await preloadResources(CONFIG.locales, miloLibs);
+  const { loadArea, setConfig, getConfig } = await import(`${miloLibs}/utils/utils.js`);
 
   setConfig({ ...CONFIG, miloLibs });
+  await getRenewBanner(getConfig);
   await loadArea();
+  applyPagePersonalization();
+  rewriteLinks(document);
 }());

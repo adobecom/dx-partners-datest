@@ -5,6 +5,7 @@ const { css } = await import(`${miloLibs}/deps/lit-all.min.js`);
 
 const borderColor = css`#eaeaea`;
 const blueColor = css`#1473e6`;
+const grayColor = css`#F5F5F5`;
 
 export const partnerCardsStyles = css`
   h3, p, span, button, li, input {
@@ -97,6 +98,26 @@ export const partnerCardsStyles = css`
     width: 100%;
     order: 3;
   }
+  .partner-cards-sidebar .sidebar-info-box {
+    order: 4;
+    background-color: ${grayColor};
+    font-size: 14px;
+    font-family: inherit;
+    margin-top: 24px;
+    padding: 16px;
+    line-height: 21px;
+  }
+  
+  .partner-cards-sidebar .sidebar-info-box br {
+    content: "";
+    display: block;
+  }
+  .partner-cards-sidebar .sidebar-info-box .title {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 24px;
+  }
   
   .partner-cards-sidebar .sidebar-chosen-filter-btn {
     background-color: transparent;
@@ -156,7 +177,7 @@ export const partnerCardsStyles = css`
     align-items: flex-start;
     color: #464646;
     transition: color .3s ease-in-out;
-    padding: 12px 5px 14px;
+    padding: 12px 5px 14px 0;
   }
   
   .partner-cards-sidebar .filter .filter-header:hover {
@@ -239,7 +260,7 @@ export const partnerCardsStyles = css`
   }
   
   .partner-cards-sidebar .filter-list li sp-checkbox {
-    padding: 0 6px;
+    padding: 0 3px;
     font-size: .875rem;
     line-height: 1rem;
     width: 100%;
@@ -436,7 +457,7 @@ export const partnerCardsStyles = css`
     display: block;
     right: 0;
     top: 30px;
-    z-index: 10;
+    z-index: 2;
     background-color: #fff;
     border-radius: 5px;
     border: 1px solid #eaeaea;
@@ -538,68 +559,13 @@ export const partnerCardsStyles = css`
     padding: 5px 0;
   }
   
-  .pagination-wrapper .pagination-pages-list button {
-    border: none;
-    background-color: transparent;
-  }
-  
-  .pagination-wrapper .page-btn {
-    position: relative;
-    min-width: 32px;
-    min-height: 32px;
-    max-width: 70px;
-    padding: 8px 10px;
-    font-size: .875rem;
-    line-height: .875rem;
-    color: #4b4b4b;
-    word-break: break-word;
-    text-align: center;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    border-radius: 16px;
-    overflow: hidden;
-  }
-  
-  .pagination-wrapper .pagination-prev-btn {
-    padding-right: 10px;
-    font-weight: 700;
-  }
-  
-  .pagination-wrapper .pagination-next-btn {
-    padding-left: 10px;
-    font-weight: 700;
-  }
-  
-  .pagination-wrapper .pagination-prev-btn:hover,
-  .pagination-wrapper .pagination-next-btn:hover,
-  .pagination-wrapper .page-btn:hover {
-    cursor: pointer;
-    text-decoration: underline;
-    transition: all .3s;
-  }
-  
-  .pagination-wrapper .pagination-prev-btn.disabled,
-  .pagination-wrapper .pagination-prev-btn.disabled:hover,
-  .pagination-wrapper .pagination-next-btn.disabled,
-  .pagination-wrapper .pagination-next-btn.disabled:hover,
-  .pagination-wrapper .page-btn.selected:hover {
-    text-decoration: none;
-    cursor: default;
-  }
-  
-  .pagination-wrapper .pagination-prev-btn.disabled,
-  .pagination-wrapper .pagination-next-btn.disabled {
-    color: #9d9d9d;
-  }
-  
-  .pagination-wrapper .page-btn.selected {
-    background-color: #e5e5e5;
-    border-radius: 50%;
-  }
-  
   .pagination-wrapper .pagination-total-results {
     font-weight: 700;
     text-transform: lowercase;
+  }
+
+  .pagination-wrapper .pagination-total-results span {
+    font-weight: 500;
   }
   
   @media screen and (max-width: 1200px) {
@@ -616,7 +582,7 @@ export const partnerCardsStyles = css`
   @media screen and (max-width: 1200px) {
     .all-filters-wrapper-mobile.open {
       position: fixed;
-      z-index: 10;
+      z-index: 10000000;
       display: flex;
       flex-direction: column;
       width: 100%;
@@ -895,15 +861,185 @@ export const partnerCardsStyles = css`
   .all-filters-wrapper-mobile .all-filters-footer-clear-btn-mobile:focus {
     border-color: ${blueColor};
   }
-`;
-
-export const newsCardStyles = css`
-
-  .news-card * {
-    box-sizing: border-box;
+  
+  .filter-info {
+    display: flex;
+    margin: 0 15px 5px 0;
   }
   
-  .news-card {
+  .info-icon {
+    height: 18px;
+    width: 18px;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-size: cover;
+    margin: 5px 10px 0 3px;
+    flex-shrink: 0;
+  }
+  .filter-info-text {
+    font-family: inherit;
+    font-size: var(--type-body-xs-size);
+    line-height: 17px;
+  }
+  .filter-wrapper-mobile .filter-info {
+    display: none;
+  }
+  .filter-wrapper-mobile.expanded .filter-info {
+    display: flex;
+    width: 100%;
+    margin: 0;
+    padding: 10px 20px;
+  }
+  .filter-wrapper-mobile.expanded .info-icon {
+    margin-top: 0;
+    margin-left: 0;
+  }
+`;
+
+export const partnerCardsLoadMoreStyles = css`
+  .pagination-wrapper.pagination-wrapper-load-more {
+    justify-content: center;
+    flex-direction: column-reverse;
+  }
+  
+  .pagination-wrapper-load-more .load-more-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: .875rem;
+    line-height: 1.063rem;
+    font-weight: 700;
+    min-width: 60px;
+    max-width: 100%;
+    height: 32px;
+    max-height: 32px;
+    padding-left: 14px;
+    padding-right: 14px;
+    color: #222222;
+    border: 2px solid #222222;
+    border-radius: 16px;
+    background-color: #ffffff00;
+    cursor: pointer;
+    transition: border-color .3s ease-in-out,background-color .3s ease-in-out;
+  }
+  @media (hover: hover) {
+    .pagination-wrapper-load-more .load-more-btn:hover {
+      text-decoration: none;
+      border-color: #222222;
+      background-color: #222222;
+      color: #ffffff;
+    }
+  }
+`;
+
+export const partnerCardsPaginationStyles = css`
+  .pagination-wrapper.pagination-wrapper-default {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  @media screen and (max-width: 1200px) {
+    .pagination-wrapper.pagination-wrapper-default {
+      justify-content: center;
+    }
+  }
+
+  .pagination-wrapper-default .pagination-pages-list button {
+    border: none;
+    background-color: transparent;
+  }
+
+  .pagination-wrapper-default .page-btn {
+    position: relative;
+    min-width: 32px;
+    min-height: 32px;
+    max-width: 70px;
+    padding: 8px 10px;
+    font-size: .875rem;
+    line-height: .875rem;
+    color: #4b4b4b;
+    word-break: break-word;
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .pagination-wrapper-default .pagination-prev-btn {
+    padding-right: 10px;
+    font-weight: 700;
+  }
+
+  .pagination-wrapper-default .pagination-next-btn {
+    padding-left: 10px;
+    font-weight: 700;
+  }
+
+  .pagination-wrapper-default .pagination-prev-btn:hover,
+  .pagination-wrapper-default .pagination-next-btn:hover,
+  .pagination-wrapper-default .page-btn:hover {
+    cursor: pointer;
+    text-decoration: underline;
+    transition: all .3s;
+  }
+
+  .pagination-wrapper-default .pagination-prev-btn.disabled,
+  .pagination-wrapper-default .pagination-prev-btn.disabled:hover,
+  .pagination-wrapper-default .pagination-next-btn.disabled,
+  .pagination-wrapper-default .pagination-next-btn.disabled:hover,
+  .pagination-wrapper-default .page-btn.selected:hover {
+    text-decoration: none;
+    cursor: default;
+  }
+
+  .pagination-wrapper-default .pagination-prev-btn.disabled,
+  .pagination-wrapper-default .pagination-next-btn.disabled {
+    color: #9d9d9d;
+  }
+
+  .pagination-wrapper-default .page-btn.selected {
+    background-color: #e5e5e5;
+    border-radius: 50%;
+  }
+`;
+
+export const partnerCardsDateFilterStyles = css`
+  .date-filter-tag {
+    background-color: transparent;
+    border: none;
+    padding: 0 6px;
+    height: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  .date-filter-tag-label {
+    width: calc(100% - 12px);
+    font-size: .875rem;
+    line-height: 1.3;
+    text-align: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .date-filter-tag-checkmark {
+    color: ${blueColor};
+    width: 12px;
+    height: 12px;
+  }
+`;
+
+export const singlePartnerCardStyles = css`
+  .single-partner-card * {
+    box-sizing: border-box;
+  }
+
+  .single-partner-card {
     display: flex;
     flex-direction: column;
     background-color: #fff;
@@ -913,13 +1049,13 @@ export const newsCardStyles = css`
     width: 100%;
     height: 400px;
   }
-  
-  .news-card:hover {
+
+  .single-partner-card:hover {
     box-shadow: 0 3px 6px 0 rgba(0,0,0,.16);
     transition: box-shadow .3s ease-in-out;
   }
-  
-  .news-card .card-header {
+
+  .single-partner-card .card-header {
     min-height: 192px;
     max-height: 192px;
     background-color: #323232;
@@ -930,12 +1066,12 @@ export const newsCardStyles = css`
     border-top-right-radius: 4px;
     position: relative;
   }
-  
-  .news-card:hover .card-header:after {
+
+  .single-partner-card:hover .card-header:after {
     opacity: 1;
   }
-  
-  .news-card .card-header:after {
+
+  .single-partner-card .card-header:after {
     position: absolute;
     content: "";
     top: 0;
@@ -948,8 +1084,8 @@ export const newsCardStyles = css`
     opacity: 0;
     transition: opacity .3s ease-in-out;
   }
-  
-  .news-card .card-content {
+
+  .single-partner-card .card-content {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -957,8 +1093,8 @@ export const newsCardStyles = css`
     padding: 16px 16px 20px;
     height: 100%;
   }
-  
-  .news-card .card-title {
+
+  .single-partner-card .card-title {
     color: #323232;
     font-size: 1.125rem;
     font-weight: 700;
@@ -971,8 +1107,8 @@ export const newsCardStyles = css`
     overflow: hidden;
     -webkit-line-clamp: 2;
   }
-  
-  .news-card .card-description {
+
+  .single-partner-card .card-description {
     color: #505050;
     font-size: .875rem;
     line-height: 1.3125rem;
@@ -985,14 +1121,14 @@ export const newsCardStyles = css`
     overflow: hidden;
     -webkit-line-clamp: 3;
   }
-  
-  .news-card .card-footer {
+
+  .single-partner-card .card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  
-  .news-card .card-btn {
+
+  .single-partner-card .card-btn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1014,98 +1150,20 @@ export const newsCardStyles = css`
     cursor: pointer;
     transition: border-color .3s ease-in-out,background-color .3s ease-in-out;
   }
-  
-  .news-card .card-btn:hover {
+
+  .single-partner-card .card-btn:hover {
     text-decoration: none;
     border-color: #222222;
     background-color: #222222;
     color: #ffffff;
   }
-  
-  .news-card .card-date {
+
+  .single-partner-card .card-date {
     color: #747474;
     font-size: .875rem;
     line-height: 1.3125rem;
     word-break: break-word;
     max-height: 3.9375rem;
     padding: 0;
-  }
-`;
-
-export const loadMorePaginationStyles = css`
-  .pagination-wrapper {
-    justify-content: center;
-    flex-direction: column-reverse;
-  }
-  
-  .pagination-wrapper .load-more-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: .875rem;
-    line-height: 1.063rem;
-    font-weight: 700;
-    min-width: 60px;
-    max-width: 100%;
-    height: 32px;
-    max-height: 32px;
-    padding-left: 14px;
-    padding-right: 14px;
-    color: #222222;
-    border: 2px solid #222222;
-    border-radius: 16px;
-    background-color: #ffffff00;
-    cursor: pointer;
-    transition: border-color .3s ease-in-out,background-color .3s ease-in-out;
-  }
-  
-  .pagination-wrapper .load-more-btn:hover {
-    text-decoration: none;
-    border-color: #222222;
-    background-color: #222222;
-    color: #ffffff;
-  }
-`;
-
-export const numericPaginationStyles = css`
-  .pagination-wrapper {
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  
-  @media screen and (max-width: 1200px) {
-    .pagination-wrapper {
-      justify-content: center;
-    }
-  }
-`;
-
-export const dateFilterStyles = css`
-  .date-filter-tag {
-    background-color: transparent;
-    border: none;
-    padding: 0 6px;
-    height: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    cursor: pointer;
-  }
-  
-  .date-filter-tag-label {
-    width: calc(100% - 12px);
-    font-size: .875rem;
-    line-height: 1.3;
-    text-align: left;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
-  
-  .date-filter-tag-checkmark {
-    color: ${blueColor};
-    width: 12px;
-    height: 12px;
   }
 `;

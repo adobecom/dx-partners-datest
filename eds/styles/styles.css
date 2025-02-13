@@ -1,8 +1,26 @@
-/* 
+/*
  * Put project specific base styles here.
  *
  * Note: The proect does not load this file.
  *       You will need to load these using scripts.js.
- * 
+ *
  *
  */
+
+/* some milo blocks set the display rule with higher specificity, so I think only good solution is !important */
+.personalization-hide {
+  display: none !important;
+}
+
+/* some milo blocks set the display rule with higher specificity, so I think only good solution is !important */
+.partner-personalization {
+  display: none !important;
+}
+
+/* MWPW-162386 */
+@supports (-moz-appearance: none) {
+  h2 strong,
+  h3 strong {
+    font-weight: unset;
+  }
+}
