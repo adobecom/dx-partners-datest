@@ -1,5 +1,6 @@
 import { singlePartnerCardStyles } from './PartnerCardsStyles.js';
 import { formatDate, getLibs, prodHosts } from '../scripts/utils.js';
+import { transformCardUrl } from '../blocks/utils/utils.js';
 
 const miloLibs = getLibs();
 const { html, LitElement } = await import(`${miloLibs}/deps/lit-all.min.js`);
@@ -14,23 +15,6 @@ class SinglePartnerCard extends LitElement {
   };
 
   static styles = singlePartnerCardStyles;
-
-  // eslint-disable-next-line class-methods-use-this
-  transformCardUrl(url) {
-    if (!url) {
-      // eslint-disable-next-line no-console
-      console.error('URL is null or undefined');
-      return '';
-    }
-    // todo do wee need this if block (doesn't exist in dme)
-    if (window.location.host === 'partners.adobe.com') {
-      return url;
-    }
-    const newUrl = new URL(url);
-    newUrl.protocol = window.location.protocol;
-    newUrl.host = window.location.host;
-    return newUrl;
-  }
 
   get imageUrl() {
     const isKB = this.data?.tags.some((tag) => tag.id === KB_TAG);
@@ -67,7 +51,7 @@ class SinglePartnerCard extends LitElement {
           </div>
           <div class="card-footer">
             <span class="card-date">${formatDate(this.data.cardDate, this.ietf)}</span>
-            <a class="card-btn" href="${this.transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
+            <a class="card-btn" href="${transformCardUrl(this.data.contentArea?.url)}">${this.data.footer[0]?.right[0]?.text}</a>
           </div>
         </div>
       </div>
