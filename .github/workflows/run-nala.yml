@@ -24,4 +24,4 @@ jobs:
           prRepo: ${{ github.event.pull_request.head.repo.name }}
           prBranch: ${{ github.event.pull_request.head.ref }}
           prBaseBranch: ${{ github.event.pull_request.base.ref }}
-          HLX_API_KEY: ${{ secrets.HLX_API_KEY }}
+          AEM_API_KEY: ${{ secrets.AEM_API_KEY }}
