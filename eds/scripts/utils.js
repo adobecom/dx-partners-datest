@@ -28,7 +28,7 @@ export const [setLibs, getLibs] = (() => {
         const partnerBranch = hostname.startsWith('main') ? 'main' : 'stage';
         const branch = new URLSearchParams(search).get('milolibs') || partnerBranch;
         if (branch === 'local') return 'http://localhost:6456/libs';
-        return branch.includes('--') ? `https://${branch}.hlx.live/libs` : `https://${branch}--milo--adobecom.hlx.live/libs`;
+        return branch.includes('--') ? `https://${branch}.aem.live/libs` : `https://${branch}--milo--adobecom.aem.live/libs`;
       })();
       return libs;
     }, () => libs,
@@ -38,6 +38,8 @@ export const [setLibs, getLibs] = (() => {
 export const prodHosts = [
   'main--dx-partners--adobecom.hlx.page',
   'main--dx-partners--adobecom.hlx.live',
+  'main--dx-partners--adobecom.aem.page',
+  'main--dx-partners--adobecom.aem.live',
   'partners.adobe.com',
 ];
 
