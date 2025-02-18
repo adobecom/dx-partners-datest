@@ -105,7 +105,7 @@
   border-color: #d3d3d3;
   border-radius: 0 0 3px 3px;
 }
-
+/*MWPW-154138*/
 .feds-search-result,
 .feds-search-view-all-results {
   display: block;
@@ -125,6 +125,7 @@
   font-weight: 400;
 }
 
+/*MWPW-154138*/
 .feds-search-view-all-results {
   color: var(--link-color);
 }
