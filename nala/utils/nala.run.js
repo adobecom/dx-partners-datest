@@ -90,7 +90,7 @@ function getLocalTestLiveUrl(env, milolibs) {
     } else if (env === 'libs') {
       return `http://127.0.0.1:6456/?milolibs=${milolibs}`;
     } else {
-      return `https://${env}--dx-partners--adobecom.hlx.live/?milolibs=${milolibs}`;
+      return `https://${env}--dx-partners--adobecom.aem.live/?milolibs=${milolibs}`;
     }
   } else {
     if (env === 'local') {
@@ -100,7 +100,7 @@ function getLocalTestLiveUrl(env, milolibs) {
     } else if (env === 'partners.stage') {
       return 'https://partners.stage.adobe.com';
     } else {
-      return `https://${env}--dx-partners--adobecom.hlx.live`;
+      return `https://${env}--dx-partners--adobecom.aem.live`;
     }
   }
 }

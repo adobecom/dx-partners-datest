@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import { isBranchURLValid } from '../libs/baseurl.js';
 import axios from 'axios';
 
-const MAIN_BRANCH_LIVE_URL = 'https://main--dx-partners--adobecom.hlx.live';
+const MAIN_BRANCH_LIVE_URL = 'https://main--dx-partners--adobecom.aem.live';
 const STAGE_URL = 'https://partners.stage.adobe.com';
 const LOCALHOST_URL = 'http://localhost:3000';
 
@@ -26,7 +26,7 @@ async function getGitHubPRBranchLiveUrl() {
   const prFromOrg = process.env.prOrg;
   const prFromRepoName = process.env.prRepo;
   
-  const prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.hlx.live`;
+  const prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
 
   try {
     if (await isBranchURLValid(prBranchLiveUrl)) {

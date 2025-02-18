@@ -15,6 +15,8 @@ const miloLibs = getLibs();
 const { replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 const { getConfig, getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/utils.js`);
 const { debounce } = await import(`${miloLibs}/utils/action.js`);
+const { getFedsPlaceholderConfig } = await import (`${miloLibs}/utils/federated.js`);
+
 
 const CONFIG = {
   selectors: {
