@@ -264,7 +264,7 @@ test.describe('Validate news block', () => {
   });
 
   test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
-    const { data, path } = features[5];
+    const { data, path } = features[6];
     await test.step('Click Sign In', async () => {
       await page.goto(`${baseURL}${path}`);
       await page.waitForLoadState('domcontentloaded');
