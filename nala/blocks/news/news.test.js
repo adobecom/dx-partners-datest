@@ -36,6 +36,7 @@ test.describe('Validate news block', () => {
       const resultCardPartnerLevel = await newsPage.resultNumber.textContent();
       await expect(parseInt(resultCardPartnerLevel.split(' ')[0], 10)).toBe(0);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, path, context);
+      await newsPage.clearSearchSelector.click();
       await page.reload();
     });
 
@@ -264,7 +265,7 @@ test.describe('Validate news block', () => {
   });
 
   test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
-    const { data, path } = features[5];
+    const { data, path } = features[6];
     await test.step('Click Sign In', async () => {
       await page.goto(`${baseURL}${path}`);
       await page.waitForLoadState('domcontentloaded');
@@ -275,6 +276,7 @@ test.describe('Validate news block', () => {
       await expect(parseInt(resultPlatinum.split(' ')[0], 10)).toBe(data.noCards);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
 
+      await newsPage.clearSearchSelector.click();
       await page.reload();
       await page.waitForLoadState('domcontentloaded');
     });
