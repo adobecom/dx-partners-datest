@@ -39,7 +39,7 @@ test.describe('Validate news block', () => {
       await newsPage.clearSearchSelector.click();
       await page.reload();
     });
-    // dummy
+
     await test.step('Find automation regression cards for current partner level', async () => {
       const resultAll = await newsPage.resultNumber.textContent();
       await expect(parseInt(resultAll.split(' ')[0], 10)).toBe(data.resultTotal);
@@ -345,7 +345,7 @@ test.describe('Validate news block', () => {
       await page.goto(`${baseURL}${path}`);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
       await page.reload();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
     });
 
     await test.step(`Open ${path} in a new tab`, async () => {
