@@ -39,7 +39,7 @@ test.describe('Validate news block', () => {
       await newsPage.clearSearchSelector.click();
       await page.reload();
     });
-
+    // dummy
     await test.step('Find automation regression cards for current partner level', async () => {
       const resultAll = await newsPage.resultNumber.textContent();
       await expect(parseInt(resultAll.split(' ')[0], 10)).toBe(data.resultTotal);
