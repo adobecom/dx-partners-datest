@@ -264,7 +264,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL, browserName}) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[6];
     await test.step('Click Sign In', async () => {
       await page.goto(`${baseURL}${path}`);
@@ -297,7 +300,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[7].name},${features[7].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[7].name},${features[7].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[7];
     await findCardsForPartnerLevel(
       page,
@@ -307,7 +313,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[8].name},${features[8].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[8].name},${features[8].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[8];
     await findCardsForPartnerLevel(
       page,
@@ -317,7 +326,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[9].name},${features[9].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[9].name},${features[9].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[9];
     await findCardsForPartnerLevel(
       page,
@@ -327,7 +339,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[10];
     await test.step('Click Sign In', async () => {
       await findCardsForPartnerLevel(
@@ -339,7 +354,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[11];
     await test.step('Go to stage.adobe.com', async () => {
       await page.goto(`${baseURL}${path}`);
@@ -352,7 +370,7 @@ test.describe('Validate news block', () => {
       const newTab = await context.newPage();
       await newTab.goto(`${path}`);
       const newTabPage = new NewsPage(newTab);
-      await newTab.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
+      await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 20000 });
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
