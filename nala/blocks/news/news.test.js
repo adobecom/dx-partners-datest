@@ -278,7 +278,7 @@ test.describe('Validate news block', () => {
 
       await newsPage.clearSearchSelector.click();
       await page.reload();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
     });
 
     await test.step('Find platinum automation regression cards', async () => {
@@ -352,6 +352,7 @@ test.describe('Validate news block', () => {
       const newTab = await context.newPage();
       await newTab.goto(`${path}`);
       const newTabPage = new NewsPage(newTab);
+      await newTab.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
