@@ -77,3 +77,16 @@ export function setDownloadParam(url) {
     return '';
   }
 }
+
+// eslint-disable-next-line class-methods-use-this
+export function transformCardUrl(url) {
+  if (!url) {
+    // eslint-disable-next-line no-console
+    console.error('URL is null or undefined');
+    return '';
+  }
+  const newUrl = new URL(url);
+  newUrl.protocol = window.location.protocol;
+  newUrl.host = window.location.host;
+  return newUrl;
+}
