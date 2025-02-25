@@ -3,6 +3,8 @@
     {
       "id": "library",
       "title": "Library",
+      "previewHost": "main--dx-partners--adobecom.hlx.page",
+      "liveHost": "main--dx-partners--adobecom.hlx.live",
       "environments": [
         "edit"
       ],
