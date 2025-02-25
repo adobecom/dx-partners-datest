@@ -81,7 +81,7 @@ export default {
       tags: '@dx-signin @regression @circleCi',
       data: {
         partnerLevel: 'tpp-platinum:',
-        expectedToSeeInURL: '/solutionpartners/error/contact-not-found',
+        expectedToSeeInURL: '/solutionpartners/drafts/automation/regression/public-page',
       },
     },
     {

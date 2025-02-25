@@ -254,7 +254,7 @@ test.describe('MAPP sign in flow', () => {
         .toContain(`${features[6].data.expectedToSeeInURL}`);
       const signInButton = await newTabPage.signInButton;
       await expect(signInButton).toBeHidden();
-      const joinNowButton = await newTabPage.joinNowButton;
+      const joinNowButton = await newTabPage.gnavJoinNowButton;
       await expect(joinNowButton).toBeVisible();
     });
   });
