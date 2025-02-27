@@ -8,6 +8,7 @@ const STAGE_URL = 'https://partners.stage.adobe.com';
 const LOCALHOST_URL = 'http://localhost:3000';
 
 async function getGitHubPRBranchLiveUrl() {
+  console.log('in getgithubprbranchlive url');
   // get the pr number
   const prReference = process.env.GITHUB_REF;
   const prNumber = prReference.split('/')[2];
@@ -25,10 +26,10 @@ async function getGitHubPRBranchLiveUrl() {
   // Get the org and repo from the environment variables
   const prFromOrg = process.env.prOrg;
   const prFromRepoName = process.env.prRepo;
-  
   const prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
-
+console.log('pr branch live url', prBranchLiveUrl);
   try {
+    console.log('in first try');
     if (await isBranchURLValid(prBranchLiveUrl)) {
       process.env.PR_BRANCH_LIVE_URL = prBranchLiveUrl;
     }
@@ -49,6 +50,7 @@ async function getGitHubPRBranchLiveUrl() {
 }
 
 async function getGitHubMiloLibsBranchLiveUrl() {
+  console.log('in get github milo libs branch live url');
   const repository = process.env.GITHUB_REPOSITORY;
 
   let prBranchLiveUrl;
@@ -58,6 +60,7 @@ async function getGitHubMiloLibsBranchLiveUrl() {
   miloLibs = process.env.MILO_LIBS;
 
   try {
+    console.log('in try before is branch url valid');
     if (await isBranchURLValid(prBranchLiveUrl)) {
       process.env.PR_BRANCH_LIVE_URL = prBranchLiveUrl;     
     }
@@ -65,6 +68,7 @@ async function getGitHubMiloLibsBranchLiveUrl() {
     console.info('PR Branch live url : ', prBranchLiveUrl);
     console.info('Milo Libs : ', miloLibs);
   } catch (err) {
+    console.log('in catch');
     console.error(`Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`);
     console.info(`Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`);
     process.exit(1);
