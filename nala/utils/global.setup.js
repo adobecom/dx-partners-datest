@@ -29,7 +29,7 @@ async function getGitHubPRBranchLiveUrl() {
   const prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
 
   try {
-    if (await isBranchURLValid(prBranchLiveUrl)) {
+    if (await isBranchURLValid(prBranchLiveUrl, true)) {
       process.env.PR_BRANCH_LIVE_URL = prBranchLiveUrl;
     }
     console.info('PR Repository : ', repository);
