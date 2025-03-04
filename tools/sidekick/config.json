@@ -1,10 +1,10 @@
 {
+  "previewHost": "main--dx-partners--adobecom.aem.page",
+  "liveHost": "main--dx-partners--adobecom.aem.live",
   "plugins": [
     {
       "id": "library",
       "title": "Library",
-      "previewHost": "main--dx-partners--adobecom.aem.page",
-      "liveHost": "main--dx-partners--adobecom.aem.live",
       "environments": [
         "edit"
       ],
