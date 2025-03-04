@@ -48,12 +48,11 @@ const {
   loadIms,
   decorateLinks,
   loadScript,
+  getFedsPlaceholderConfig,
   getGnavSource,
 } = await import(`${miloLibs}/utils/utils.js`);
 const { replaceKey, replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 // End
-
-const { getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/federated.js`);
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
