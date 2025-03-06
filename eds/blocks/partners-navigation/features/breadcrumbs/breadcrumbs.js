@@ -1,8 +1,7 @@
 // MWPW-159021
 /* eslint-disable */
-import { getMetadata, getConfig } from '../../../../utils/utils.js';
+import { getMetadata, getConfig, getFederatedUrl } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
-import { getFederatedUrl } from '../../../../utils/federated.js';
 
 const metadata = {
   seo: 'breadcrumbs-seo',

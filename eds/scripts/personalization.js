@@ -100,11 +100,11 @@ function processRenew(profile) {
 }
 
 function processGnavElements(elements) {
-  const regex = /(?<=\().*?(?=\))/g;
+  const regex = /\((.*?)\)/g;
   return elements.map((el) => {
-    const matches = el.textContent.match(regex);
-    if (!matches?.length) return {};
-    const match = matches[0];
+    const matches = [...el.textContent.matchAll(regex)];
+    if (!matches?.length || !matches[0][1]) return {};
+    const match = matches[0][1];
     el.textContent = el.textContent.replace(`(${match})`, '');
     const conditions = match.split(',').map((condition) => condition.trim());
     if (!conditions.length) return {};
