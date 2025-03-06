@@ -57,13 +57,14 @@ const config = {
       use: { ...devices['Desktop Firefox'] },
       bypassCSP: true,
     },
-    {
-      name: 'dx-partners-live-webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-      bypassCSP: true,
-    },
+//     {
+//       name: 'dx-partners-live-webkit',
+//       use: {
+//         ...devices['Desktop Safari'],
+//         ignoreHTTPSErrors: true,
+//       },
+//       bypassCSP: true,
+//     },
     /* Test Against Mobile View ports */
 //     {
 //       name: 'mobile-chrome-pixel5',

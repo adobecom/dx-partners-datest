@@ -5,9 +5,17 @@ import { getLibs } from '../../../scripts/utils.js';
 
 const miloLibs = getLibs();
 const {
-  getConfig, getMetadata, loadStyle, loadLana, decorateLinks, localizeLink,
+  getConfig,
+  getMetadata,
+  loadStyle,
+  loadLana,
+  decorateLinks,
+  localizeLink,
+  getFederatedContentRoot,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } = await import(`${miloLibs}/utils/utils.js`);
-const { getFederatedContentRoot, getFederatedUrl, getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/federated.js`);
+
 const { processTrackingLabels } = await import(`${miloLibs}/martech/attributes.js`);
 const { replaceText } = await import(`${miloLibs}/features/placeholders.js`);
 // End
