@@ -11,7 +11,7 @@ test.describe('MAPP sign in flow', () => {
   test.beforeEach(async ({ page, browserName, baseURL, context }) => {
     signInPage = new SignInPage(page);
     if (!baseURL.includes('partners.stage.adobe.com')) {
-      await context.setExtraHTTPHeaders({ authorization: `token ${process.env.HLX_API_KEY}` });
+      await context.setExtraHTTPHeaders({ authorization: `token ${process.env.MILO_AEM_API_KEY}` });
     }
     if (browserName === 'chromium' && !baseURL.includes('partners.stage.adobe.com')) {
       await page.route('https://www.adobe.com/chimera-api/**', async (route, request) => {
@@ -254,7 +254,7 @@ test.describe('MAPP sign in flow', () => {
         .toContain(`${features[6].data.expectedToSeeInURL}`);
       const signInButton = await newTabPage.signInButton;
       await expect(signInButton).toBeHidden();
-      const joinNowButton = await newTabPage.joinNowButton;
+      const joinNowButton = await newTabPage.gnavJoinNowButton;
       await expect(joinNowButton).toBeVisible();
     });
   });

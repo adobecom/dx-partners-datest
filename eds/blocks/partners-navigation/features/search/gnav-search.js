@@ -2,7 +2,6 @@
 /* eslint-disable */
 import {
   toFragment,
-  getFedsPlaceholderConfig,
   isDesktop,
   setCurtainState,
   trigger,
@@ -14,8 +13,10 @@ import {generateRequestForSearchAPI} from "../../../utils/utils.js";
 
 const miloLibs = getLibs();
 const { replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
-const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
+const { getConfig, getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/utils.js`);
 const { debounce } = await import(`${miloLibs}/utils/action.js`);
+const { getFedsPlaceholderConfig } = await import (`${miloLibs}/utils/federated.js`);
+
 
 const CONFIG = {
   selectors: {

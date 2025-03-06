@@ -310,7 +310,7 @@
     },
     "styles": {
       "typeOverride": "default",
-      "backgroundImage": "https://main--dx-partners--adobecom.hlx.live/SPP/CaaSNewsTest/media_1aed2d3e14529e808c2f221d41bcc23bca25c5283.jpeg",
+      "backgroundImage": "https://main--dx-partners--adobecom.aem.live/SPP/CaaSNewsTest/media_1aed2d3e14529e808c2f221d41bcc23bca25c5283.jpeg",
       "backgroundAltText": "Yugo the car",
       "mnemonic": "",
       "icon": "",
@@ -344,7 +344,7 @@
     "contentArea": {
       "detailText": "This is the detail",
       "title": "First News Article Test Update",
-      "url": "https://main--dx-partners--adobecom.hlx.live/SPP/CaaSNewsTest/first-news-article-test",
+      "url": "https://main--dx-partners--adobecom.aem.live/SPP/CaaSNewsTest/first-news-article-test",
       "description": "This is a team Yugo test",
       "dateDetailText": {
         "type": "date-interval",
@@ -370,7 +370,7 @@
             "type": "button",
             "style": "",
             "text": "Read now",
-            "href": "https://main--dx-partners--adobecom.hlx.live/SPP/CaaSNewsTest/first-news-article-test"
+            "href": "https://main--dx-partners--adobecom.aem.live/SPP/CaaSNewsTest/first-news-article-test"
           }
         ]
       }
@@ -383,7 +383,7 @@
     "modifiedDate": "2024-05-21T19:11:17.000Z",
     "startDate": "",
     "endDate": "",
-    "ctaLink": "https://main--dx-partners--adobecom.hlx.live/SPP/CaaSNewsTest/first-news-article-test",
+    "ctaLink": "https://main--dx-partners--adobecom.aem.live/SPP/CaaSNewsTest/first-news-article-test",
     "arbitrary": [
       {
         "key": "Product",
@@ -394,7 +394,7 @@
         "value": "Americas"
       }
     ],
-    "overlayLink": "https://main--dx-partners--adobecom.hlx.live/SPP/CaaSNewsTest/first-news-article-test",
+    "overlayLink": "https://main--dx-partners--adobecom.aem.live/SPP/CaaSNewsTest/first-news-article-test",
     "lang": "en",
     "country": "us",
     "origin": "dx-partners"

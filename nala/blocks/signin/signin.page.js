@@ -5,6 +5,7 @@ export default class SignInPage {
     this.signInButtonStageAdobe = page.locator('.profile-comp.secondary-button');
     this.profileIconButton = page.locator('.feds-profile-button');
     this.joinNowButton = page.locator('a:has-text("Join now")');
+    this.gnavJoinNowButton = page.locator('.feds-cta-wrapper a:has-text("Join now")');
     this.explorePastArticles = page.locator('a:has-text("Explore past articles")');
     this.newsletterLink = page.locator('a:has-text("product newsletter")');
     this.logoutButton = page.locator('[daa-ll="Sign Out"]');

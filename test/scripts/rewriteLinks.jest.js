@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { getUpdatedHref, rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
+import { rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
 import { getConfig } from '../../eds/blocks/utils/utils.js';
 import { partnerIsSignedIn } from '../../eds/scripts/utils.js';
 
@@ -10,7 +10,12 @@ jest.mock('../../eds/scripts/utils.js', () => ({ partnerIsSignedIn: jest.fn(() =
 
 // Mock DOM
 document.body.innerHTML = `
-  <a href="https://partners.adobe.com">Partner prod Link</a>
+  <div>
+    <a href="https://partners.adobe.com">Partner prod Link</a>
+    <a id="spp-link" href="https://solutionpartners.adobe.com/solution-partners/contact.html">SPP prod Link</a>
+    <a id="exchange-link" href="https://exchange.adobe.com/">Adobe Exchange prod Link</a>
+    <a id="cbc-link" href="https://cbconnection.adobe.com/en/apc-helpdesk">CBC prod Link</a>
+  </div>
 `;
 
 describe('Test rewrite links', () => {
@@ -29,9 +34,6 @@ describe('Test rewrite links', () => {
   });
   afterEach(() => {
     jest.clearAllMocks(); // Clear mocks after each test
-    document.body.innerHTML = `
-  <a href="https://partners.adobe.com">Partner prod Link</a>
-`;
   });
 
   test('should  update partners prod link when on non prod', () => {
@@ -50,4 +52,22 @@ describe('Test rewrite links', () => {
       expect(links[0].href).toBe('https://partners.stage.adobe.com/');
     },
   );
+
+  test('should update SPP prod link when on non prod', () => {
+    rewriteLinks(document);
+    const link = document.querySelector('#spp-link');
+    expect(link.href).toBe('https://solutionpartners.stage2.adobe.com/solution-partners/contact.html');
+  });
+
+  test('should update Adobe Exchange prod link when on non prod', () => {
+    rewriteLinks(document);
+    const link = document.querySelector('#exchange-link');
+    expect(link.href).toBe('https://stage.exchange.adobe.com/');
+  });
+
+  test('should update CBC prod link when on non prod', () => {
+    rewriteLinks(document);
+    const link = document.querySelector('#cbc-link');
+    expect(link.href).toBe('https://cbconnection-stage.adobe.com/en/apc-helpdesk');
+  });
 });

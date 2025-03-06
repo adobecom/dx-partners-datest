@@ -1,11 +1,12 @@
-import { toFragment, getFedsPlaceholderConfig, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
+import { toFragment, trigger, closeAllDropdowns, logErrorFor } from '../../utilities/utilities.js';
 
 // MWPW-157751
 import { getLibs } from '../../../../scripts/utils.js';
 
 const miloLibs = getLibs();
 const { replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
-const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
+
+const { getConfig, getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/utils.js`);
 
 const getLanguage = (ietfLocale) => {
   if (!ietfLocale.length) return 'en';
@@ -115,6 +116,7 @@ class ProfileDropdown {
     // the email had some special logic as well;
     // for MVP, we took a simpler approach ("Some very long name, very l...")
     this.avatarElem = toFragment`<img
+      data-cs-mask
       class="feds-profile-img"
       src="${this.avatar}"
       tabindex="0"
@@ -126,8 +128,8 @@ class ProfileDropdown {
         <div class="feds-profile-header">
           ${this.avatarElem}
           <div class="feds-profile-details">
-            <p class="feds-profile-name">${this.profileData.displayName}</p>
-            <p class="feds-profile-email">${this.decorateEmail(this.profileData.email)}</p>
+            <p data-cs-mask class="feds-profile-name">${this.profileData.displayName}</p>
+            <p data-cs-mask class="feds-profile-email">${this.decorateEmail(this.profileData.email)}</p>
             <a  href="${decorateProfileLink('account', `?lang=${lang}`)}"
                 target="_blank" 
                 daa-ll="${this.placeholders.viewAccount}"

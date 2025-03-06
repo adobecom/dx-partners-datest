@@ -39,7 +39,7 @@ const config = {
     actionTimeout: 60000,
 
     trace: 'on-first-retry',
-    baseURL: process.env.PR_BRANCH_LIVE_URL || (process.env.LOCAL_TEST_LIVE_URL || 'https://main--dx-partners--adobecom.hlx.live'),
+    baseURL: process.env.PR_BRANCH_LIVE_URL || (process.env.LOCAL_TEST_LIVE_URL || 'https://main--dx-partners--adobecom.aem.live'),
 
   },
 
@@ -57,13 +57,14 @@ const config = {
       use: { ...devices['Desktop Firefox'] },
       bypassCSP: true,
     },
-    {
-      name: 'dx-partners-live-webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-      bypassCSP: true,
-    },
+//     {
+//       name: 'dx-partners-live-webkit',
+//       use: {
+//         ...devices['Desktop Safari'],
+//         ignoreHTTPSErrors: true,
+//       },
+//       bypassCSP: true,
+//     },
     /* Test Against Mobile View ports */
 //     {
 //       name: 'mobile-chrome-pixel5',

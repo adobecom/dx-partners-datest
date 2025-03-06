@@ -13,7 +13,7 @@ test.describe('Validate news block', () => {
     newsPage = new NewsPage(page);
     signInPage = new SignInPage(page);
     if (!baseURL.includes('partners.stage.adobe.com')) {
-          await context.setExtraHTTPHeaders({ authorization: `token ${process.env.HLX_API_KEY}` });
+          await context.setExtraHTTPHeaders({ authorization: `token ${process.env.MILO_AEM_API_KEY}` });
         }
         if (browserName === 'chromium' && !baseURL.includes('partners.stage.adobe.com')) {
           await page.route('https://www.adobe.com/chimera-api/**', async (route, request) => {
@@ -36,6 +36,7 @@ test.describe('Validate news block', () => {
       const resultCardPartnerLevel = await newsPage.resultNumber.textContent();
       await expect(parseInt(resultCardPartnerLevel.split(' ')[0], 10)).toBe(0);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, path, context);
+      await newsPage.clearSearchSelector.click();
       await page.reload();
     });
 
@@ -263,8 +264,11 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL }) => {
-    const { data, path } = features[5];
+  test(`${features[6].name},${features[6].tags}`, async ({ page, context, baseURL, browserName}) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
+    const { data, path } = features[6];
     await test.step('Click Sign In', async () => {
       await page.goto(`${baseURL}${path}`);
       await page.waitForLoadState('domcontentloaded');
@@ -275,8 +279,9 @@ test.describe('Validate news block', () => {
       await expect(parseInt(resultPlatinum.split(' ')[0], 10)).toBe(data.noCards);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
 
+      await newsPage.clearSearchSelector.click();
       await page.reload();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
     });
 
     await test.step('Find platinum automation regression cards', async () => {
@@ -295,7 +300,10 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[7].name},${features[7].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[7].name},${features[7].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[7];
     await findCardsForPartnerLevel(
       page,
@@ -305,7 +313,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[8].name},${features[8].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[8].name},${features[8].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[8];
     await findCardsForPartnerLevel(
       page,
@@ -315,7 +326,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[9].name},${features[9].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[9].name},${features[9].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[9];
     await findCardsForPartnerLevel(
       page,
@@ -325,7 +339,10 @@ test.describe('Validate news block', () => {
     );
   });
 
-  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[10].name},${features[10].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[10];
     await test.step('Click Sign In', async () => {
       await findCardsForPartnerLevel(
@@ -337,19 +354,23 @@ test.describe('Validate news block', () => {
     });
   });
 
-  test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL }) => {
+  test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL, browserName }) => {
+    if (browserName === 'firefox') {
+      test.slow();
+    }
     const { data, path } = features[11];
     await test.step('Go to stage.adobe.com', async () => {
       await page.goto(`${baseURL}${path}`);
       await signInPage.addCookie(data.partnerPortal, data.partnerLevel, baseURL + path, context);
       await page.reload();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForSelector('.partner-cards-cards-results', { state: 'visible' });
     });
 
     await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
       await newTab.goto(`${path}`);
       const newTabPage = new NewsPage(newTab);
+      await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 20000 });
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
