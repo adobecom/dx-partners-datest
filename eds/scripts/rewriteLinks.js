@@ -1,4 +1,5 @@
 import { getConfig } from '../blocks/utils/utils.js';
+import { prodHosts } from './utils.js';
 
 /**
  * Domain configs where the key is the production domain,
@@ -19,9 +20,10 @@ const domainConfigs = {
  * there was a problem processing, or there is no domain mapping defined for it.
  */
 export function rewriteUrlOnNonProd(url) {
-  const { env } = getConfig();
+  const { env, codeRoot } = getConfig();
+  const codeRootUrl = new URL(codeRoot);
 
-  if (env.name === 'prod') return;
+  if (env.name === 'prod' || prodHosts.some((host) => host === codeRootUrl.host)) return;
 
   const stagePathMappings = domainConfigs[url.hostname]?.stage?.pathMappings;
 
