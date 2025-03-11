@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
+import { getUpdatedHref, rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
 import { getConfig } from '../../eds/blocks/utils/utils.js';
 import { partnerIsSignedIn } from '../../eds/scripts/utils.js';
 
@@ -78,5 +78,14 @@ describe('Test rewrite links', () => {
     rewriteLinks(document);
     const link = document.querySelector('#cbc-link');
     expect(link.href).toBe('https://cbconnection-stage.adobe.com/en/apc-helpdesk');
+  });
+
+  test('should return prod link href unchanged in on aem.page', () => {
+    getConfig.mockReturnValue({ env: { name: 'stage' }, codeRoot: 'https://main--dx-partners--adobecom.aem.page/edsdme' });
+
+    const href = 'https://partners.adobe.com/';
+    const result = getUpdatedHref(href);
+
+    expect(result).toBe(href);
   });
 });

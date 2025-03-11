@@ -23,7 +23,7 @@ export function rewriteUrlOnNonProd(url) {
   const { env, codeRoot } = getConfig();
   const codeRootUrl = new URL(codeRoot);
 
-  if (env.name === 'prod' || prodHosts.some((host) => host === codeRootUrl.host)) return;
+  if (env.name === 'prod' || prodHosts.includes(codeRootUrl.host)) return;
 
   const stagePathMappings = domainConfigs[url.hostname]?.stage?.pathMappings;
 
