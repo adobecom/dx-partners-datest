@@ -5,6 +5,7 @@ import {
   partnerCardsPaginationStyles,
 } from './PartnerCardsStyles.js';
 import './SinglePartnerCard.js';
+import { extractFilterData, rollingHash } from '../blocks/utils/caasUtils.js';
 
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
@@ -54,13 +55,34 @@ export default class PartnerCards extends LitElement {
     this.mobileView = window.innerWidth <= 1200;
     this.searchInputPlaceholder = '{{search}}';
     this.searchInputLabel = '';
+    this.allTags = [];
     this.updateView = this.updateView.bind(this);
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
+    await this.fetchTags();
     this.setBlockData();
     window.addEventListener('resize', this.updateView);
+  }
+
+  async fetchTags() {
+    try {
+      setTimeout(() => {
+        this.tagsFetched = true;
+      }, 20);
+      // todo milo have some default response stored if this fetch is not succesfull, do we need it
+      const caasTagsResponse = await fetch(
+        'https://www.adobe.com/chimera-api/tags',
+      );
+      if (!caasTagsResponse.ok) {
+        throw new Error(`Get caas tags HTTP error! Status: ${caasTagsResponse.status}`);
+      }
+      this.allTags = await caasTagsResponse.json();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error);
+    }
   }
 
   setBlockData() {
@@ -103,6 +125,22 @@ export default class PartnerCards extends LitElement {
             key: tagKey,
             parentKey: filterKey,
             value: this.blockData.localizedText[`{{${tagKey}}}`],
+            checked: false,
+          })),
+        };
+        this.blockData.filters.push(filterObj);
+      },
+      'caas-filter': async (cols) => {
+        const [caasFilter] = cols;
+        const filter = caasFilter.innerText.trim().toLowerCase().replace(/ /g, '-');
+        const { filterData, filterItems } = extractFilterData(filter, this.allTags.namespaces);
+        const filterObj = {
+          key: filterData.key,
+          value: filterData.value,
+          tags: filterItems.map((filterOption) => ({
+            key: filterOption.key,
+            parentKey: filter,
+            value: this.blockData.localizedText[`{{${filterOption.value}}}`] || filterOption.value,
             checked: false,
           })),
         };
@@ -176,6 +214,10 @@ export default class PartnerCards extends LitElement {
   onViewUpdate() {}
 
   async firstUpdated() {
+    if (!this.blockData.filters) {
+      requestAnimationFrame(() => this.firstUpdated());
+      return;
+    }
     await super.firstUpdated();
     await this.fetchData();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
@@ -602,25 +644,52 @@ export default class PartnerCards extends LitElement {
     const selectedFiltersKeys = Object.keys(this.selectedFilters);
     if (selectedFiltersKeys.length) {
       this.cards = this.cards.filter((card) => {
-        if (!card.arbitrary.length) return;
+        if (!card.arbitrary.length && !card.tags.length) return;
 
-        let cardArbitraryArr = [...card.arbitrary];
-        const firstObj = card.arbitrary[0];
-        if ('id' in firstObj && 'version' in firstObj) {
-          cardArbitraryArr = cardArbitraryArr.slice(1);
+        let cardArbitraryAndTagArr = [...card.arbitrary];
+        // splits card tag to have {key : value} - same as arbitrary - data structure
+        // eslint-disable-next-line func-names
+        const getTagFormatted = function (str) {
+          const separatorIndex = str.indexOf('/');
+          if (separatorIndex === -1) return [str, ''];
+
+          const id = str.substring(0, separatorIndex);
+          const value = str.substring(separatorIndex + 1);
+          const tag = {};
+          tag[id] = value;
+          return tag;
+        };
+
+        card.tags.forEach((tag) => {
+          cardArbitraryAndTagArr.push(getTagFormatted(tag.id));
+        });
+        // eslint-disable-next-line no-console
+        const firstObj = card.arbitrary && card.arbitrary[0];
+        if (firstObj && 'id' in firstObj && 'version' in firstObj) {
+          cardArbitraryAndTagArr = cardArbitraryAndTagArr.slice(1);
         }
         // eslint-disable-next-line consistent-return
-        return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
-          const arbitraryTagKey = Object.keys(arbitraryTag)[0]?.replaceAll(' ', '-');
-          if (arbitraryTagKey !== key) return false;
+        return selectedFiltersKeys
+          .every((selectedFilterKey) => cardArbitraryAndTagArr.some((arrayItem) => {
+            const itemKey = Object.keys(arrayItem)[0]?.replaceAll(' ', '-');
+            const processedItemKey = selectedFilterKey.startsWith('caas:') ? rollingHash(selectedFilterKey) : selectedFilterKey;
+            if (itemKey !== processedItemKey) return false;
 
-          const arbitraryTagValue = this.getArbitraryTagValue(arbitraryTag, key);
-          if (arbitraryTagValue) {
+            const arbitraryTagValue = this.getArbitraryTagValue(arrayItem, processedItemKey);
+            // eslint-disable-next-line no-console
+            if (arbitraryTagValue) {
             // eslint-disable-next-line max-len
-            return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
-          }
-          return false;
-        }));
+              return this.selectedFilters[selectedFilterKey].some((selectedTag) => {
+                if (selectedFilterKey.startsWith('caas:')) {
+                  const tagValue = selectedTag.key.replace(selectedTag.parentKey, '').replace('/', '');
+                  const hash = rollingHash(tagValue);
+                  return hash === arbitraryTagValue;
+                }
+                return selectedTag.key === arbitraryTagValue;
+              });
+            }
+            return false;
+          }));
       });
     } else {
       this.urlSearchParams.delete('filters');

@@ -155,7 +155,6 @@ export function getPartnerDataCookieValue(programType, key) {
 }
 
 function extractTableCollectionTags(el) {
-  console.log('element', el);
   let tableCollectionTags = [];
   Array.from(el.children).forEach((row) => {
     const cols = Array.from(row.children);
@@ -364,7 +363,7 @@ function setApiParams(api, block) {
 export function getCaasUrl(block) {
   const useStageCaasEndpoint = block.name === 'knowledge-base-overview';
   const domain = `${(useStageCaasEndpoint && !prodHosts.includes(window.location.host)) ? 'https://14257-chimera-stage.adobeioruntime.net/api/v1/web/chimera-0.0.1' : 'https://www.adobe.com/chimera-api'}`;
-  const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&debug=true&flatFile=false&expanded=true`);
+  const api = new URL(`${domain}/collection?originSelection=dx-partners&draft=false&flatFile=false&expanded=true`);
   return setApiParams(api, block);
 }
 
