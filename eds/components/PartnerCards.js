@@ -706,7 +706,7 @@ export default class PartnerCards extends LitElement {
 
     const searchParamsString = this.urlSearchParams.toString();
     if (searchParamsString.length) {
-      url.search = decodeURIComponent(searchParamsString);
+      url.search = searchParamsString;
     } else {
       url.search = '';
     }
