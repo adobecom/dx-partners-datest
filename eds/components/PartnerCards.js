@@ -1,4 +1,4 @@
-import { getLibs, prodHosts } from '../scripts/utils.js';
+import {CAAS_TAGS_URL, getLibs, prodHosts} from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
@@ -70,7 +70,7 @@ export default class PartnerCards extends LitElement {
     try {
       // todo milo have some default response stored if this fetch is not succesfull, do we need it
       const caasTagsResponse = await fetch(
-        'https://www.adobe.com/chimera-api/tags',
+        CAAS_TAGS_URL,
       );
       if (!caasTagsResponse.ok) {
         throw new Error(`Get caas tags HTTP error! Status: ${caasTagsResponse.status}`);

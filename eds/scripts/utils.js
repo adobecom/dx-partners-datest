@@ -12,7 +12,7 @@
 const PARTNER_ERROR_REDIRECTS_COUNT_COOKIE = 'partner_redirects_count';
 const MAX_PARTNER_ERROR_REDIRECTS_COUNT = 3;
 export const PARTNER_LOGIN_QUERY = 'partnerLogin';
-
+export const CAAS_TAGS_URL = 'https://www.adobe.com/chimera-api/tags';
 /**
  * The decision engine for where to get Milo's libs from.
  */
@@ -402,6 +402,7 @@ export async function preloadResources(locales, miloLibs) {
     };
     const caasUrl = getCaasUrl(block);
     preload(caasUrl);
+    preload(CAAS_TAGS_URL);
   });
 }
 
