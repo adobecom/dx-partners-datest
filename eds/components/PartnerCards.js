@@ -68,9 +68,6 @@ export default class PartnerCards extends LitElement {
 
   async fetchTags() {
     try {
-      setTimeout(() => {
-        this.tagsFetched = true;
-      }, 20);
       // todo milo have some default response stored if this fetch is not succesfull, do we need it
       const caasTagsResponse = await fetch(
         'https://www.adobe.com/chimera-api/tags',
