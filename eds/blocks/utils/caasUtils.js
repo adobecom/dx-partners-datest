@@ -1,4 +1,8 @@
-// import caasTags from "@adobecom/milo/libs/blocks/caas-config/caas-tags.js";
+import { getLibs } from '../../scripts/utils.js';
+
+const miloLibs = getLibs();
+const { getConfig } = await import(`${miloLibs}/utils/utils.js`);
+
 /**
  * Hash returned in base 36 (highest possible) to encode in as few bytes as possible
  * https://en.wikipedia.org/wiki/Rolling_hash
@@ -21,7 +25,12 @@ export function rollingHash(s, l = 6) {
   }
   return ((hash + MOD) % MOD).toString(36);
 }
-
+function getTagTitleLocalized(tag) {
+  const { locale } = getConfig();
+  const localeToTagTranslationLocaleDiffs = { cn: 'zh_cn' };
+  const mappedLocale = localeToTagTranslationLocaleDiffs[locale?.region] || locale?.region;
+  return tag[`title.${mappedLocale}`] || tag.title;
+}
 export function extractFilterData(tagPath, caasTags) {
   const pathParts = tagPath.replace('caas:', '').split('/'); // Remove prefix and split by hierarchy
   let currentLevel = caasTags.caas.tags; // Start from the root tags
@@ -33,8 +42,7 @@ export function extractFilterData(tagPath, caasTags) {
     currentLevel = foundTag.tags || [];
   }
   const filterItems = Object.entries(currentLevel)
-    // .filter(([key, value]) => existingTags.has(value.tagID)) // Filter if tagId exists in the set
-    .map(([, value]) => ({ key: value.tagID, value: value.title }));
-  const filterData = { value: foundTag.title, key: foundTag.tagID };
+    .map(([, value]) => ({ key: value.tagID, value: getTagTitleLocalized(value) }));
+  const filterData = { value: getTagTitleLocalized(foundTag), key: foundTag.tagID };
   return { filterData, filterItems };
 }
