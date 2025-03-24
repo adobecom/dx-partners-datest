@@ -68,9 +68,9 @@ selectors.popupItems = `
 // This method covers focusable elements only, so we aren’t interested in SVGs for example.
 const isElementVisible = (elem) => !!(
   elem
-    && elem instanceof HTMLElement
-    && (elem.offsetWidth && elem.offsetHeight)
-    && window.getComputedStyle(elem).getPropertyValue('visibility') !== 'hidden'
+  && elem instanceof HTMLElement
+  && (elem.offsetWidth && elem.offsetHeight)
+  && window.getComputedStyle(elem).getPropertyValue('visibility') !== 'hidden'
 );
 
 const getNextVisibleItemPosition = (position, items) => {

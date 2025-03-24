@@ -15,7 +15,6 @@ const miloLibs = getLibs();
 const { replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 const { getConfig, getFedsPlaceholderConfig } = await import(`${miloLibs}/utils/utils.js`);
 const { debounce } = await import(`${miloLibs}/utils/action.js`);
-const { getFedsPlaceholderConfig } = await import (`${miloLibs}/utils/federated.js`);
 
 
 const CONFIG = {
@@ -278,7 +277,7 @@ class Search {
 
   static getSearchLink(query) {
     const queryString = query ? `?term=${encodeURIComponent((query || '').trim())}` : '';
-    return `${locale?.prefix}/channelpartners/home/search/${queryString}`;
+    return `${locale?.region}/channelpartners/home/search/${queryString}`;
   }
 }
 
