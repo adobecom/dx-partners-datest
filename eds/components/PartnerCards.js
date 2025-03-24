@@ -1,4 +1,4 @@
-import {CAAS_TAGS_URL, getLibs, prodHosts} from '../scripts/utils.js';
+import { CAAS_TAGS_URL, getLibs, prodHosts } from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
@@ -130,7 +130,10 @@ export default class PartnerCards extends LitElement {
       'caas-filter': async (cols) => {
         const [caasFilter] = cols;
         const filter = caasFilter.innerText.trim().toLowerCase().replace(/ /g, '-');
-        this.blockData.filters.push(extractFilterData(filter, this.allTags));
+        const tag = extractFilterData(filter, this.allTags);
+        if (tag) {
+          this.blockData.filters.push(extractFilterData(filter, this.allTags));
+        }
       },
       sort: (cols) => {
         const [sortKeysEl] = cols;
@@ -641,9 +644,7 @@ export default class PartnerCards extends LitElement {
 
           const id = str.substring(0, separatorIndex);
           const value = str.substring(separatorIndex + 1);
-          const tag = {};
-          tag[id] = value;
-          return tag;
+          return { [id]: value };
         };
 
         card.tags.forEach((tag) => {
@@ -658,20 +659,18 @@ export default class PartnerCards extends LitElement {
         return selectedFiltersKeys
           .every((selectedFilterKey) => cardArbitraryAndTagArr.some((arrayItem) => {
             const itemKey = Object.keys(arrayItem)[0]?.replaceAll(' ', '-');
-            const processedItemKey = selectedFilterKey.startsWith('caas:') ? rollingHash(selectedFilterKey) : selectedFilterKey;
-            if (itemKey !== processedItemKey) return false;
+            const tagKey = rollingHash(`caas:${selectedFilterKey}`);
 
-            const arbitraryTagValue = this.getArbitraryTagValue(arrayItem, processedItemKey);
+            if (itemKey !== selectedFilterKey && itemKey !== tagKey) return false;
+
+            const arbitraryTagValue = this.getArbitraryTagValue(arrayItem, selectedFilterKey)
+              || this.getArbitraryTagValue(arrayItem, tagKey);
             // eslint-disable-next-line no-console
             if (arbitraryTagValue) {
             // eslint-disable-next-line max-len
               return this.selectedFilters[selectedFilterKey].some((selectedTag) => {
-                if (selectedFilterKey.startsWith('caas:')) {
-                  const tagValue = selectedTag.key.replace(selectedTag.parentKey, '').replace('/', '');
-                  const hash = rollingHash(tagValue);
-                  return hash === arbitraryTagValue;
-                }
-                return selectedTag.key === arbitraryTagValue;
+                const hash = rollingHash(selectedTag.key);
+                return selectedTag.key === arbitraryTagValue || hash === arbitraryTagValue;
               });
             }
             return false;
@@ -684,7 +683,7 @@ export default class PartnerCards extends LitElement {
 
   // eslint-disable-next-line class-methods-use-this
   getArbitraryTagValue(arbitraryTag, key) {
-    return arbitraryTag[key].replaceAll(' ', '-');
+    return arbitraryTag[key]?.replaceAll(' ', '-');
   }
 
   handleUrlSearchParams() {
@@ -692,7 +691,7 @@ export default class PartnerCards extends LitElement {
 
     const searchParamsString = this.urlSearchParams.toString();
     if (searchParamsString.length) {
-      url.search = searchParamsString;
+      url.search = decodeURIComponent(searchParamsString);
     } else {
       url.search = '';
     }
