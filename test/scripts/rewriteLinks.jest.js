@@ -1,12 +1,21 @@
 /**
  * @jest-environment jsdom
  */
-import { rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
+import { getUpdatedHref, rewriteLinks } from '../../eds/scripts/rewriteLinks.js';
 import { getConfig } from '../../eds/blocks/utils/utils.js';
 import { partnerIsSignedIn } from '../../eds/scripts/utils.js';
 
 jest.mock('../../eds/blocks/utils/utils.js', () => ({ getConfig: jest.fn() }));
-jest.mock('../../eds/scripts/utils.js', () => ({ partnerIsSignedIn: jest.fn(() => ({ 'partner name': { company: 'test' } })) }));
+jest.mock('../../eds/scripts/utils.js', () => ({
+  partnerIsSignedIn: jest.fn(() => ({ 'partner name': { company: 'test' } })),
+  prodHosts: [
+    'main--dx-partners--adobecom.hlx.page',
+    'main--dx-partners--adobecom.hlx.live',
+    'main--dx-partners--adobecom.aem.page',
+    'main--dx-partners--adobecom.aem.live',
+    'partners.adobe.com',
+  ],
+}));
 
 // Mock DOM
 document.body.innerHTML = `
@@ -20,7 +29,7 @@ document.body.innerHTML = `
 
 describe('Test rewrite links', () => {
   beforeEach(() => {
-    getConfig.mockReturnValue({ env: { name: 'stage' } });
+    getConfig.mockReturnValue({ env: { name: 'stage' }, codeRoot: 'https://stage--dx-partners--adobecom.aem.page/edsdme' });
     partnerIsSignedIn.mockReturnValue({ 'partner name': { company: 'test' } });
     Object.defineProperty(window, 'location', {
       writable: true,
@@ -69,5 +78,14 @@ describe('Test rewrite links', () => {
     rewriteLinks(document);
     const link = document.querySelector('#cbc-link');
     expect(link.href).toBe('https://cbconnection-stage.adobe.com/en/apc-helpdesk');
+  });
+
+  test('should return prod link href unchanged in on aem.page', () => {
+    getConfig.mockReturnValue({ env: { name: 'stage' }, codeRoot: 'https://main--dx-partners--adobecom.aem.page/edsdme' });
+
+    const href = 'https://partners.adobe.com/';
+    const result = getUpdatedHref(href);
+
+    expect(result).toBe(href);
   });
 });
