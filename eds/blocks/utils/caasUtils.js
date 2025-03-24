@@ -33,7 +33,7 @@ function getTagTitleLocalized(tag) {
 }
 export function extractFilterData(tagPath, caasTags) {
   const pathParts = tagPath.replace('caas:', '').split('/'); // Remove prefix and split by hierarchy
-  let currentLevel = caasTags.caas.tags; // Start from the root tags
+  let currentLevel = caasTags.namespaces.caas.tags; // Start from the root tags
   let foundTag;
   // eslint-disable-next-line no-restricted-syntax
   for (const part of pathParts) {
@@ -41,8 +41,16 @@ export function extractFilterData(tagPath, caasTags) {
     if (!foundTag) return [];
     currentLevel = foundTag.tags || [];
   }
-  const filterItems = Object.entries(currentLevel)
-    .map(([, value]) => ({ key: value.tagID, value: getTagTitleLocalized(value) }));
-  const filterData = { value: getTagTitleLocalized(foundTag), key: foundTag.tagID };
-  return { filterData, filterItems };
+
+  return {
+    key: foundTag.tagID,
+    value: getTagTitleLocalized(foundTag),
+    tags: Object.entries(currentLevel)
+      .map(([, value]) => ({
+        key: value.tagID,
+        parentKey: foundTag.tagID,
+        checked: false,
+        value: getTagTitleLocalized(value),
+      })),
+  };
 }

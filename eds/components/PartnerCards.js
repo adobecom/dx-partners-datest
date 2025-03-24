@@ -130,18 +130,7 @@ export default class PartnerCards extends LitElement {
       'caas-filter': async (cols) => {
         const [caasFilter] = cols;
         const filter = caasFilter.innerText.trim().toLowerCase().replace(/ /g, '-');
-        const { filterData, filterItems } = extractFilterData(filter, this.allTags.namespaces);
-        const filterObj = {
-          key: filterData.key,
-          value: filterData.value,
-          tags: filterItems.map((filterOption) => ({
-            key: filterOption.key,
-            parentKey: filter,
-            value: this.blockData.localizedText[`{{${filterOption.value}}}`] || filterOption.value,
-            checked: false,
-          })),
-        };
-        this.blockData.filters.push(filterObj);
+        this.blockData.filters.push(extractFilterData(filter, this.allTags));
       },
       sort: (cols) => {
         const [sortKeysEl] = cols;
