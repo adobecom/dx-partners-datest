@@ -277,7 +277,7 @@ class Search {
 
   static getSearchLink(query) {
     const queryString = query ? `?term=${encodeURIComponent((query || '').trim())}` : '';
-    return `${locale?.region}/channelpartners/home/search/${queryString}`;
+    return `${locale?.prefix}/channelpartners/home/search/${queryString}`;
   }
 }
 

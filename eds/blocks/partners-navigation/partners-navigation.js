@@ -1367,7 +1367,7 @@ export default async function init(block) {
   if (hash === '_noActiveItem') {
     setDisableAEDState();
   }
-  const content = await fetchAndProcessPlainHtml({ url });
+  let content = await fetchAndProcessPlainHtml({ url });
   if (!content) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
