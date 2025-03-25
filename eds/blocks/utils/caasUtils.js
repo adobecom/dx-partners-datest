@@ -32,6 +32,20 @@ function getTagTitleLocalized(tag) {
   const value = tag[`title.${mappedLocale}`] || tag.title;
   return new DOMParser().parseFromString(value, 'text/html').body.textContent;
 }
+
+function getParentChild(id) {
+  let i = id.length;
+  while (id[i] !== '/' && i >= 0) {
+    // eslint-disable-next-line no-plusplus
+    i--;
+  }
+  return [id.substring(0, i), id.substring(i + 1)];
+}
+
+function getHash(tagID) {
+  const [parent, child] = getParentChild(tagID);
+  return `${rollingHash(parent)}/${rollingHash(child)}`;
+}
 export function extractFilterData(tagPath, caasTags) {
   const pathParts = tagPath.replace('caas:', '').split('/'); // Remove prefix and split by hierarchy
   let currentLevel = caasTags.namespaces.caas.tags; // Start from the root tags
@@ -52,6 +66,7 @@ export function extractFilterData(tagPath, caasTags) {
         parentKey: foundTag.tagID.replace('caas:', ''),
         checked: false,
         value: getTagTitleLocalized(value),
+        hash: getHash(value.tagID),
       })),
   };
 }

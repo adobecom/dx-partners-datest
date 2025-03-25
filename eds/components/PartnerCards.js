@@ -5,7 +5,7 @@ import {
   partnerCardsPaginationStyles,
 } from './PartnerCardsStyles.js';
 import './SinglePartnerCard.js';
-import { extractFilterData, rollingHash } from '../blocks/utils/caasUtils.js';
+import { extractFilterData } from '../blocks/utils/caasUtils.js';
 
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
@@ -132,7 +132,7 @@ export default class PartnerCards extends LitElement {
         const filter = caasFilter.innerText.trim().toLowerCase().replace(/ /g, '-');
         const tag = extractFilterData(filter, this.allTags);
         if (tag) {
-          this.blockData.filters.push(extractFilterData(filter, this.allTags));
+          this.blockData.filters.push(tag);
         }
       },
       sort: (cols) => {
@@ -237,6 +237,16 @@ export default class PartnerCards extends LitElement {
   // eslint-disable-next-line class-methods-use-this
   additionalFirstUpdated() {}
 
+  mergeTagAndArbitraryFilters(card) {
+    const filterTagMap = new Map(
+      this.blockData.filters.flatMap((filter) => filter.tags
+        .map((tag) => [tag.hash, { [tag.parentKey]: tag.key }])),
+    );
+
+    card.arbitrary
+      .concat(card.tags.map((cardTag) => filterTagMap.get(cardTag.id)).filter(Boolean));
+  }
+
   async fetchData() {
     try {
       let apiData;
@@ -260,8 +270,12 @@ export default class PartnerCards extends LitElement {
         if (prodHosts.includes(window.location.host)) {
           apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
         }
-        // eslint-disable-next-line no-return-assign
-        apiData.cards.forEach((card, index) => card.orderNum = index + 1);
+
+        apiData.cards.forEach((card, index) => {
+          card.orderNum = index + 1;
+          this.mergeTagAndArbitraryFilters(card);
+        });
+
         this.onDataFetched(apiData);
         this.allCards = apiData.cards;
         this.cards = apiData.cards;
@@ -633,48 +647,25 @@ export default class PartnerCards extends LitElement {
     const selectedFiltersKeys = Object.keys(this.selectedFilters);
     if (selectedFiltersKeys.length) {
       this.cards = this.cards.filter((card) => {
-        if (!card.arbitrary.length && !card.tags.length) return;
+        if (!card.arbitrary.length) return;
 
-        let cardArbitraryAndTagArr = [...card.arbitrary];
-        // splits card tag to have {key : value} - same as arbitrary - data structure
-        // eslint-disable-next-line func-names
-        const getTagFormatted = function (str) {
-          const separatorIndex = str.indexOf('/');
-          if (separatorIndex === -1) return [str, ''];
-
-          const id = str.substring(0, separatorIndex);
-          const value = str.substring(separatorIndex + 1);
-          return { [id]: value };
-        };
-
-        card.tags.forEach((tag) => {
-          cardArbitraryAndTagArr.push(getTagFormatted(tag.id));
-        });
-        // eslint-disable-next-line no-console
-        const firstObj = card.arbitrary && card.arbitrary[0];
-        if (firstObj && 'id' in firstObj && 'version' in firstObj) {
-          cardArbitraryAndTagArr = cardArbitraryAndTagArr.slice(1);
+        let cardArbitraryArr = [...card.arbitrary];
+        const firstObj = card.arbitrary[0];
+        if ('id' in firstObj && 'version' in firstObj) {
+          cardArbitraryArr = cardArbitraryArr.slice(1);
         }
         // eslint-disable-next-line consistent-return
-        return selectedFiltersKeys
-          .every((selectedFilterKey) => cardArbitraryAndTagArr.some((arrayItem) => {
-            const itemKey = Object.keys(arrayItem)[0]?.replaceAll(' ', '-');
-            const tagKey = rollingHash(`caas:${selectedFilterKey}`);
+        return selectedFiltersKeys.every((key) => cardArbitraryArr.some((arbitraryTag) => {
+          const arbitraryTagKey = Object.keys(arbitraryTag)[0]?.replaceAll(' ', '-');
+          if (arbitraryTagKey !== key) return false;
 
-            if (itemKey !== selectedFilterKey && itemKey !== tagKey) return false;
-
-            const arbitraryTagValue = this.getArbitraryTagValue(arrayItem, selectedFilterKey)
-              || this.getArbitraryTagValue(arrayItem, tagKey);
-            // eslint-disable-next-line no-console
-            if (arbitraryTagValue) {
+          const arbitraryTagValue = this.getArbitraryTagValue(arbitraryTag, key);
+          if (arbitraryTagValue) {
             // eslint-disable-next-line max-len
-              return this.selectedFilters[selectedFilterKey].some((selectedTag) => {
-                const hash = rollingHash(selectedTag.key);
-                return selectedTag.key === arbitraryTagValue || hash === arbitraryTagValue;
-              });
-            }
-            return false;
-          }));
+            return this.selectedFilters[key].some((selectedTag) => selectedTag.key === arbitraryTagValue);
+          }
+          return false;
+        }));
       });
     } else {
       this.urlSearchParams.delete('filters');
@@ -683,7 +674,7 @@ export default class PartnerCards extends LitElement {
 
   // eslint-disable-next-line class-methods-use-this
   getArbitraryTagValue(arbitraryTag, key) {
-    return arbitraryTag[key]?.replaceAll(' ', '-');
+    return arbitraryTag[key].replaceAll(' ', '-');
   }
 
   handleUrlSearchParams() {
