@@ -253,7 +253,7 @@ export default class PartnerCards extends LitElement {
       filter.tags = filter.tags.filter((tag) => this.cardFiltersSet.has(`${tag.parentKey}:${tag.key}`));
     });
     this.blockData.filters = this.blockData.filters
-      .filter((filter) => filter.tags.length > 0);
+      .filter((filter) => filter.tags.length);
   }
 
   async fetchData() {
