@@ -56,6 +56,7 @@ export default class PartnerCards extends LitElement {
     this.searchInputPlaceholder = '{{search}}';
     this.searchInputLabel = '';
     this.allTags = [];
+    this.cardFiltersSet = new Set();
     this.updateView = this.updateView.bind(this);
   }
 
@@ -243,8 +244,16 @@ export default class PartnerCards extends LitElement {
         .map((tag) => [tag.hash, { [tag.parentKey]: tag.key }])),
     );
 
-    card.arbitrary
+    card.arbitrary = card.arbitrary
       .concat(card.tags.map((cardTag) => filterTagMap.get(cardTag.id)).filter(Boolean));
+  }
+
+  removeFiltersWithoutCards() {
+    this.blockData.filters.forEach((filter) => {
+      filter.tags = filter.tags.filter((tag) => this.cardFiltersSet.has(`${tag.parentKey}:${tag.key}`));
+    });
+    this.blockData.filters = this.blockData.filters
+      .filter((filter) => filter.tags.length > 0);
   }
 
   async fetchData() {
@@ -274,10 +283,15 @@ export default class PartnerCards extends LitElement {
         apiData.cards.forEach((card, index) => {
           card.orderNum = index + 1;
           this.mergeTagAndArbitraryFilters(card);
+          card.arbitrary.forEach((filter) => {
+            const [key, value] = Object.entries(filter)[0]; // Extract key-value pair
+            this.cardFiltersSet.add(`${key}:${value}`);
+          });
         });
 
         this.onDataFetched(apiData);
         this.allCards = apiData.cards;
+        this.removeFiltersWithoutCards();
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = !!apiData.cards;
