@@ -232,6 +232,11 @@ export function hasSalesCenterAccess() {
   return !!salesCenterAccess;
 }
 
+export function isAdminUser() {
+  const { isAdmin } = getPartnerDataCookieObject(getCurrentProgramType());
+  return !!isAdmin;
+}
+
 export function isRenew() {
   const programType = getCurrentProgramType();
 
@@ -279,6 +284,18 @@ export function partnerIsSignedIn() {
 export function signedInNonMember() {
   return partnerIsSignedIn() && !isMember();
 }
+
+function getProgramTypeStatus() {
+  const isSPP = getPartnerDataCookieValue('spp', 'status') === 'member';
+  const isTPP = getPartnerDataCookieValue('tpp', 'status') === 'member';
+  return { isSPP, isTPP };
+}
+
+const { isSPP, isTPP } = getProgramTypeStatus();
+
+export const isSPPOnly = () => isSPP && !isTPP;
+export const isTPPOnly = () => !isSPP && isTPP;
+export const isSPPandTPP = () => isSPP && isTPP;
 
 export function getNodesByXPath(query, context = document) {
   const nodes = [];
