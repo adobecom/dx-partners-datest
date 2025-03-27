@@ -1,10 +1,11 @@
-import { getLibs, prodHosts } from '../scripts/utils.js';
+import { CAAS_TAGS_URL, getLibs, prodHosts } from '../scripts/utils.js';
 import {
   partnerCardsStyles,
   partnerCardsLoadMoreStyles,
   partnerCardsPaginationStyles,
 } from './PartnerCardsStyles.js';
 import './SinglePartnerCard.js';
+import { extractFilterData } from '../blocks/utils/caasUtils.js';
 
 const miloLibs = getLibs();
 const { html, LitElement, css, repeat } = await import(`${miloLibs}/deps/lit-all.min.js`);
@@ -54,13 +55,32 @@ export default class PartnerCards extends LitElement {
     this.mobileView = window.innerWidth <= 1200;
     this.searchInputPlaceholder = '{{search}}';
     this.searchInputLabel = '';
+    this.allTags = [];
+    this.cardFiltersSet = new Set();
     this.updateView = this.updateView.bind(this);
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
+    await this.fetchTags();
     this.setBlockData();
     window.addEventListener('resize', this.updateView);
+  }
+
+  async fetchTags() {
+    try {
+      // todo milo have some default response stored if this fetch is not succesfull, do we need it
+      const caasTagsResponse = await fetch(
+        CAAS_TAGS_URL,
+      );
+      if (!caasTagsResponse.ok) {
+        throw new Error(`Get caas tags HTTP error! Status: ${caasTagsResponse.status}`);
+      }
+      this.allTags = await caasTagsResponse.json();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error);
+    }
   }
 
   setBlockData() {
@@ -107,6 +127,14 @@ export default class PartnerCards extends LitElement {
           })),
         };
         this.blockData.filters.push(filterObj);
+      },
+      'caas-filter': async (cols) => {
+        const [caasFilter] = cols;
+        const filter = caasFilter.innerText.trim().toLowerCase().replace(/ /g, '-');
+        const tag = extractFilterData(filter, this.allTags);
+        if (tag) {
+          this.blockData.filters.push(tag);
+        }
       },
       sort: (cols) => {
         const [sortKeysEl] = cols;
@@ -176,6 +204,10 @@ export default class PartnerCards extends LitElement {
   onViewUpdate() {}
 
   async firstUpdated() {
+    if (!this.blockData.filters) {
+      requestAnimationFrame(() => this.firstUpdated());
+      return;
+    }
     await super.firstUpdated();
     await this.fetchData();
     if (this.blockData.sort.items.length) this.selectedSortOrder = this.blockData.sort.default;
@@ -206,6 +238,24 @@ export default class PartnerCards extends LitElement {
   // eslint-disable-next-line class-methods-use-this
   additionalFirstUpdated() {}
 
+  mergeTagAndArbitraryFilters(card) {
+    const filterTagMap = new Map(
+      this.blockData.filters.flatMap((filter) => filter.tags
+        .map((tag) => [tag.hash, { [tag.parentKey]: tag.key }])),
+    );
+
+    card.arbitrary = card.arbitrary
+      .concat(card.tags.map((cardTag) => filterTagMap.get(cardTag.id)).filter(Boolean));
+  }
+
+  removeFiltersWithoutCards() {
+    this.blockData.filters.forEach((filter) => {
+      filter.tags = filter.tags.filter((tag) => this.cardFiltersSet.has(`${tag.parentKey}:${tag.key}`));
+    });
+    this.blockData.filters = this.blockData.filters
+      .filter((filter) => filter.tags.length);
+  }
+
   async fetchData() {
     try {
       let apiData;
@@ -229,10 +279,19 @@ export default class PartnerCards extends LitElement {
         if (prodHosts.includes(window.location.host)) {
           apiData.cards = apiData.cards.filter((card) => !card.contentArea.url?.includes('/drafts/'));
         }
-        // eslint-disable-next-line no-return-assign
-        apiData.cards.forEach((card, index) => card.orderNum = index + 1);
+
+        apiData.cards.forEach((card, index) => {
+          card.orderNum = index + 1;
+          this.mergeTagAndArbitraryFilters(card);
+          card.arbitrary.forEach((filter) => {
+            const [key, value] = Object.entries(filter)[0]; // Extract key-value pair
+            this.cardFiltersSet.add(`${key}:${value}`);
+          });
+        });
+
         this.onDataFetched(apiData);
         this.allCards = apiData.cards;
+        this.removeFiltersWithoutCards();
         this.cards = apiData.cards;
         this.paginatedCards = this.cards.slice(0, this.cardsPerPage);
         this.hasResponseData = !!apiData.cards;
