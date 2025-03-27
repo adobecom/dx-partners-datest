@@ -2,9 +2,13 @@ import { processPrimaryContact, processSalesAccess } from './personalizationUtil
 import {
   getPartnerDataCookieObject,
   hasSalesCenterAccess,
+  isAdminUser,
   isMember,
   partnerIsSignedIn,
   signedInNonMember,
+  isSPPOnly,
+  isTPPOnly,
+  isSPPandTPP,
 } from './utils.js';
 import { PARTNER_LEVEL, PROGRAM } from '../blocks/utils/dxConstants.js';
 
@@ -26,6 +30,10 @@ export const PERSONALIZATION_CONDITIONS = {
   'partner-all-levels': isMember(),
   'partner-sales-access': hasSalesCenterAccess(),
   'partner-level': (level) => PARTNER_LEVEL === level,
+  'partner-spp-member': isSPPOnly(),
+  'partner-tpp-member': isTPPOnly(),
+  'partner-spp-tpp-member': isSPPandTPP(),
+  'partner-admin': isAdminUser(),
 };
 
 export const MAIN_NAV_PERSONALIZATION_CONDITIONS = {
