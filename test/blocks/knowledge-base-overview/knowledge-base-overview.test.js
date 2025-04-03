@@ -5,11 +5,14 @@ import init from '../../../eds/blocks/knowledge-base-overview/knowledge-base-ove
 import PartnerCards from '../../../eds/components/PartnerCards.js';
 
 const cardsString = await readFile({ path: './mocks/cards.json' });
+const tagsString = await readFile({ path: './mocks/tags.json' });
 const cards = JSON.parse(cardsString);
+const tags = JSON.parse(tagsString);
 
 describe('knowledge-base-overview block', () => {
   beforeEach(async () => {
     sinon.stub(PartnerCards.prototype, 'fetchData').resolves({ cards });
+    sinon.stub(PartnerCards.prototype, 'fetchTags').resolves({ tags });
 
     sinon.stub(PartnerCards.prototype, 'firstUpdated').callsFake(async function () {
       this.allCards = cards;
@@ -17,14 +20,15 @@ describe('knowledge-base-overview block', () => {
       this.paginatedCards = this.cards.slice(0, 3);
       this.hasResponseData = true;
       this.fetchedData = true;
+      this.allTags = tags;
     });
-
     await import('../../../eds/scripts/scripts.js');
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
   });
 
   afterEach(() => {
     PartnerCards.prototype.fetchData.restore();
+    PartnerCards.prototype.fetchTags.restore();
     PartnerCards.prototype.firstUpdated.restore();
   });
 
@@ -33,8 +37,8 @@ describe('knowledge-base-overview block', () => {
 
     const block = document.querySelector('.knowledge-base-overview');
     expect(block).to.exist;
-
     const component = await init(block);
+    await component.updateComplete;
     expect(component).to.exist;
 
     const knowledgeBaseWrapper = document.querySelector('.knowledge-base-overview-wrapper');

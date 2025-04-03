@@ -5,11 +5,14 @@ import init from '../../../eds/blocks/partner-news/partner-news.js';
 import PartnerCards from '../../../eds/components/PartnerCards.js';
 
 const cardsString = await readFile({ path: './mocks/cards.json' });
+const tagsString = await readFile({ path: './mocks/tags.json' });
+const tags = JSON.parse(tagsString);
 const cards = JSON.parse(cardsString);
 
 describe('partner-news block', () => {
   beforeEach(async () => {
     sinon.stub(PartnerCards.prototype, 'fetchData').resolves({ cards });
+    sinon.stub(PartnerCards.prototype, 'fetchTags').resolves({ tags });
 
     sinon.stub(PartnerCards.prototype, 'firstUpdated').callsFake(async function () {
       this.allCards = cards;
@@ -17,6 +20,7 @@ describe('partner-news block', () => {
       this.paginatedCards = this.cards.slice(0, 3);
       this.hasResponseData = true;
       this.fetchedData = true;
+      this.allTags = tags;
     });
 
     await import('../../../eds/scripts/scripts.js');
@@ -25,6 +29,7 @@ describe('partner-news block', () => {
 
   afterEach(() => {
     PartnerCards.prototype.fetchData.restore();
+    PartnerCards.prototype.fetchTags.restore();
     PartnerCards.prototype.firstUpdated.restore();
   });
 
@@ -35,6 +40,7 @@ describe('partner-news block', () => {
     expect(block).to.exist;
 
     const component = await init(block);
+    await component.updateComplete;
     expect(component).to.exist;
 
     const partnerNewsWrapper = document.querySelector('.partner-news-wrapper');
