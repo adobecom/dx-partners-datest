@@ -1,5 +1,3 @@
-import { expect } from '@playwright/test';
-
 export default class SmokeTest {
   constructor(page) {
     this.page = page;
@@ -33,73 +31,5 @@ export default class SmokeTest {
 
   async verifyIfFooterIsPresent() {
     return await this.footer.isVisible();
-  }
-
-  async verifyPartnerDirectoryLinks(data, baseURL) {
-    // Solution Partners - Contact Us
-    await expect(this.contactUsLinkSP).toBeVisible();
-    await expect(this.contactUsLinkSP).toHaveAttribute('href', data.contactUsSPURL);
-
-    // Solution Partners - Find a partner
-    await expect(this.findPartnerLinkSP).toBeVisible();
-    await expect(this.findPartnerLinkSP).toHaveAttribute('href', `${baseURL}${data.findPartnerSPURL}`);
-
-    // Solution Partners - Learn more
-    await expect(this.learnMoreLinkSP).toBeVisible();
-    await expect(this.learnMoreLinkSP).toHaveAttribute('href', data.learnMoreSPURL);
-
-    // Technology Partners - Contact Us
-    await expect(this.contactUsLinkTP).toBeVisible();
-    await expect(this.contactUsLinkTP).toHaveAttribute('href', `${baseURL}${data.contactUsTPURL}`);
-
-    // Technology Partners - Find a partner
-    await expect(this.findPartnerLinkTP).toBeVisible();
-    await expect(this.findPartnerLinkTP).toHaveAttribute('href', `${baseURL}${data.findPartnerTPURL}`);
-
-    // Technology Partners - Learn more
-    await expect(this.learnMoreLinkTP).toBeVisible();
-    await expect(this.learnMoreLinkTP).toHaveAttribute('href', `${baseURL}${data.learnMoreTPURL}`);
-
-    // Authorized Resellers - Contact Us
-    await expect(this.contactUsLinkAR).toBeVisible();
-    await expect(this.contactUsLinkAR).toHaveAttribute('href', data.contactUsLinkAR);
-
-    // Authorized Resellers - Find a partner
-    await expect(this.findPartnerLinkAR).toBeVisible();
-    await expect(this.findPartnerLinkAR).toHaveAttribute('href', data.findPartnerLinkAR);
-
-    // Authorized Resellers - Learn more
-    await expect(this.learnMoreLinkAR).toBeVisible();
-    await expect(this.learnMoreLinkAR).toHaveAttribute('href', `${baseURL}${data.learnMoreARURL}`);
-
-    // Visit Adobe Exchange
-    await expect(this.visitAdobeExchangeLink).toBeVisible();
-    await expect(this.visitAdobeExchangeLink).toHaveAttribute('href', data.visitAdobeExchangeURL);
-  }
-
-  async verifyPartnerDirectoryJoinLinks(data, baseURL) {
-    // Solution Partners - Learn more
-    await expect(this.learnMoreLinkSP).toBeVisible();
-    await expect(this.learnMoreLinkSP).toHaveAttribute('href', data.learnMoreSPURL);
-
-    // Solution Partners - Join Now
-    await expect(this.joinNowLinkSP).toBeVisible();
-    await expect(this.joinNowLinkSP).toHaveAttribute('href', data.joinNowSPURL);
-
-    // Technology Partners - Learn more
-    await expect(this.learnMoreLinkTP).toBeVisible();
-    await expect(this.learnMoreLinkTP).toHaveAttribute('href', `${baseURL}${data.learnMoreTPURL}`);
-
-    // Technology Partners - Join Now
-    await expect(this.joinNowLinkTP).toBeVisible();
-    await expect(this.joinNowLinkTP).toHaveAttribute('href', `${baseURL}${data.joinNowTPURL}`);
-
-    // Authorized Resellers - Learn more
-    await expect(this.learnMoreLinkAR).toBeVisible();
-    await expect(this.learnMoreLinkAR).toHaveAttribute('href', `${baseURL}${data.learnMoreARURL}`);
-
-    // Authorized Resellers - Join Now
-    await expect(this.joinNowLinkAR).toBeVisible();
-    await expect(this.joinNowLinkAR).toHaveAttribute('href', `${baseURL}${data.joinNowARURL}`);
   }
 }

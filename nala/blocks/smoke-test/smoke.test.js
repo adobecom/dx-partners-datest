@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import SmokeTest from './smoke.page.js';
 import SmokeSpec from './smoke.spec.js';
 
@@ -23,6 +23,51 @@ test.describe('Validate Partner Directory pages', () => {
         }
   });
 
+  async function verifyPartnerLinks(data, baseURL, type = 'directory') {
+    const linksToCheck = [];
+
+    if (type === 'directory') {
+      linksToCheck.push(
+        // Solution Partners
+        { element: smokeTest.contactUsLinkSP, expected: data.contactUsSPURL },
+        { element: smokeTest.findPartnerLinkSP, expected: `${baseURL}${data.findPartnerSPURL}` },
+        { element: smokeTest.learnMoreLinkSP, expected: data.learnMoreSPURL },
+
+        // Technology Partners
+        { element: smokeTest.contactUsLinkTP, expected: `${baseURL}${data.contactUsTPURL}` },
+        { element: smokeTest.findPartnerLinkTP, expected: `${baseURL}${data.findPartnerTPURL}` },
+        { element: smokeTest.learnMoreLinkTP, expected: `${baseURL}${data.learnMoreTPURL}` },
+
+        // Authorized Resellers
+        { element: smokeTest.contactUsLinkAR, expected: data.contactUsLinkAR },
+        { element: smokeTest.findPartnerLinkAR, expected: data.findPartnerLinkAR },
+        { element: smokeTest.learnMoreLinkAR, expected: `${baseURL}${data.learnMoreARURL}` },
+
+        // Adobe Exchange
+        { element: smokeTest.visitAdobeExchangeLink, expected: data.visitAdobeExchangeURL }
+      );
+    } else if (type === 'join') {
+      linksToCheck.push(
+        // Solution Partners
+        { element: smokeTest.learnMoreLinkSP, expected: data.learnMoreSPURL },
+        { element: smokeTest.joinNowLinkSP, expected: data.joinNowSPURL },
+
+        // Technology Partners
+        { element: smokeTest.learnMoreLinkTP, expected: `${baseURL}${data.learnMoreTPURL}` },
+        { element: smokeTest.joinNowLinkTP, expected: `${baseURL}${data.joinNowTPURL}` },
+
+        // Authorized Resellers
+        { element: smokeTest.learnMoreLinkAR, expected: `${baseURL}${data.learnMoreARURL}` },
+        { element: smokeTest.joinNowLinkAR, expected: `${baseURL}${data.joinNowARURL}` }
+      );
+    }
+
+    for (const { element, expected } of linksToCheck) {
+      await expect(element).toBeVisible();
+      await expect(element).toHaveAttribute('href', expected);
+    }
+  }
+
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     const { path } = features[0];
     await test.step('Go to Partner Directory, verify status code and if gnav is visible', async () => {
@@ -43,16 +88,12 @@ test.describe('Validate Partner Directory pages', () => {
 
     await test.step('Go to Partner Directory page and verify the links', async () => {
       await page.goto(baseURL);
-      await smokeTest.verifyPartnerDirectoryLinks(data, baseURL);
+      await verifyPartnerLinks(data, baseURL, 'directory');
     });
-  });
-
-  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const { data, path } = features[2];
 
     await test.step('Go to Partner Directory Join page and verify the links', async () => {
-      await page.goto(`${baseURL}${path}`);
-      await smokeTest.verifyPartnerDirectoryJoinLinks(data, baseURL);
+      await page.goto(`${baseURL}${data.joinPath}`);
+      await verifyPartnerLinks(data, baseURL, 'join');
     });
   });
 });
