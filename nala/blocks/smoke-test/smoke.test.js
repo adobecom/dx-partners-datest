@@ -68,6 +68,7 @@ test.describe('Validate Partner Directory pages', () => {
     }
   }
 
+
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     const { path } = features[0];
     await test.step('Go to Partner Directory, verify status code and if gnav is visible', async () => {
@@ -90,9 +91,13 @@ test.describe('Validate Partner Directory pages', () => {
       await page.goto(baseURL);
       await verifyPartnerLinks(data, baseURL, 'directory');
     });
+  });
+
+  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+    const { data, path } = features[2];
 
     await test.step('Go to Partner Directory Join page and verify the links', async () => {
-      await page.goto(`${baseURL}${data.joinPath}`);
+      await page.goto(`${baseURL}${path}`);
       await verifyPartnerLinks(data, baseURL, 'join');
     });
   });
