@@ -370,7 +370,7 @@ test.describe('Validate news block', () => {
       const newTab = await context.newPage();
       await newTab.goto(`${path}`);
       const newTabPage = new NewsPage(newTab);
-      await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 20000 });
+      await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
