@@ -368,7 +368,7 @@ test.describe('Validate news block', () => {
 
     await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
-      await newTab.goto(`${path}`);
+      await newTab.goto(`${path}`, { waitUntil: 'networkidle' });
       const newTabPage = new NewsPage(newTab);
       await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
       const resultCards = await newTabPage.resultNumber.textContent();
