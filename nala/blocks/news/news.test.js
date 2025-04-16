@@ -368,7 +368,7 @@ test.describe('Validate news block', () => {
 
     await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
-      await newTab.goto(`${path}`);
+      await newTab.goto(`${path}`, { waitUntil: 'networkidle' });
       const newTabPage = new NewsPage(newTab);
 
       await page.locator('a[href*="/solution-partners/news_archive.html"]:has-text("Explore past articles")').waitFor({ state: 'visible' });
