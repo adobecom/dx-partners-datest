@@ -373,6 +373,7 @@ test.describe('Validate news block', () => {
 
       await page.locator('a[href*="/solution-partners/news_archive.html"]:has-text("Explore past articles")').waitFor({ state: 'visible', timeout: 30000 });
       await page.locator('.partner-cards-collection').waitFor({ state: 'visible' });
+      await page.locator('.single-partner-card').nth(0).waitFor({ state: 'visible' });
 
       await page.locator('.partner-cards-collection .card-date:has-text("May 12, 2045")').waitFor({ state: 'visible', timeout: 30000 });
       //await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
