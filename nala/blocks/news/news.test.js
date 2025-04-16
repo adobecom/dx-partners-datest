@@ -372,8 +372,9 @@ test.describe('Validate news block', () => {
       const newTabPage = new NewsPage(newTab);
 
       await page.locator('a[href*="/solution-partners/news_archive.html"]:has-text("Explore past articles")').waitFor({ state: 'visible', timeout: 30000 });
+      await page.locator('.partner-cards').waitFor({ state: 'visible' });
 
-      //await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+      await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
