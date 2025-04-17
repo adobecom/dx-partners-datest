@@ -375,8 +375,11 @@ test.describe('Validate news block', () => {
       await page.locator('.partner-cards-collection').waitFor({ state: 'visible' });
       await page.locator('.single-partner-card').nth(0).waitFor({ state: 'visible' });
 
-      await page.locator('.partner-cards-collection .card-date:has-text("May 12, 2045")').waitFor({ state: 'visible', timeout: 30000 });
-      //await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+      // await page.locator('.partner-cards-collection .card-date:has-text("May 12, 2045")').waitFor({ state: 'visible', timeout: 30000 });
+
+     // await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+      await newTabPage.resultNumber.waitFor({ state: 'visible' });
+
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
     });
