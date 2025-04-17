@@ -44,7 +44,6 @@ import {
 import { getLibs } from '../../scripts/utils.js';// MWPW-157751
 import { rewriteLinks } from '../../scripts/rewriteLinks.js';
 
-import { getMiloLocaleSettings } from '../merch/merch.js';
 
 const miloLibs = getLibs();
 const {
@@ -58,6 +57,7 @@ const {
 } = await import(`${miloLibs}/utils/utils.js`);
 const { replaceKey, replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 // End
+const { getMiloLocaleSettings } = await import(`${miloLibs}/merch/merch.js`);
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
