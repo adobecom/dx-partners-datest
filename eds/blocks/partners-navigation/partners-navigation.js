@@ -57,7 +57,7 @@ const {
 } = await import(`${miloLibs}/utils/utils.js`);
 const { replaceKey, replaceKeyArray } = await import(`${miloLibs}/features/placeholders.js`);
 // End
-const { getMiloLocaleSettings } = await import(`${miloLibs}/merch/merch.js`);
+const { getMiloLocaleSettings } = await import(`${miloLibs}/blocks/merch/merch.js`);
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
