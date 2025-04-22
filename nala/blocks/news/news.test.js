@@ -368,10 +368,16 @@ test.describe('Validate news block', () => {
 
     await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
-      await newTab.goto(`${path}`, { waitUntil: 'load' });
+      await newTab.goto(`${path}`);
+      await newTab.waitForLoadState('networkidle');
       const newTabPage = new NewsPage(newTab);
 
-    await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+     // await newTabPage.firstCardDate.waitFor({ state: 'attached', timeout: 10000 });
+     // await expect(newTabPage.firstCardDate).toBeVisible({ timeout: 10000 });
+
+    //await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+      await expect(newTabPage.firstCardDate).toBeVisible({ timeout: 30000 });
+
 
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
