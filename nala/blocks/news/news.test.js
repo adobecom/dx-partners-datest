@@ -355,9 +355,9 @@ test.describe('Validate news block', () => {
   });
 
   test(`${features[11].name},${features[11].tags}`, async ({ page, context, baseURL, browserName }) => {
-    if (browserName === 'firefox') {
+    //if (browserName === 'firefox') {
       test.slow();
-    }
+   // }
     const { data, path } = features[11];
     await test.step('Go to stage.adobe.com', async () => {
       await page.goto(`${baseURL}${path}`);
@@ -368,16 +368,10 @@ test.describe('Validate news block', () => {
 
     await test.step(`Open ${path} in a new tab`, async () => {
       const newTab = await context.newPage();
-      await newTab.goto(`https://partners.stage.adobe.com/solutionpartners/drafts/automation/regression/partner-news`, { waitUntil: 'networkidle' });
+      await newTab.goto(`${path}`, { waitUntil: 'load' });
       const newTabPage = new NewsPage(newTab);
 
-      await page.locator('a[href*="/solution-partners/news_archive.html"]:has-text("Explore past articles")').waitFor({ state: 'visible', timeout: 30000 });
-      await page.locator('.partner-cards-collection').waitFor({ state: 'visible' });
-      await page.locator('.single-partner-card').nth(0).waitFor({ state: 'visible' });
-
-      // await page.locator('.partner-cards-collection .card-date:has-text("May 12, 2045")').waitFor({ state: 'visible', timeout: 30000 });
-
-     // await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
+    await newTabPage.firstCardDate.waitFor({ state: 'visible', timeout: 30000 });
 
       const resultCards = await newTabPage.resultNumber.textContent();
       await expect(parseInt(resultCards.split(' ')[0], 10)).toBe(data.numberOfPublicCards);
