@@ -21,8 +21,6 @@ export const PERSONALIZATION_PLACEHOLDERS = {
 export const LEVEL_CONDITION = 'partner-level';
 export const PERSONALIZATION_MARKER = 'partner-personalization';
 export const PROCESSED_MARKER = '-processed';
-export const PERSONALIZATION_HIDE = 'personalization-hide';
-export const COOKIE_OBJECT = getPartnerDataCookieObject(PROGRAM);
 
 export const PERSONALIZATION_CONDITIONS = {
   'partner-not-member': signedInNonMember(),

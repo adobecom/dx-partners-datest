@@ -8,10 +8,13 @@ import {
   PERSONALIZATION_PLACEHOLDERS,
   PERSONALIZATION_MARKER,
   PROCESSED_MARKER,
-  PERSONALIZATION_HIDE,
   PERSONALIZATION_CONDITIONS,
-  PROFILE_PERSONALIZATION_ACTIONS, COOKIE_OBJECT, LEVEL_CONDITION,
+  PROFILE_PERSONALIZATION_ACTIONS, LEVEL_CONDITION,
 } from './personalizationConfigDX.js';
+import {
+  COOKIE_OBJECT,
+  PERSONALIZATION_HIDE,
+} from './personalizationUtils.js';
 
 function personalizePlaceholders(placeholders, context = document) {
   Object.entries(placeholders).forEach(([key, value]) => {

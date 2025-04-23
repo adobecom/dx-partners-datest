@@ -1,6 +1,8 @@
 import { getPartnerDataCookieObject, hasSalesCenterAccess } from './utils.js';
 import { PROGRAM } from '../blocks/utils/dxConstants.js';
-import { PERSONALIZATION_HIDE, COOKIE_OBJECT } from './personalizationConfigDX.js';
+
+export const PERSONALIZATION_HIDE = 'personalization-hide';
+export const COOKIE_OBJECT = getPartnerDataCookieObject(PROGRAM);
 
 export function processPrimaryContact(el) {
   const isPrimary = COOKIE_OBJECT.primaryContact;
