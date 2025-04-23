@@ -16,7 +16,6 @@ import {
   lanaLog,
   loadBaseStyles,
   loadDecorateMenu,
-  rootPath,
   loadStyles,
   logErrorFor,
   selectors,
