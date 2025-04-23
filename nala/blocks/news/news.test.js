@@ -367,7 +367,7 @@ test.describe('Validate news block', () => {
     });
 
     await test.step(`Compare results`, async () => {
-     await expect(newsPage.resultCardNumber).toBeVisible();
+      await expect(newsPage.resultCardNumber).toBeVisible();
 
       const resultCards = await newsPage.resultCardNumber.textContent();
       await expect(parseInt(resultCards)).toBe(data.numberOfPublicCards);
