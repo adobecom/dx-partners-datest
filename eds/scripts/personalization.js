@@ -105,7 +105,7 @@ function processGnavElements(elements) {
     const matches = [...el.textContent.matchAll(regex)];
     if (!matches?.length || !matches[0][1]) return {};
     const match = matches[0][1];
-    el.textContent = el.textContent.replace(`(${match})`, '');
+    el.innerHTML = el.innerHTML.replace(`(${match})`, '');
     const conditions = match.split(',').map((condition) => condition.trim());
     if (!conditions.length) return {};
     return { el, conditions };

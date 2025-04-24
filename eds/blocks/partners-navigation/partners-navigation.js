@@ -43,7 +43,6 @@ import {
 import { getLibs } from '../../scripts/utils.js';// MWPW-157751
 import { rewriteLinks } from '../../scripts/rewriteLinks.js';
 
-
 const miloLibs = getLibs();
 const {
   getConfig,
@@ -123,9 +122,9 @@ export const CONFIG = {
               enableProfileSwitcher: true,
               miniAppContext: {
                 logger: {
-                  trace: () => {},
-                  debug: () => {},
-                  info: () => {},
+                  trace: () => { },
+                  debug: () => { },
+                  info: () => { },
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', errorType: 'warn' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'error' }),
                 },
@@ -338,7 +337,14 @@ class Gnav {
     this.content = content;
     this.block = block;
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
-
+    const shortcutIcons = [];
+    this.content.querySelectorAll('.shortcut-icons > div').forEach((icon) => {
+      shortcutIcons.push({
+        iconLink: icon.querySelector('a')?.getAttribute('href'),
+        iconKey: icon.querySelectorAll('div').length === 2 && icon.querySelector('div :not(a)')?.textContent,
+      });
+    });
+    console.log('shorcutIcons', shortcutIcons);
     this.blocks = {
       profile: {
         rawElem: this.content.querySelector('.profile'),
@@ -346,6 +352,7 @@ class Gnav {
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
+      shorcutIcons: shortcutIcons,
     };
 
     this.setupUniversalNav();
@@ -368,6 +375,16 @@ class Gnav {
         if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
     }
+  };
+
+  decorateShorcutIcons = () => {
+    const html = this.blocks.shorcutIcons.filter(el => el.iconLink && el.iconKey).map((obj) => `
+    <a href="${obj.iconLink}" class="shortcut-icons-link">
+      <img src="https://main--dx-partners--adobecom.aem.page/eds/partners-shared/mnemonics/${obj.iconKey}.svg" alt="Image" class="shortcut-icons-img" />
+    </a>
+  `).join('');
+
+    return toFragment`<div class="shortcut-icons">${html}</div>`;
   };
 
   init = () => logErrorFor(async () => {
@@ -883,6 +900,10 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
+
+    const stickyCtaBtn = document.querySelector('.sticky-cta');
+    if (stickyCtaBtn) stickyCtaBtn.innerHTML = ''
+
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
@@ -1077,6 +1098,7 @@ class Gnav {
         ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
+        ${this.decorateShorcutIcons()}
         ${isDesktop.matches ? this.decorateSearch() : ''}
       </div>
     `;
