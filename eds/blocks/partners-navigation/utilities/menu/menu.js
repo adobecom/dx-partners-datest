@@ -336,8 +336,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
     if (!content) return;
 
-    personalizeMainNav(document.querySelector('header'));
-
     const menuContent = toFragment`<div class="feds-menu-content">${content.innerHTML}</div>`;
     menuTemplate = toFragment`<div class="feds-popup">
         <div class="feds-menu-container">
@@ -349,7 +347,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });
-
+    personalizeMainNav(document.querySelector('header'));
     if (getActiveLink(menuTemplate) instanceof HTMLElement) {
       // Special handling on desktop, as content is loaded async;
       // bolding the item text would normally push the content
