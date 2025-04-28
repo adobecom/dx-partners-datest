@@ -347,7 +347,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     decorateCrossCloudMenu(menuTemplate);
 
     await decorateColumns({ content: menuContent });
-    personalizeMainNav(document.querySelector('header'));
+
     if (getActiveLink(menuTemplate) instanceof HTMLElement) {
       // Special handling on desktop, as content is loaded async;
       // bolding the item text would normally push the content
@@ -385,6 +385,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   config.template?.append(menuTemplate);
+  personalizeMainNav(document.querySelector('header')); //MWPW-170795
 }, 'Decorate menu failed', 'gnav-menu', 'info');
 
 export default { decorateMenu, decorateLinkGroup };
