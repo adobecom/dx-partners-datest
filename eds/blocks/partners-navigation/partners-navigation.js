@@ -380,9 +380,11 @@ class Gnav {
   };
 
   decorateShorcutIcons = () => {
+    const origin = window.location.origin.includes('adobecom')
+      ? 'https://main--dx-partners--adobecom.aem.page' : window.location.origin;
     const html = this.blocks.shorcutIcons.filter(el => el.iconLink && el.iconKey).map((obj) => `
     <a href="${obj.iconLink}" class="shortcut-icons-link">
-      <img src="https://main--dx-partners--adobecom.aem.page/eds/partners-shared/mnemonics/${obj.iconKey}.svg" alt="Image" class="shortcut-icons-img" />
+      <img src="${origin}/eds/partners-shared/mnemonics/${obj.iconKey}.svg" alt="Image" class="shortcut-icons-img" />
     </a>
   `).join('');
 
