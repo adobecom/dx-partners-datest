@@ -154,6 +154,13 @@ export function personalizeMainNav(gnav) {
   });
 }
 
+export function shouldHideLinkGroup(elem) {
+  if (elem.classList.contains(PERSONALIZATION_MARKER)) {
+    const conditions = Object.values(elem.classList);
+    return shouldHide(conditions, PERSONALIZATION_CONDITIONS);
+  }
+}
+
 function personalizeProfile(gnav) {
   const profile = gnav.querySelector('.profile');
   personalizePlaceholders(PERSONALIZATION_PLACEHOLDERS, profile);
