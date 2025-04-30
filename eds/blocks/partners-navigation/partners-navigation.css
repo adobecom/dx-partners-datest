@@ -1454,6 +1454,7 @@ html:has(body.disable-ios-scroll) {
   display: block;
 }
 
+/*MWPW-168681*/
 .shortcut-icons {
   display: flex;
   align-items: center;

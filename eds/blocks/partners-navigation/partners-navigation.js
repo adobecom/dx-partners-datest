@@ -337,8 +337,10 @@ class Gnav {
     this.content = content;
     this.block = block;
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
+    // MWPW-168681 START
     const shortcutIcons = [];
-    this.content.querySelectorAll('.shortcut-icons > div').forEach((icon) => {
+    const MAX_GNAV_ICONS_COUNT = 8;
+    Array.from(this.content.querySelectorAll('.shortcut-icons > div')).slice(0, MAX_GNAV_ICONS_COUNT).forEach((icon) => {
       if (icon.querySelectorAll('div').length !== 2) {
         return;
       }
@@ -347,6 +349,7 @@ class Gnav {
         iconLink: icon.querySelectorAll('div')[1]?.querySelector('a')?.getAttribute('href'),
       });
     });
+    // MWPW-168681 END
     this.blocks = {
       profile: {
         rawElem: this.content.querySelector('.profile'),
@@ -354,7 +357,7 @@ class Gnav {
       },
       search: { config: { icon: CONFIG.icons.search } },
       breadcrumbs: { wrapper: '' },
-      shorcutIcons: shortcutIcons,
+      shorcutIcons: shortcutIcons, // MWPW-168681
     };
 
     this.setupUniversalNav();
@@ -379,6 +382,7 @@ class Gnav {
     }
   };
 
+  // MWPW-168681 START
   decorateShorcutIcons = () => {
     const origin = window.location.origin.includes('adobecom')
       ? 'https://main--dx-partners--adobecom.aem.page' : window.location.origin;
@@ -390,6 +394,7 @@ class Gnav {
 
     return toFragment`<div class="shortcut-icons">${html}</div>`;
   };
+  // MWPW-168681 END
 
   init = () => logErrorFor(async () => {
     branchBannerLoadCheck(this.updatePopupPosition);
@@ -904,10 +909,12 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
-
+    // MWPW-168681 START
     const stickyCtaBtn = document.querySelector('.sticky-cta');
-    if (stickyCtaBtn) stickyCtaBtn.innerHTML = ''
-
+    if (this.block.shorcutIcons?.length > 0 && stickyCtaBtn) {
+      stickyCtaBtn.innerHTML = '';
+    }
+    // MWPW-168681 END
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
