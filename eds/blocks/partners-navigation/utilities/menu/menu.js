@@ -20,7 +20,7 @@ import {
   hasActiveLink,
 } from '../utilities.js';
 
-import { personalizeMainNav } from "../../../../scripts/personalization.js";
+import { personalizeMainNav, shouldHideLinkGroup } from "../../../../scripts/personalization.js";
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
@@ -64,6 +64,7 @@ const decorateHeadline = (elem, index) => {
 
 const decorateLinkGroup = (elem, index) => {
   if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
+  if (shouldHideLinkGroup(elem)) return ''; // MWPW-172591
 
   // TODO: allow links with image and no label
   const image = elem.querySelector('picture');
@@ -386,6 +387,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
 
   config.template?.append(menuTemplate);
   personalizeMainNav(document.querySelector('header')); //MWPW-170795
+
 }, 'Decorate menu failed', 'gnav-menu', 'info');
 
 export default { decorateMenu, decorateLinkGroup };
