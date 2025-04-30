@@ -42,6 +42,7 @@ import {
 // MWPW-157751
 import { getLibs } from '../../scripts/utils.js';// MWPW-157751
 import { rewriteLinks } from '../../scripts/rewriteLinks.js';
+import { PERSONALIZATION_MARKER } from '../../scripts/personalizationConfigDX.js';
 
 const miloLibs = getLibs();
 const {
@@ -344,8 +345,10 @@ class Gnav {
       if (icon.querySelectorAll('div').length !== 2) {
         return;
       }
+      const iconKey = icon.querySelectorAll('div')[0]?.textContent;
+      if (iconKey.includes(PERSONALIZATION_MARKER)) return;
       shortcutIcons.push({
-        iconKey: icon.querySelectorAll('div')[0]?.textContent,
+        iconKey,
         iconLink: icon.querySelectorAll('div')[1]?.querySelector('a')?.getAttribute('href'),
       });
     });
