@@ -339,12 +339,14 @@ class Gnav {
     this.customLinks = getConfig()?.customLinks?.split(',') || [];
     const shortcutIcons = [];
     this.content.querySelectorAll('.shortcut-icons > div').forEach((icon) => {
+      if (icon.querySelectorAll('div').length !== 2) {
+        return;
+      }
       shortcutIcons.push({
-        iconLink: icon.querySelector('a')?.getAttribute('href'),
-        iconKey: icon.querySelectorAll('div').length === 2 && icon.querySelector('div :not(a)')?.textContent,
+        iconKey: icon.querySelectorAll('div')[0]?.textContent,
+        iconLink: icon.querySelectorAll('div')[1]?.querySelector('a')?.getAttribute('href'),
       });
     });
-    console.log('shorcutIcons', shortcutIcons);
     this.blocks = {
       profile: {
         rawElem: this.content.querySelector('.profile'),

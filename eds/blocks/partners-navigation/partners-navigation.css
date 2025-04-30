@@ -1469,7 +1469,7 @@ html:has(body.disable-ios-scroll) {
   display: flex;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .shortcut-icons {
     justify-content: space-around;
     flex: 1;
