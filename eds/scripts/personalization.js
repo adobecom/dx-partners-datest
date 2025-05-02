@@ -87,6 +87,9 @@ export function applyPagePersonalization() {
 }
 
 function processRenew(profile) {
+  if(!profile){
+    return;
+  }
   const { env } = getConfig();
   const renew = isRenew();
   const renewElements = Array.from(profile.querySelectorAll('.partner-renew'));
