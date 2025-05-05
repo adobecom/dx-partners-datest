@@ -6,3 +6,4 @@ mountpoints:
   /:
     url: https://content.da.live/adobecom/dx-partners-datest/
     type: markup
+  /.helix: https://adobe.sharepoint.com/:f:/r/sites/DX-Partners/Shared%20Documents%2F%2Ehelix
