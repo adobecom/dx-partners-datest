@@ -4,4 +4,5 @@
 #    type: markup
 
 mountpoints:
-  /: https://adobe.sharepoint.com/:f:/r/sites/DX-Partners/Shared%20Documents
+  /:
+    url: https://adobe.sharepoint.com/:f:/r/sites/DX-Partners/Shared%20Documents
